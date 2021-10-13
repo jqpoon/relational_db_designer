@@ -8,10 +8,11 @@ on:
 jobs:
   frontend_tests:
     runs-on: ubuntu-latest
+    container: 
+      image: docker/alpine:3.8
     steps:
       - name: Frontend tests
-      uses: docker://alpine:3.8
-      - run: echo "Frontend test commands here"
+        run: echo "Frontend test commands here"
  
   backend_tests:
     runs-on: ubuntu-latest
