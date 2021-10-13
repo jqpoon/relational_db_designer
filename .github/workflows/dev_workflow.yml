@@ -9,10 +9,11 @@ jobs:
   frontend_tests:
     runs-on: ubuntu-latest
     container: 
-      image: alpine:3.8
+      image: node:16
     steps:
       - name: Frontend tests
         run: echo "Frontend test commands here"
+        run: node --help
  
   backend_tests:
     runs-on: ubuntu-latest
