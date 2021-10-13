@@ -1,0 +1,32 @@
+name: Development workflow - Testing and deployment
+on: 
+  push:
+    branches:
+      - dev
+      - devops_setup # Temporary, until setting up of infra is complete
+
+jobs:
+  frontend_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Frontend test commands here"
+ 
+  backend_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Backend test commands here"
+
+  frontend_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Frontend deploy commands here"
+
+  backend_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Backend deploy commands here"
+
+  database_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Database commands here (if needed)"
