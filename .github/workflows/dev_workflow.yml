@@ -12,8 +12,9 @@ jobs:
       image: node:16
     steps:
       - name: Frontend tests
-        run: echo "Frontend test commands here"
-        run: node --help
+        run: |
+          echo "Frontend test commands here"
+          node --help
  
   backend_tests:
     runs-on: ubuntu-latest
