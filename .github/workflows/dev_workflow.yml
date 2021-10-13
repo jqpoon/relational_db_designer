@@ -9,6 +9,7 @@ jobs:
   frontend_tests:
     runs-on: ubuntu-latest
     steps:
+      - name: Frontend tests
       uses: docker://alpine:3.8
       - run: echo "Frontend test commands here"
  
