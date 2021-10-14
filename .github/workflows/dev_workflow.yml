@@ -1,0 +1,52 @@
+name: Development workflow - Testing and deployment
+on: 
+  push:
+    branches:
+      - dev
+      - devops_setup # Temporary, until setting up of infra is complete
+
+jobs:
+  frontend_tests:
+    runs-on: ubuntu-latest
+    container: 
+      image: node:16
+    steps:
+      - name: Frontend tests
+        run: |
+          echo "Frontend test commands here"
+          node --help
+ 
+  backend_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Backend test commands here"
+
+  frontend_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Login to Heroku
+        working-directory: frontend
+        env: 
+          HEROKU_API_KEY : ${{ secrets.HEROKU_API_KEY }}
+        run: heroku container:login
+      - name: Build and push
+        working-directory: frontend
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: heroku container:push -a relational-db-designer web 
+      - name: Release
+        working-directory: frontend
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: heroku container:release -a relational-db-designer web 
+
+  backend_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Backend deploy commands here"
+
+  database_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Database commands here (if needed)"
