@@ -26,14 +26,17 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Login to Heroku
+        working-directory: frontend
         env: 
           HEROKU_API_KEY : ${{ secrets.HEROKU_API_KEY }}
         run: heroku container:login
       - name: Build and push
+        working-directory: frontend
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         run: heroku container:push -a relational-db-designer web 
       - name: Release
+        working-directory: frontend
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         run: heroku container:release -a relational-db-designer web 
