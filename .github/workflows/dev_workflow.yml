@@ -29,11 +29,9 @@ jobs:
   # Frontend is minified into a build folder and served from the backend
   backend_deploy:
     runs-on: ubuntu-latest
-    container:
-      image: node:16
     steps:
       - uses: actions/checkout@v2
-      
+
       - name: Login to Heroku
         working-directory: backend
         env: 
