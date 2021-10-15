@@ -14,6 +14,10 @@ RUN npm ci --only=production
 WORKDIR /usr/src/app
 COPY . .
 
+# Build client
+WORKDIR /usr/src/app/client
+RUN npm run build
+
 # Run node server
 WORKDIR /usr/src/app/backend
 EXPOSE 3000
