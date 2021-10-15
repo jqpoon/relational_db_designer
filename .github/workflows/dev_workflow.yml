@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - dev
-      - devops_setup # Temporary, until setting up of infra is complete
+      - devops_deployment # Temporary, until setting up of infra is complete
 
 jobs:
   frontend_tests:
@@ -18,33 +18,34 @@ jobs:
  
   backend_tests:
     runs-on: ubuntu-latest
+    container: 
+      image: node:16
     steps:
-      - run: echo "Backend test commands here"
+      - name: Backend tests
+        run: |
+          echo "Backend test commands here"
+          node --help
 
-  frontend_deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Login to Heroku
-        working-directory: frontend
-        env: 
-          HEROKU_API_KEY : ${{ secrets.HEROKU_API_KEY }}
-        run: heroku container:login
-      - name: Build and push
-        working-directory: frontend
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: heroku container:push -a relational-db-designer web 
-      - name: Release
-        working-directory: frontend
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: heroku container:release -a relational-db-designer web 
-
+  # Frontend is minified into a build folder and served from the backend
   backend_deploy:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Backend deploy commands here"
+      - uses: actions/checkout@v2
+
+      - name: Login to Heroku
+        env: 
+          HEROKU_API_KEY : ${{ secrets.HEROKU_API_KEY }}
+        run: heroku container:login
+
+      - name: Build and push
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: heroku container:push -a relational-db-designer web 
+
+      - name: Release
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: heroku container:release -a relational-db-designer web 
 
   database_deploy:
     runs-on: ubuntu-latest
