@@ -33,13 +33,7 @@ jobs:
       image: node:16
     steps:
       - uses: actions/checkout@v2
-
-      - name: Build client
-        working-directory: client
-        run: |
-          npm i react-scripts
-          npm run build
-
+      
       - name: Login to Heroku
         working-directory: backend
         env: 

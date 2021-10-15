@@ -1,22 +1,20 @@
 FROM node:14
 
-# Create app directory
+# Install backend dependencies
 WORKDIR /usr/src/app/backend
-
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
 COPY backend/package*.json ./
-
-RUN npm install
-# If you are building your code for production
 RUN npm ci --only=production
 
+# Install client dependencies
+WORKDIR /usr/src/app/client
+COPY client/package*.json ./
+RUN npm ci --only=production
+
+# Copy files
 WORKDIR /usr/src/app
-# Bundle app source
 COPY . .
 
+# Run node server
 WORKDIR /usr/src/app/backend
 EXPOSE 3000
 CMD [ "npm", "start" ]
-
