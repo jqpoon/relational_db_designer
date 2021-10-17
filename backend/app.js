@@ -5,6 +5,7 @@ var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+// var schemaRouter = require('./routes/schema');
 
 var app = express();
 
@@ -21,5 +22,6 @@ if (process.env.NODE_ENV === "production") {
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+// app.use('/schema', schemaRouter);
 
 module.exports = app;
