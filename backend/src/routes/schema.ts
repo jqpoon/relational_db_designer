@@ -1,19 +1,20 @@
-import express from 'express';
+import { Router } from 'express';
 import SchemaController from "../controllers/schemaController";
 
-export const router = express.Router();
+const router = Router();
 
 // Get Schema from Database
 router.get('/', function(req, res, next) {
     // TODO Julian request translation
-    console.log(req)
+    // console.log(req)
 
     // if ...
     // else ...
 
-    SchemaController.getInstance().createEntity({
-        name: 'Testing',
-    })
+    // SchemaController.getInstance().createEntity({
+    //     name: 'Testing',
+    // })
+    console.log('nyello')
 });
 
 export default router;
