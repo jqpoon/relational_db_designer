@@ -11,10 +11,13 @@ router.get('/', function(req, res, next) {
     // if ...
     // else ...
 
-    // SchemaController.getInstance().createEntity({
-    //     name: 'Testing',
-    // })
-    console.log('nyello')
+    SchemaController.getInstance().testing({
+        name: 'Testing Entity',
+    }, {
+        name: 'Testing Attribute',
+    })
+    // console.log('hello')
+
 });
 
 export default router;

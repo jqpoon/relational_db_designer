@@ -1,4 +1,5 @@
 import Entity from "../models/entity";
+import Attribute from "../models/attribute";
 import DatabaseController from "./databaseController";
 
 class SchemaController {
@@ -14,9 +15,10 @@ class SchemaController {
         return SchemaController.instance;
     }
 
-    public createEntity(entity: Entity): void {
+    public testing(entity: Entity, attribute: Attribute): void {
         // TODO return response back to API, checking entity validity
         DatabaseController.getInstance().createEntity(entity);
+        DatabaseController.getInstance().addAttribute(entity, attribute);
     }
 
 }

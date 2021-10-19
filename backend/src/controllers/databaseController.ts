@@ -1,5 +1,6 @@
-import neo4j, { Driver } from "neo4j-driver";
+import neo4j, {Driver, QueryResult} from "neo4j-driver";
 import Entity from "../models/entity";
+import Attribute from "../models/attribute";
 
 class DatabaseController {
 
@@ -18,23 +19,63 @@ class DatabaseController {
         return DatabaseController.instance;
     }
 
-    public async createEntity({
-                            name,
-                        }: Entity) {
+    private static verifyDatabaseUpdate(result: QueryResult): boolean {
+        if (result.records[0] == undefined) {
+            throw new Error('Database not updated')
+        }
+        return true
+    }
+
+    public async createEntity(entity: Entity) {
 
         const session = this.databaseDriver.session()
 
         try {
-            const result = await session.writeTransaction(tx =>
+            const result: QueryResult = await session.writeTransaction(tx =>
                 tx.run(
                     'CREATE (a:ENTITY) SET a.name = $name RETURN a.name',
-                    { name: name }
+                    entity,
                 )
             )
-            const singleRecord = result.records[0]
-            console.log(singleRecord)
-            const greeting = singleRecord.get(0)
-            console.log(greeting)
+            DatabaseController.verifyDatabaseUpdate(result)
+        } finally {
+            await session.close()
+        }
+    }
+
+    private async createAttribute(attribute: Attribute) {
+        const session = this.databaseDriver.session()
+
+        try {
+            const result: QueryResult = await session.writeTransaction(tx =>
+                tx.run(
+                    'CREATE (a:ATTRIBUTE) SET a.name = $name RETURN a.name',
+                    attribute,
+                )
+            )
+            DatabaseController.verifyDatabaseUpdate(result)
+        } finally {
+            await session.close()
+        }
+    }
+
+    public async addAttribute(entity: Entity, attribute: Attribute) {
+
+        const session = this.databaseDriver.session()
+
+        try {
+            await this.createAttribute(attribute);
+            const result = await session.writeTransaction(tx =>
+                tx.run(
+                    'MATCH (a:ENTITY), (b:ATTRIBUTE) WHERE a.name = $entityName AND b.name = $attributeName ' +
+                    'CREATE (a)-[r:Attribute]->(b) RETURN type(r)',
+                    {
+                        entityName: entity.name,
+                        attributeName: attribute.name
+                    },
+                )
+            )
+            DatabaseController.verifyDatabaseUpdate(result)
         } finally {
             await session.close()
         }
