@@ -1,6 +1,7 @@
 import neo4j, {Driver, QueryResult} from "neo4j-driver";
 import Entity from "../models/entity";
 import Attribute from "../models/attribute";
+import Relationship from "../models/relationship";
 
 class DatabaseController {
 
@@ -60,6 +61,7 @@ class DatabaseController {
     }
 
     public async addAttribute(entity: Entity, attribute: Attribute) {
+        // assume entity node exists already
 
         const session = this.databaseDriver.session()
 
@@ -79,6 +81,60 @@ class DatabaseController {
         } finally {
             await session.close()
         }
+    }
+
+    private async createRelationship(relationship: Relationship) {
+        const session = this.databaseDriver.session()
+
+        try {
+            const result: QueryResult = await session.writeTransaction(tx =>
+                tx.run(
+                    'CREATE (a:RELATIONSHIP) SET a.name = $name RETURN a.name',
+                    relationship,
+                )
+            )
+            DatabaseController.verifyDatabaseUpdate(result)
+        } finally {
+            await session.close()
+        }
+    }
+
+    public async addRelationship(entityOne: Entity, entityTwo: Entity, relationship: Relationship) {
+        // assume entity node exists already
+
+        const session = this.databaseDriver.session()
+
+        try {
+            await this.createRelationship(relationship);
+            const firstRelation = await session.writeTransaction(tx =>
+                tx.run(
+                    // TODO add relationship one to many to name once know where to retrieve the info
+                    'MATCH (a:ENTITY), (b:RELATIONSHIP) WHERE a.name = $entityName AND b.name = $relationshipName ' +
+                    'CREATE (a)-[r:Relationship]->(b) RETURN type(r)',
+                    {
+                        entityName: entityOne.name,
+                        relationshipName: relationship.name,
+                    },
+                )
+            )
+            DatabaseController.verifyDatabaseUpdate(firstRelation)
+
+            const secondRelation = await session.writeTransaction(tx =>
+                tx.run(
+                    // TODO add relationship one to many to name once know where to retrieve the info
+                    'MATCH (a:ENTITY), (b:RELATIONSHIP) WHERE a.name = $entityName AND b.name = $relationshipName ' +
+                    'CREATE (a)-[r:Relationship]->(b) RETURN type(r)',
+                    {
+                        entityName: entityTwo.name,
+                        relationshipName: relationship.name,
+                    },
+                )
+            )
+            DatabaseController.verifyDatabaseUpdate(secondRelation)
+        } finally {
+            await session.close()
+        }
+
     }
 
 }

@@ -1,6 +1,7 @@
 import Entity from "../models/entity";
 import Attribute from "../models/attribute";
 import DatabaseController from "./databaseController";
+import Relationship from "../models/relationship";
 
 class SchemaController {
 
@@ -15,10 +16,12 @@ class SchemaController {
         return SchemaController.instance;
     }
 
-    public testing(entity: Entity, attribute: Attribute): void {
+    public testing(entityOne: Entity, entityTwo: Entity, attribute: Attribute, relationship: Relationship): void {
         // TODO return response back to API, checking entity validity
-        DatabaseController.getInstance().createEntity(entity);
-        DatabaseController.getInstance().addAttribute(entity, attribute);
+        DatabaseController.getInstance().createEntity(entityOne);
+        DatabaseController.getInstance().createEntity(entityTwo);
+        DatabaseController.getInstance().addAttribute(entityOne, attribute);
+        DatabaseController.getInstance().addRelationship(entityOne, entityTwo, relationship)
     }
 
 }

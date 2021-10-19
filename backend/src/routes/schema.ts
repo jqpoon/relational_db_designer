@@ -12,9 +12,13 @@ router.get('/', function(req, res, next) {
     // else ...
 
     SchemaController.getInstance().testing({
-        name: 'Testing Entity',
+        name: 'Testing Entity One',
+    }, {
+        name: 'Testing Entity Two',
     }, {
         name: 'Testing Attribute',
+    }, {
+        name: 'Testing Relationship',
     })
     // console.log('hello')
 
