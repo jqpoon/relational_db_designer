@@ -1,0 +1,10 @@
+.diamond {
+  border-style: solid;
+  border-width: medium;
+  border-color: black;
+  transform: rotate(45deg);
+}
+
+.node {
+  background-color: red;
+}

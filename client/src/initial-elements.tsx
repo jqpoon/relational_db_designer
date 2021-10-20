@@ -1,6 +1,7 @@
 import React from 'react';
+import { Elements, ArrowHeadType } from 'react-flow-renderer';
 
-export const initialElements = [
+export const initialElements: Elements = [
   {
     id: '1',
     type: 'input',
@@ -86,7 +87,7 @@ export const initialElements = [
     id: 'e4-5',
     source: '4',
     target: '5',
-    arrowHeadType: 'arrowclosed',
+    arrowHeadType: ArrowHeadType.ArrowClosed,
     label: 'edge with arrow head',
   },
   {
