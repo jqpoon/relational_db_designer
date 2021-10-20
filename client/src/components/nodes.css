@@ -6,5 +6,9 @@
 }
 
 .node {
-  background-color: red;
+  background-color: none;
+}
+
+.handle {
+  background-color: transparent;
 }

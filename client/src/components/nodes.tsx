@@ -22,13 +22,14 @@ export function Entity(props: NodeData) {
 export function Relationship({ data }) {
   const canvasRef = useRef(null);
   const drawBorder = (ctx) => {
-    ctx.fillStyle = "#000000";
+    ctx.fillStyle = "#FFFFFF";
     ctx.beginPath();
-    ctx.moveTo(ctx.canvas.width / 2, 0);
+    ctx.moveTo(ctx.canvas.width / 2, 0.2);
     ctx.lineTo(0, ctx.canvas.height / 2);
     ctx.lineTo(ctx.canvas.width / 2, ctx.canvas.height);
     ctx.lineTo(ctx.canvas.width, ctx.canvas.height / 2);
-    ctx.lineTo(ctx.canvas.width / 2, 0);
+    ctx.lineTo(ctx.canvas.width / 2, 0.2);
+    ctx.fill();
     ctx.stroke();
   };
   useEffect(() => {
@@ -57,14 +58,12 @@ export function Relationship({ data }) {
           maxWidth: "150px",
           textAlign: "center",
           wordWrap: "break-word",
+          zIndex: 10,
         }}
       >
         {data.label}
       </div>
-      <Handle type="target" position={Position.Bottom} />
-      <Handle type="target" position={Position.Left} />
-      <Handle type="target" position={Position.Top} />
-      <Handle type="target" position={Position.Right} />
+      <Handle className="handle" type="target" position={Position.Top} />
     </div>
   );
   return node;
