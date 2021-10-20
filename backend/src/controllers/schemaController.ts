@@ -62,6 +62,27 @@ class SchemaController {
         return entitiesHashMap
     }
 
+    public async getAllRelationships(): Promise<Relationship[]> {
+
+        var relationshipResult: QueryResult = await DatabaseController.getInstance().getAllRelationships()
+
+        const relationships: Array<Relationship> = [];
+
+        for (var e of relationshipResult.records) {
+            var relationName = e.toObject()['{ relationName: r.name, entities: collect(relations) }'].relationName
+            var entities = e.toObject()['{ relationName: r.name, entities: collect(relations) }'].entities
+
+            relationships.push({
+                name: relationName,
+                // TOOD add type of relationship as well, maybe store full entity object instead?
+                entities: entities.map((e: { entityID: number }) => e.entityID)
+            })
+        }
+
+        console.log(relationships)
+        return relationships
+    }
+
 }
 
 export default SchemaController

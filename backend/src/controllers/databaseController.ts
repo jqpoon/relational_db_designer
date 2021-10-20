@@ -172,7 +172,24 @@ class DatabaseController {
 
     }
 
-    // MATCH (r:RELATIONSHIP)<-[re]-(n:ENTITY) with r, [{type: re, name: n.name}] as relations RETURN { relationName: r.name, entities: collect(relations) }
+    public async getAllRelationships(): Promise<QueryResult> {
+        const session = this.databaseDriver.session()
+
+        try {
+            const entitiesWithAttributes = await session.writeTransaction(tx =>
+                tx.run(
+                    'MATCH (r:RELATIONSHIP)<-[re]-(n:ENTITY) with r, {type: re, entityID: n.id} ' +
+                    'as relations RETURN { relationName: r.name, entities: collect(relations) }',
+                )
+            )
+            DatabaseController.verifyDatabaseUpdate(entitiesWithAttributes)
+
+            return entitiesWithAttributes
+        } finally {
+            await session.close()
+        }
+
+    }
 
 }
 

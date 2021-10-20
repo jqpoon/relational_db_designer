@@ -23,7 +23,7 @@ router.get('/', function(req, res, next) {
     //     name: 'Testing Relationship',
     // })
 
-    const result = SchemaController.getInstance().getAllEntities()
+    const result = SchemaController.getInstance().getAllRelationships()
 
 });
 
