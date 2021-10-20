@@ -26,7 +26,6 @@ export function DragAndDrop(){
   const reactFlowWrapper = useRef(null);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const [elements, setElements] = useState(initialElements);
-  const [nodeName, setNodeName] = useState('Node 1');
 
   const onConnect:any
   = (params:any) => setElements((els:any) => addEdge(params, els));
@@ -74,11 +73,7 @@ export function DragAndDrop(){
           >
 
 <div className="updatenode__controls">
-        <label>label:</label>
-        <input
-          value={nodeName}
-          onChange={(evt) => setNodeName(evt.target.value)}
-        /> </div>
+      </div>
             <Controls />
           </ReactFlow>
         </div>
