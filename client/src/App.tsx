@@ -10,31 +10,6 @@ import Menu from "./components/menu";
 // TODO(): Connectors between nodes
 // TODO(): Figure out how to generate attribute
 // TODO(iat): Toolbar for creating new nodes/&edges
-const elements = [
-  {
-    id: "1",
-    type: "input", // input node
-    data: { label: "Input Node" },
-    position: { x: 250, y: 25 },
-  },
-  // default node
-  {
-    id: "2",
-    // you can also pass a React component as a label
-    data: { label: <div>Default Node</div> },
-    position: { x: 100, y: 125 },
-  },
-  {
-    id: "3",
-    type: "attributeNode", // output node/
-    data: { label: "attribute1" },
-    position: { x: 250, y: 250 },
-  },
-  { id: "e3-1", source: "2", target: "3", type:"attributeEdge", data: {text: "custom-edge1"}},
-
-  { id: "e1-2", source: "1", target: "2", animated: true }
-];
-
 
 const sampleEntities = [
   {
@@ -45,6 +20,33 @@ const sampleEntities = [
 ];
 
 export default function App() {
+
+  var initialElements = [
+    {
+      id: "1",
+      type: "input", // input node
+      data: { label: "Input Node" },
+      position: { x: 250, y: 25 },
+    },
+    // default node
+    {
+      id: "2",
+      // you can also pass a React component as a label
+      data: { label: <div>Default Node</div> },
+      position: { x: 100, y: 125 },
+    },
+    {
+      id: "3",
+      type: "attributeNode", // output node/
+      data: { label: "attribute1" },
+      position: { x: 250, y: 250 },
+    },
+    { id: "e3-1", source: "2", target: "3", type:"attributeEdge"},
+  
+    { id: "e1-2", source: "1", target: "2", animated: true }
+  ];
+
+  const [elements, setElements] = useState(initialElements)
 
   const edgeTypes = {
     attributeEdge: AttributeEdge,
@@ -82,7 +84,7 @@ export default function App() {
                     onClick={resetMenu}
                 />
             </div>
-            <Menu {...menuProps} />
+            <Menu {...menuProps} setElements={setElements} />
         </>
     );
 }
