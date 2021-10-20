@@ -1,32 +1,41 @@
 import React from 'react';
-import { getBezierPath, getMarkerEnd } from 'react-flow-renderer';
+import { ArrowHeadType, getSmoothStepPath, getMarkerEnd , Position, getBezierPath } from 'react-flow-renderer';
+import './edges.css'
 
 export interface EdgeProps {
-  id: number;
+  id: string;
   sourceX: number,
   sourceY: number,
   targetX: number,
   targetY: number,
-  sourcePosition: number,
-  targetPosition: number,
+  sourcePosition: Position,
+  targetPosition: Position,
   style: any, // Used to be {}
   data: any,
-  arrowHeadType: any,
+  arrowHeadType: ArrowHeadType,
   markerEndId: any,
 }
 
-// export default function CustomEdge(props : EdgeProps) {
-//   let sourceX = props.id;
-//   const edgePath = getBezierPath({ props.sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition });
-//   const markerEnd = getMarkerEnd(arrowHeadType, markerEndId);
+const foreignObjectSize = 20;
 
-//   return (
-//     <>
-//       <path id={id} style={style} className="react-flow__edge-path" d={edgePath} markerEnd={markerEnd} />
-//       <text>
-//         <textPath href={`#${id}`} style={{ fontSize: '12px' }} startOffset="50%" textAnchor="middle">
-//           {data.text}
-//         </textPath>
-//       </text>
-//     </>
-//   );
+export default function AttributeEdge(props : EdgeProps) {
+  let edgePathDict = {sourceX: props.sourceX, sourceY: props.sourceY, sourcePosition: props.sourcePosition, targetX: props.targetX, targetY: props.targetY - 10, targetPosition: props.targetPosition};
+  
+  const edgePath = getBezierPath(edgePathDict);
+  const markerEnd = getMarkerEnd(props.arrowHeadType, props.markerEndId);
+
+  return (
+    <>
+      <path id={props.id} style={props.style} className="react-flow__edge-path" d={edgePath} markerEnd={markerEnd} />
+
+      <foreignObject
+        width={foreignObjectSize}
+        height={foreignObjectSize}
+        x={props.targetX - foreignObjectSize / 2}
+        y={props.targetY - 15}
+      >
+        <div className="attribute-end"></div>
+      </foreignObject>
+    </>
+  );
+}
