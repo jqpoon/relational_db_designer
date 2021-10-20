@@ -1,4 +1,4 @@
-import ReactFlow from "react-flow-renderer";
+import ReactFlow, { Handle, Position } from "react-flow-renderer";
 
 export interface NodeData {
   id: string;
@@ -6,7 +6,7 @@ export interface NodeData {
   position: { x: number; y: number };
 }
 
-export default function Entity(props: NodeData) {
+export function Entity(props: NodeData) {
   return {
     id: props.id,
     type: "default",
@@ -14,3 +14,16 @@ export default function Entity(props: NodeData) {
     data: {text: props.label},
   };
 }
+
+export function AttributeNode(data: any) {
+  return (
+    <div>
+      <Handle
+        type="source"
+        position={Position.Top} // Need to change top/bottom/right/left depending on where the node is
+        style={{ display : 'none'}}
+      />
+      <div>{data.data.label}</div>
+    </div>
+  );
+};
