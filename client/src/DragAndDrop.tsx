@@ -1,32 +1,56 @@
 //@ts-nocheck
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import ReactFlow, {
   ReactFlowProvider,
   addEdge,
   removeElements,
   Controls,
 } from 'react-flow-renderer';
+import Entity from "./components/Entity";
+import { AttributeNode} from "./components/nodes";
+import AttributeEdge from "./components/edges";
+import Menu from "./components/menu";
 
 import { Toolbar } from './toolbar';
 import './dnd.css'
 
-const initialElements = [
-  {
-    id: '1',
-    type: 'input',
-    data: { label: 'input node' },
-    position: { x: 250, y: 5 },
-  },
-];
 
 let id = 0;
 const getId = () => `dndnode_${id++}`;
 
+// Types
+const edgeTypes = {
+  attributeEdge: AttributeEdge,
+};
+const nodeTypes = {
+  entity: Entity,
+  attributeNode: AttributeNode,
+};
+
 export function DragAndDrop(props){
+  // Ref
   const reactFlowWrapper = useRef(null);
+
+  // State
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
-  const [elements, setElements] = useState(initialElements);
-  const [nodeName, setNodeName] = useState('Node 1');
+  const [elements, setElements] = useState([]);
+  const [menuProps, setMenuProps] = useState({ display: "none" });
+
+  // Functions
+  const nodeRightClick = (e: any, data: any) => {
+    e.preventDefault();
+    setMenuProps({
+        display: "initial",
+        x: e.pageX,
+        y: e.pageY,
+        target: data.id,
+        resetMenu: resetMenu,
+    });
+  };
+
+  const resetMenu = () => {
+    setMenuProps({ display: "none" });
+  };
 
   const onConnect:any
   = (params:any) => setElements((els:any) => addEdge(params, els));
@@ -61,6 +85,7 @@ export function DragAndDrop(props){
   };
 
   return (
+    <>
     <div className="dndflow">
       <ReactFlowProvider>
         <div className="reactflow-wrapper" ref={reactFlowWrapper}>
@@ -71,7 +96,10 @@ export function DragAndDrop(props){
             onLoad={onLoad}
             onDrop={onDrop}
             onDragOver={onDragOver}
-            nodeTypes={props.nodeTypes}
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            onNodeContextMenu={nodeRightClick}
+            onClick={resetMenu}
           >
             <Controls />
           </ReactFlow>
@@ -79,5 +107,7 @@ export function DragAndDrop(props){
         <Toolbar />
       </ReactFlowProvider>
     </div>
+    <Menu {...menuProps} setElements={setElements} />
+    </>
   );
 }

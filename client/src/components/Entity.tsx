@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import './nodes.css'
 
 // @ts-nocheck
@@ -7,7 +7,7 @@ import {
   Position,
 } from 'react-flow-renderer';
 
-export function Entity(props: any){
+export default function Entity(props: any){
     const [value, setValue] = useState("");
     const [text, updateText] = useState(props.data.text);
     const [seen, setSeen] = useState('inline');
