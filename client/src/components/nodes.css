@@ -8,3 +8,11 @@
     text-align: center;
     width: 150px;
 }
+
+.node {
+  background-color: none;
+}
+
+.handle {
+  background-color: transparent;
+}
