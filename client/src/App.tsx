@@ -47,8 +47,11 @@ export default function App() {
   const reactFlowWrapper = useRef(null);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const [elements, setElements] = useState<Elements>(initialElements);
+  // new
   const [isEditing, setEditing] = useState(false);
-  const [selected, setSelected] = useState([]);
+  const [selectedEntities, setSelectedEntities] = useState([]);
+  const [selectedRelationship, setSelectedRelationship] = useState(null);
+
   const onConnect = (params) => setElements((els) => addEdge(params, els));
   const onElementsRemove = (elementsToRemove) =>
     setElements((els) => removeElements(elementsToRemove, els));
@@ -59,20 +62,6 @@ export default function App() {
   const onDragOver = (event) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
-  };
-
-  const onElementClick = (event, element) => {
-    if (isEdge(element)) return;
-    if (selected.includes(element)) {
-      setSelected(
-        selected.filter((value) => {
-          return value != element;
-        })
-      );
-    } else {
-      setSelected([...selected, element]);
-    }
-    console.log(selected);
   };
 
   const onDrop = (event) => {
@@ -94,43 +83,64 @@ export default function App() {
     setElements((es) => es.concat(newNode));
   };
 
+  // New functions
   const exitEditing = () => {
-    setSelected([]);
+    setSelectedEntities([]);
+    setSelectedRelationship(null);
     setEditing(false);
   };
 
   const connectER = () => {
-    const relationships = selected.filter((node) => {
-      return node.type === "relationship";
-    });
-    const entities = selected.filter((node) => {
-      return node.type !== "relationship";
-    });
+    // Check
+    if (selectedEntities.length < 2 || selectedRelationship === null) {
+      console.log(selectedEntities);
+      console.log(selectedRelationship);
+      alert("Invalid connections between entities and relationships.");
+      exitEditing();
+      return;
+    }
+    // Add edge
     let edges = [];
-    relationships.map((rel) => {
-      entities.map((ent) => {
-        const constEdge = {
-          id: "edge+" + getId(),
-          type: "straight",
-          source: ent.id,
-          target: rel.id,
-          label: "Edge",
-        };
-        console.log("NewEdge:");
-        console.log(constEdge);
-        edges.push(constEdge);
-      });
+    selectedEntities.map((ent) => {
+      const newEdge = {
+        id: "edge+" + getId(),
+        type: "straight",
+        source: ent.id,
+        target: selectedRelationship.id,
+        label: "Edge",
+      };
+      console.log("NewEdge:");
+      console.log(newEdge);
+      edges.push(newEdge);
     });
     setElements([...elements, ...edges]);
     console.log(elements);
     exitEditing();
   };
 
+  const onElementClick = (event, element) => {
+    if (isEdge(element)) return;
+    if (element.type === "relationship") {
+      setSelectedRelationship(element);
+    } else {
+      if (selectedEntities.includes(element)) {
+        setSelectedEntities(
+          selectedEntities.filter((value) => {
+            return value.id != element.id;
+          })
+        );
+      } else {
+        setSelectedEntities([...selectedEntities, element]);
+      }
+    }
+  };
+
   const renderToolBar = () => {
     if (isEditing) {
       return (
         <EditsToolbar
-          selected={selected}
+          selectedEntities={selectedEntities}
+          selectedRelationship={selectedRelationship}
           connectER={connectER}
           cancelConnect={exitEditing}
         />
@@ -153,13 +163,13 @@ export default function App() {
               onLoad={onLoad}
               onDrop={onDrop}
               onDragOver={onDragOver}
-              // onSelectionChange={onSelectionChange}
-              onElementClick={onElementClick}
+              onElementClick={onElementClick} // new
             >
               <div className="updatenode__controls"></div>
               <Controls />
             </ReactFlow>
           </div>
+          {/* new */}
           {renderToolBar()}
         </ReactFlowProvider>
       </div>

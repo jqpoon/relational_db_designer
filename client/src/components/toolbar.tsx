@@ -39,22 +39,26 @@ export function Toolbar(props) {
 }
 
 export function EditsToolbar(props) {
-  const renderNodes = (nodes) => {
-    return nodes.map((node) => {
-      if (node.type === "relationship") {
-        return <div className="react-flow__node-output">{node.data.label}</div>;
-      } else {
-        return <div className="react-flow__node-input">{node.data.label}</div>;
-      }
-    });
+  const renderEntities = (entities) => {
+    return entities.map((entity) => (
+      <div className="react-flow__node-input">{entity.data.label}</div>
+    ));
   };
   return (
     <aside>
       <div className="description">Relating Entities via a Relationship</div>
       <div>
-        <label for="entities">Choose at least 2 entities:</label>
+        <label>Choose a single relationship: </label>
+        {props.selectedRelationship !== null && (
+          <div className="react-flow__node-output">
+            {props.selectedRelationship.data.label}
+          </div>
+        )}
       </div>
-      <div>{renderNodes(props.selected)}</div>
+      <div>
+        <label for="entities">Choose at least 2 entities:</label>
+        {renderEntities(props.selectedEntities)}
+      </div>
       <div className="react-flow__node-default" onClick={props.connectER}>
         Connect
       </div>
