@@ -1,17 +1,24 @@
+// @ts-nocheck
 import React from "react";
 import ReactFlow from "react-flow-renderer";
 import Entity, { NodeData } from "./components/nodes";
+import { DragAndDrop } from "./DragAndDrop";
+import { EditableNode } from "./components/EditableNode";
 
 // TODO(wyt): Custom node for entity, relationship
 // TODO(jq): Figure out attribute display
 // TODO(): Connectors between nodes
 // TODO(): Figure out how to generate attribute
 // TODO(iat): Toolbar for creating new nodes/&edges
+const nodeTypes = {
+  editableNode: EditableNode,
+};
+
 const elements = [
   {
     id: "1",
-    type: "input", // input node
-    data: { label: "Input Node" },
+    type: "editableNode", // input node
+    data: { text: "Node 1" },
     position: { x: 250, y: 25 },
   },
   // default node
@@ -43,7 +50,7 @@ const sampleEntities = [
 export default function App() {
   return (
     <div style={{ height: window.innerHeight, width: window.innerWidth }}>
-      <ReactFlow elements={elements} />
+      <ReactFlow elements={elements} nodeTypes={nodeTypes} />
     </div>
   );
 }
