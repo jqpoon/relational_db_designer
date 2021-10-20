@@ -22,7 +22,7 @@ const initialElements = [
 let id = 0;
 const getId = () => `dndnode_${id++}`;
 
-export function DragAndDrop(){
+export function DragAndDrop(props){
   const reactFlowWrapper = useRef(null);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const [elements, setElements] = useState(initialElements);
@@ -71,14 +71,8 @@ export function DragAndDrop(){
             onLoad={onLoad}
             onDrop={onDrop}
             onDragOver={onDragOver}
+            nodeTypes={props.nodeTypes}
           >
-
-<div className="updatenode__controls">
-        <label>label:</label>
-        <input
-          value={nodeName}
-          onChange={(evt) => setNodeName(evt.target.value)}
-        /> </div>
             <Controls />
           </ReactFlow>
         </div>

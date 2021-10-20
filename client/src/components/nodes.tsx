@@ -6,11 +6,3 @@ export interface NodeData {
   position: { x: number; y: number };
 }
 
-export default function Entity(props: NodeData) {
-  return {
-    id: props.id,
-    type: "default",
-    position: {x: props.position.x, y: props.position.y},
-    data: {text: props.label},
-  };
-}

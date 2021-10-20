@@ -11,10 +11,10 @@ export function Toolbar() {
   return (
     <aside>
       <div className="description">You can drag these nodes to the pane on the left.</div>
-      <div className="dndnode" style={{border: '1px solid black'}} onDragStart={(event) => onDragStart(event, 'input')} draggable>
+      <div className="react-flow__node-default"  onDragStart={(event) => onDragStart(event, 'entity')} draggable>
         Entity Node
       </div>
-      <div className="dndnode" onDragStart={(event) => onDragStart(event, 'default')} draggable>
+      <div className="react-flow__node-output" onDragStart={(event) => onDragStart(event, 'default')} draggable>
         Relationship Node
       </div>
     </aside>
