@@ -32,9 +32,9 @@ export default function AttributeEdge(props : EdgeProps) {
         width={foreignObjectSize}
         height={foreignObjectSize}
         x={props.targetX - foreignObjectSize / 2}
-        y={props.targetY - 10}
+        y={props.targetY - 15}
       >
-        <div className="circle"></div>
+        <div className="attribute-end"></div>
       </foreignObject>
     </>
   );

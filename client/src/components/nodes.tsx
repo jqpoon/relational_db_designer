@@ -21,9 +21,10 @@ export function AttributeNode(data: any) {
       <Handle
         type="source"
         position={Position.Top} // Need to change top/bottom/right/left depending on where the node is
-        style={{ display : 'none'}}
+        // style={{ backgroundColor : 'white'}}
+        style={{ visibility: 'hidden' }}
       />
       <div>{data.data.label}</div>
     </div>
   );
-};
+}; 
