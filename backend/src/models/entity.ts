@@ -6,7 +6,8 @@ interface Entity extends ModelObject {
     identifier: number;
     name: String;
     isWeak: Boolean;
-    attributes: Array<Attribute>;
+    attributes: Attribute[];
+    subsets: Entity[];
 }
 
 export default Entity;

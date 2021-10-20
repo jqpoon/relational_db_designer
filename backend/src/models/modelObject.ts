@@ -1,6 +1,9 @@
+import SchemaController from "src/controllers/schemaController";
+
 // An interface for any object in the ER model that can be parsed from a JSON request.
 interface ModelObject {
-    buildFromJson(objectAsJson: any): void;
+    buildFirstPassFromJson(objectAsJson: any): void;
+    decodeObjectReferences(schemaController: SchemaController): void;
 }
 
 export default ModelObject;
