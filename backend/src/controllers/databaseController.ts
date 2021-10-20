@@ -34,7 +34,7 @@ class DatabaseController {
         try {
             const result: QueryResult = await session.writeTransaction(tx =>
                 tx.run(
-                    'CREATE (a:ENTITY) SET a.name = $name RETURN a.name',
+                    'CREATE (e:ENTITY) SET e.name = $name, e.id = $id RETURN e.name',
                     entity,
                 )
             )
@@ -136,6 +136,43 @@ class DatabaseController {
         }
 
     }
+
+    public async getAllEntities(): Promise<QueryResult> {
+        const session = this.databaseDriver.session()
+
+        try {
+            const entities = await session.writeTransaction(tx =>
+                tx.run(
+                    'MATCH (entity:ENTITY) RETURN entity',
+                )
+            )
+            DatabaseController.verifyDatabaseUpdate(entities)
+            return entities
+        } finally {
+            await session.close()
+        }
+
+    }
+
+    public async getAllEntitiesWithAttributes(): Promise<QueryResult> {
+        const session = this.databaseDriver.session()
+
+        try {
+            const entitiesWithAttributes = await session.writeTransaction(tx =>
+                tx.run(
+                    'MATCH (n:ENTITY)-[r]->(a:ATTRIBUTE) WITH n, a as attributes RETURN { nodeID: n.id, attributes: collect(attributes) }',
+                )
+            )
+            DatabaseController.verifyDatabaseUpdate(entitiesWithAttributes)
+
+            return entitiesWithAttributes
+        } finally {
+            await session.close()
+        }
+
+    }
+
+    // MATCH (r:RELATIONSHIP)<-[re]-(n:ENTITY) with r, [{type: re, name: n.name}] as relations RETURN { relationName: r.name, entities: collect(relations) }
 
 }
 
