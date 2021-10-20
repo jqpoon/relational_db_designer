@@ -1,8 +1,12 @@
 import Attribute from "./attribute";
+import ModelObject from "./modelObject";
 
-interface Entity {
-    name: String,
-    attributes?: Array<Attribute>
+interface Entity extends ModelObject {
+    // An identifier given to every single object that exists in the ER model.
+    identifier: number;
+    name: String;
+    isWeak: Boolean;
+    attributes: Array<Attribute>;
 }
 
-export default Entity
+export default Entity;
