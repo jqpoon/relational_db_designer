@@ -1,6 +1,9 @@
-import React from "react";
-import ReactFlow from "react-flow-renderer";
-import Entity, { NodeData } from "./components/nodes";
+//@ts-nocheck
+import { useState } from "react";
+import ReactFlow, {ArrowHeadType} from "react-flow-renderer";
+import { NodeData , AttributeNode} from "./components/nodes";
+import AttributeEdge from "./components/edges";
+import Menu from "./components/menu";
 
 // TODO(wyt): Custom node for entity, relationship
 // TODO(jq): Figure out attribute display
@@ -23,14 +26,15 @@ const elements = [
   },
   {
     id: "3",
-    type: "output", // output node
-    data: { label: "Output Node" },
+    type: "attributeNode", // output node/
+    data: { label: "attribute1" },
     position: { x: 250, y: 250 },
   },
-  // animated edge
-  { id: "e1-2", source: "1", target: "2", animated: true },
-  { id: "e2-3", source: "2", target: "3" },
+  { id: "e3-1", source: "2", target: "3", type:"attributeEdge", data: {text: "custom-edge1"}},
+
+  { id: "e1-2", source: "1", target: "2", animated: true }
 ];
+
 
 const sampleEntities = [
   {
@@ -41,9 +45,44 @@ const sampleEntities = [
 ];
 
 export default function App() {
-  return (
-    <div style={{ height: window.innerHeight, width: window.innerWidth }}>
-      <ReactFlow elements={elements} />
-    </div>
-  );
+
+  const edgeTypes = {
+    attributeEdge: AttributeEdge,
+  };
+  
+  const nodeTypes = {
+    attributeNode: AttributeNode,
+  };
+
+  const [menuProps, setMenuProps] = useState({ display: "none" });
+
+    const nodeRightClick = (e: any, data: any) => {
+        e.preventDefault();
+        setMenuProps({
+            display: "initial",
+            x: e.pageX,
+            y: e.pageY,
+            target: data.id,
+            resetMenu: resetMenu,
+        });
+    };
+
+    const resetMenu = () => {
+        setMenuProps({ display: "none" });
+    };
+
+    return (
+        <>
+            <div style={{ height: window.innerHeight, width: window.innerWidth }}>
+                <ReactFlow
+                    elements={elements}
+                    nodeTypes={nodeTypes}
+                    edgeTypes={edgeTypes}
+                    onNodeContextMenu={nodeRightClick}
+                    onClick={resetMenu}
+                />
+            </div>
+            <Menu {...menuProps} />
+        </>
+    );
 }
