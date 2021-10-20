@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowHeadType, getBezierPath, getMarkerEnd , Position, getEdgeCenter} from 'react-flow-renderer';
+import { ArrowHeadType, getSmoothStepPath, getMarkerEnd , Position, getBezierPath } from 'react-flow-renderer';
 import './edges.css'
 
 export interface EdgeProps {

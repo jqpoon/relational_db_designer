@@ -28,6 +28,8 @@ export default function Menu({ display, x, y, target, resetMenu, setElements}) {
     const handleAddAttribute = () => {
         if (target) {
             console.log(target);
+            
+            // check if adding to new attribute
 
             const newNode = newAttributeNode(target, x, y);
             const newEdge = newAttributeEdge(target, target + "attribute1")
