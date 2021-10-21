@@ -1,5 +1,8 @@
 import "./menu.css";
 
+let attributeId = 0;
+const getNewAttributeName = () => `attribute_${attributeId++}`;
+
 export default function Menu({ display, x, y, target, resetMenu, setElements}) {
     const style = {
         display: display,
@@ -7,18 +10,20 @@ export default function Menu({ display, x, y, target, resetMenu, setElements}) {
         top: y ? y + 2 + "px" : null,
     };
 
+    const newAttributeNodeName = getNewAttributeName()
+
     const newAttributeNode = (nodeId, x, y) => {
         return {
-            id: nodeId + "attribute1",
+            id: nodeId + newAttributeNodeName,
             type: "attributeNode",
-            data: { label: "attribute1" },
-            position: { x: x - 10, y: y - 10},
+            data: { label: "attribute_placeholder" },
+            position: { x: x + 75, y: y + 100},
         }
     }
 
     const newAttributeEdge = (nodeId, target) => {
         return {
-            id: nodeId + "attribute1edge",
+            id: nodeId + newAttributeNodeName + "edge",
             source: nodeId,
             target: target,
             type: "attributeEdge"
@@ -27,12 +32,11 @@ export default function Menu({ display, x, y, target, resetMenu, setElements}) {
 
     const handleAddAttribute = () => {
         if (target) {
-            console.log(target);
-            
-            // check if adding to new attribute
+
+            // TODO: check if adding attribute to attribute
 
             const newNode = newAttributeNode(target, x, y);
-            const newEdge = newAttributeEdge(target, target + "attribute1")
+            const newEdge = newAttributeEdge(target, target + newAttributeNodeName)
 
             setElements(prevElements => [...prevElements, newNode, newEdge])
         }
