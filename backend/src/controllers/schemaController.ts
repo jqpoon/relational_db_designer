@@ -17,13 +17,19 @@ class SchemaController {
         return SchemaController.instance;
     }
 
-    public testing(entityOne: Entity, entityTwo: Entity, attribute: Attribute, relationship: Relationship): void {
-        // TODO return response back to API, checking entity validity
-        DatabaseController.getInstance().createEntity(entityOne);
-        DatabaseController.getInstance().createEntity(entityTwo);
-        DatabaseController.getInstance().addAttribute(entityOne, attribute);
-        DatabaseController.getInstance().addRelationship(entityOne, entityTwo, relationship)
-        DatabaseController.getInstance().getAllEntities()
+    public async addAllEntities(entities: Entity[]) {
+        for (var entity of entities) {
+            DatabaseController.getInstance().createEntity(entity);
+            for (var attribute of entity.attributes ?? []) {
+                DatabaseController.getInstance().addAttribute(entity, attribute);
+            }
+        }
+    }
+
+    public async addAllRelationships(relationships: Relationship[]) {
+        for (var relationship of relationships) {
+            DatabaseController.getInstance().addRelationship(relationship);
+        }
     }
 
     public async getAllEntities(): Promise<Map<Number, Entity>> {
@@ -59,6 +65,9 @@ class SchemaController {
 
         // TODO convert entitiesHashMap to list of values (Array<Entity>)
         console.log(entitiesHashMap)
+
+        // const iterator1 = entitiesHashMap.values();
+
         return entitiesHashMap
     }
 
@@ -72,11 +81,11 @@ class SchemaController {
             var relationName = e.toObject()['{ relationName: r.name, entities: collect(relations) }'].relationName
             var entities = e.toObject()['{ relationName: r.name, entities: collect(relations) }'].entities
 
-            relationships.push({
-                name: relationName,
-                // TOOD add type of relationship as well, maybe store full entity object instead?
-                entities: entities.map((e: { entityID: number }) => e.entityID)
-            })
+            // relationships.push({
+            //     name: relationName,
+            //     // TODO add type of relationship as well, maybe store full entity object instead?
+            //     entities: entities.map((e: { entityID: number }) => e.entityID)
+            // })
         }
 
         console.log(relationships)

@@ -99,40 +99,30 @@ class DatabaseController {
         }
     }
 
-    public async addRelationship(entityOne: Entity, entityTwo: Entity, relationship: Relationship) {
+    public async addRelationship(relationship: Relationship) {
         // assume entity node exists already
 
         const session = this.databaseDriver.session()
 
-        try {
-            await this.createRelationship(relationship);
-            const firstRelation = await session.writeTransaction(tx =>
-                tx.run(
-                    // TODO add relationship one to many to name once know where to retrieve the info
-                    'MATCH (a:ENTITY), (b:RELATIONSHIP) WHERE a.name = $entityName AND b.name = $relationshipName ' +
-                    'CREATE (a)-[r:Relationship]->(b) RETURN type(r)',
-                    {
-                        entityName: entityOne.name,
-                        relationshipName: relationship.name,
-                    },
+        for (var entity of relationship.entities) {
+            try {
+                await this.createRelationship(relationship);
+                const firstRelation = await session.writeTransaction(tx =>
+                    tx.run(
+                        // TODO add relationship one to many to name once know where to retrieve the info
+                        'MATCH (a:ENTITY), (b:RELATIONSHIP) WHERE a.name = $entityName AND b.name = $relationshipName ' +
+                        'CREATE (a)-[r:Relationship]->(b) RETURN type(r)',
+                        {
+                            entityName: entity.name,
+                            relationshipName: relationship.name,
+                        },
+                    )
                 )
-            )
-            DatabaseController.verifyDatabaseUpdate(firstRelation)
+                DatabaseController.verifyDatabaseUpdate(firstRelation)
 
-            const secondRelation = await session.writeTransaction(tx =>
-                tx.run(
-                    // TODO add relationship one to many to name once know where to retrieve the info
-                    'MATCH (a:ENTITY), (b:RELATIONSHIP) WHERE a.name = $entityName AND b.name = $relationshipName ' +
-                    'CREATE (a)-[r:Relationship]->(b) RETURN type(r)',
-                    {
-                        entityName: entityTwo.name,
-                        relationshipName: relationship.name,
-                    },
-                )
-            )
-            DatabaseController.verifyDatabaseUpdate(secondRelation)
-        } finally {
-            await session.close()
+            } finally {
+                await session.close()
+            }
         }
 
     }
