@@ -1,7 +1,8 @@
 import neo4j, {Driver, QueryResult} from "neo4j-driver";
 import Entity from "../models/entity";
 import Attribute from "../models/attribute";
-import Relationship from "../models/relationship";
+import Relationship, { LHConstraint } from "../models/relationship";
+import {keys} from 'ts-transformer-keys';
 
 class DatabaseController {
 
@@ -31,10 +32,19 @@ class DatabaseController {
 
         const session = this.databaseDriver.session()
 
+        var entityKeys = ['identifier', 'positionX', 'positionY', 'shapeWidth', 'shapeHeight', 'name']
+        if (entity.isWeak !== undefined) {
+            entityKeys.push('isWeak')
+        }
+
+        entityKeys = entityKeys.map((key) => {
+            return `e.${key} = $${key}`
+        })
+
         try {
             const result: QueryResult = await session.writeTransaction(tx =>
                 tx.run(
-                    'CREATE (e:ENTITY) SET e.name = $name, e.id = $id RETURN e.name',
+                    `CREATE (e:ENTITY) SET ${entityKeys.join(', ')} RETURN e.name`,
                     entity,
                 )
             )
@@ -47,11 +57,41 @@ class DatabaseController {
     private async createAttribute(attribute: Attribute) {
         const session = this.databaseDriver.session()
 
+        var attributeKeys: String[] = ['identifier', 'positionX', 'positionY', 'shapeWidth', 'shapeHeight', 'name',
+            'isPrimaryKey', 'isOptional']
+
+        attributeKeys = attributeKeys.map((key) => {
+            return `a.${key} = $${key}`
+        })
+
         try {
             const result: QueryResult = await session.writeTransaction(tx =>
                 tx.run(
-                    'CREATE (a:ATTRIBUTE) SET a.name = $name RETURN a.name',
+                    `CREATE (a:ATTRIBUTE) SET ${attributeKeys.join(', ')} RETURN a.name`,
                     attribute,
+                )
+            )
+            DatabaseController.verifyDatabaseUpdate(result)
+        } finally {
+            await session.close()
+        }
+    }
+
+    public async addRelationshipAttribute(relationship: Relationship, attribute: Attribute) {
+        // assume relationship node exists already
+
+        const session = this.databaseDriver.session()
+
+        try {
+            await this.createAttribute(attribute);
+            const result = await session.writeTransaction(tx =>
+                tx.run(
+                    'MATCH (a:RELATIONSHIP), (b:ATTRIBUTE) WHERE a.identifier = $relationshipIdentifier AND b.identifier = $attributeIdentifier ' +
+                    'CREATE (a)-[r:Attribute]->(b) RETURN type(r)',
+                    {
+                        relationshipIdentifier: relationship.identifier,
+                        attributeIdentifier: attribute.identifier
+                    },
                 )
             )
             DatabaseController.verifyDatabaseUpdate(result)
@@ -69,11 +109,11 @@ class DatabaseController {
             await this.createAttribute(attribute);
             const result = await session.writeTransaction(tx =>
                 tx.run(
-                    'MATCH (a:ENTITY), (b:ATTRIBUTE) WHERE a.name = $entityName AND b.name = $attributeName ' +
+                    'MATCH (a:ENTITY), (b:ATTRIBUTE) WHERE a.identifier = $entityIdentifier AND b.identifier = $attributeIdentifier ' +
                     'CREATE (a)-[r:Attribute]->(b) RETURN type(r)',
                     {
-                        entityName: entity.name,
-                        attributeName: attribute.name
+                        entityIdentifier: entity.identifier,
+                        attributeIdentifier: attribute.identifier
                     },
                 )
             )
@@ -86,10 +126,16 @@ class DatabaseController {
     private async createRelationship(relationship: Relationship) {
         const session = this.databaseDriver.session()
 
+        var relationshipKeys: String[] = ['identifier', 'positionX', 'positionY', 'shapeWidth', 'shapeHeight', 'name']
+
+        relationshipKeys = relationshipKeys.map((key) => {
+            return `a.${key} = $${key}`
+        })
+
         try {
             const result: QueryResult = await session.writeTransaction(tx =>
                 tx.run(
-                    'CREATE (a:RELATIONSHIP) SET a.name = $name RETURN a.name',
+                    `CREATE (a:RELATIONSHIP) SET ${relationshipKeys} RETURN a.name`,
                     relationship,
                 )
             )
@@ -104,27 +150,26 @@ class DatabaseController {
 
         const session = this.databaseDriver.session()
 
-        for (var entity of relationship.entities) {
-            try {
-                await this.createRelationship(relationship);
+        try {
+            await this.createRelationship(relationship);
+            for (var entityIdentifier of relationship.lHConstraints.keys()) {
+                console.log(entityIdentifier)
                 const firstRelation = await session.writeTransaction(tx =>
                     tx.run(
-                        // TODO add relationship one to many to name once know where to retrieve the info
-                        'MATCH (a:ENTITY), (b:RELATIONSHIP) WHERE a.name = $entityName AND b.name = $relationshipName ' +
-                        'CREATE (a)-[r:Relationship]->(b) RETURN type(r)',
+                        'MATCH (a:ENTITY), (b:RELATIONSHIP) WHERE a.identifier = $entityIdentifier AND b.identifier = $relationshipIdentifier ' +
+                        `CREATE (a)-[r:${LHConstraint[relationship.lHConstraints.get(entityIdentifier)!]}]->(b) RETURN type(r)`,
                         {
-                            entityName: entity.name,
-                            relationshipName: relationship.name,
+                            entityIdentifier: entityIdentifier,
+                            relationshipIdentifier: relationship.identifier,
                         },
                     )
                 )
                 DatabaseController.verifyDatabaseUpdate(firstRelation)
 
-            } finally {
-                await session.close()
             }
+        } finally {
+            await session.close()
         }
-
     }
 
     public async getAllEntities(): Promise<QueryResult> {
@@ -150,11 +195,11 @@ class DatabaseController {
         try {
             const entitiesWithAttributes = await session.writeTransaction(tx =>
                 tx.run(
-                    'MATCH (n:ENTITY)-[r]->(a:ATTRIBUTE) WITH n, a as attributes RETURN { nodeID: n.id, attributes: collect(attributes) }',
+                    'MATCH (n:ENTITY)-[r]->(a:ATTRIBUTE) WITH n, a as attributes RETURN { nodeID: n.identifier, ' +
+                    'attributes: collect(attributes) }',
                 )
             )
             DatabaseController.verifyDatabaseUpdate(entitiesWithAttributes)
-
             return entitiesWithAttributes
         } finally {
             await session.close()
@@ -168,13 +213,31 @@ class DatabaseController {
         try {
             const entitiesWithAttributes = await session.writeTransaction(tx =>
                 tx.run(
-                    'MATCH (r:RELATIONSHIP)<-[re]-(n:ENTITY) with r, {type: re, entityID: n.id} ' +
-                    'as relations RETURN { relationName: r.name, entities: collect(relations) }',
+                    'MATCH (r:RELATIONSHIP)<-[re]-(n:ENTITY) with r, {lhConstraint: re, entityID: n.identifier} ' +
+                    'as relations RETURN { relationship: r, entities: collect(relations) }',
                 )
             )
             DatabaseController.verifyDatabaseUpdate(entitiesWithAttributes)
 
             return entitiesWithAttributes
+        } finally {
+            await session.close()
+        }
+
+    }
+
+    public async getAllRelationshipsWithAttributes(): Promise<QueryResult> {
+        const session = this.databaseDriver.session()
+
+        try {
+            const relationshipWithAttributes = await session.writeTransaction(tx =>
+                tx.run(
+                    'MATCH (n:RELATIONSHIP)-[r]->(a:ATTRIBUTE) WITH n, a as attributes RETURN { relationshipID: n.identifier, ' +
+                    'attributes: collect(attributes) }',
+                )
+            )
+            DatabaseController.verifyDatabaseUpdate(relationshipWithAttributes)
+            return relationshipWithAttributes
         } finally {
             await session.close()
         }
