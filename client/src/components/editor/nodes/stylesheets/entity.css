@@ -1,9 +1,10 @@
 .entity {
 	position: absolute;
-	width: 200px;
-	height: 100px;
+	width: 150px;
+	height: 75px;
 	border: 1px solid black;
 	background-color: yellow;
+	z-index: 15;
 }
 
 .entity-input {
@@ -15,4 +16,5 @@
 
 .entity-input input {
 	width: 60%;
+	z-index: 100000000;
 }

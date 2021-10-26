@@ -4,70 +4,80 @@ import "./stylesheets/entity.css";
 
 export default function Entity({
 	index,
-	pos,
 	text,
-	editable,
-	updatePos,
-	setFocus,
 	updateText,
+	pos,
+	updatePos,
+	focus,
+	setFocus,
+	scale,
+	setPanDisabled,
+	parentRef,
 }) {
 	const entityRef = useRef(null);
 	const [value, setValue] = useState(text);
+	// To set bounds of draggable
+	const [dimensions, setDimensions] = useState({});
 
-	// Event listener for context menu
+	// Run on mount
 	useEffect(() => {
 		const entityCurr = entityRef.current;
+		setDimensions({
+			width: entityCurr.clientWidth,
+			height: entityCurr.clientHeight,
+		});
 		const handler = (e) => {
 			e.preventDefault();
 			setFocus(index);
 		};
-		entityCurr.addEventListener("contextmenu", handler);
+		// Right click
+		entityCurr?.addEventListener("contextmenu", handler);
 		return () => {
-			entityCurr.removeEventListener("contextmenu", handler);
+			entityCurr?.removeEventListener("contextmenu", handler);
 		};
 	}, []);
 
-	// If editable, it's a pop up
-	const style = editable
-		? {
-				position: "absolute",
-				top: 0,
-				left: document.documentElement.clientWidth * 0.1,
-				transform: `translate(${pos.x}px, ${pos.y}px)`,
-		  }
-		: null;
+	// Highlight if selected
+	const border =
+		focus === index
+			? {
+					border: "2px solid orange",
+			  }
+			: null;
 
-	let entity = (
-		<div className="entity" style={style} ref={entityRef}>
-			{editable ? (
-				<div className="entity-input">
-					<input
-						value={value}
-						onChange={(e) => setValue(e.target.value)}
-					/>
-					<button onClick={(e) => updateText(value, index)}>
-						Save
-					</button>
-				</div>
-			) : (
-				text
-			)}
-		</div>
+	return (
+		<Draggable
+			nodeRef={entityRef}
+			defaultPosition={pos}
+			onMouseDown={() => setPanDisabled(true)}
+			onStop={(e, data) => {
+				updatePos(data, index);
+				setPanDisabled(false);
+			}}
+			scale={scale}
+			bounds={{
+				left: 5,
+				top: 5,
+				right: parentRef.current.clientWidth - dimensions.width - 5,
+				bottom: parentRef.current.clientHeight - dimensions.height - 5,
+			}}
+		>
+			<div className="entity" style={border} ref={entityRef}>
+				{focus === index ? (
+					<div className="entity-input">
+						<input
+							value={value}
+							onChange={(e) => setValue(e.target.value)}
+							onClick={(e) => e.stopPropagation()}
+						/>
+						<button onClick={() => updateText(value, index)}>
+							Save
+						</button>
+					</div>
+				) : (
+					value
+				)}
+			</div>
+		</Draggable>
 	);
-
-	if (!editable) {
-		entity = (
-			<Draggable
-				nodeRef={entityRef}
-				defaultPosition={pos}
-				onStop={(e, data) => {
-					updatePos(data, index);
-				}}
-			>
-				{entity}
-			</Draggable>
-		);
-	}
-
-	return entity;
 }
