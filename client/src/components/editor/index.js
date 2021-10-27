@@ -26,13 +26,10 @@ function Editor() {
 			text: "",
 			focus: true,
 		};
-		setEntities([...entities, newEntity]);
+		let updatedEntities = [...entities, newEntity];
+		setEntities(updatedEntities);
+		setFocus(updatedEntities.length - 1);
 	};
-	// Set focus to entities each time
-	useEffect(() => {
-		// TODO: what happens when the action is delete?
-		setFocus(entities.length - 1);
-	}, [entities]);
 
 	// Update position of entity
 	const updatePos = (data, index) => {
@@ -50,7 +47,7 @@ function Editor() {
 		setPanDisabled(false);
 	};
 
-	const panProps = { disabled: panDisabled, excluded: ["input"] };
+	const panProps = { disabled: panDisabled, excluded: ["input", "button"] };
 
 	return (
 		<div className="editor">
