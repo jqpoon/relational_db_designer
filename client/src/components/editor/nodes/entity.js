@@ -44,13 +44,17 @@ export default function Entity({
 					<input
 						value={value}
 						onChange={(e) => setValue(e.target.value)}
+						onKeyPress={(e) => {
+							if (e.key === "Enter") {
+							  updateText(value, index);
+							}
+						}}
 					/>
-					<button onClick={(e) => updateText(value, index)}>
-						Save
-					</button>
 				</div>
 			) : (
-				text
+				<div className="entity-input">
+				{text}
+				</div>
 			)}
 		</div>
 	);

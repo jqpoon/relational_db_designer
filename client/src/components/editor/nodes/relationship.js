@@ -32,12 +32,11 @@ export default function Relationship({
       setFocus(index);
     };
     if (entityCurr) {
-        entityCurr.addEventListener("contextmenu", handler);
-
-    return () => {
-      entityCurr.removeEventListener("contextmenu", handler);
-    };
-}
+      entityCurr.addEventListener("contextmenu", handler);
+      return () => {
+        entityCurr.removeEventListener("contextmenu", handler);
+      };
+    }
   }, []);
 
   // If editable, it's a pop up
@@ -51,19 +50,23 @@ export default function Relationship({
     : null;
 
   let relationship = (
-    <Draggable
-      nodeRef={relationshipRef}
-      defaultPosition={pos}
-      onStop={(e, data) => {
-        updatePos(data, index);
-      }}
-    >
-      <div className="relationship">
-        <div className="diamond">
-          <div className="diamond-text">{text}</div>
-        </div>
+    <div className="relationship" style={style} ref={relationshipRef}>
+      <div className="diamond">
+          {editable ? (
+        <div className="diamond-input">
+          <input
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === "Enter") {
+                updateText(value, index);
+              }
+            }}
+          />
+        </div>) :
+        (<div className="diamond-text">{text}</div>) }
       </div>
-    </Draggable>
+    </div>
   );
 
   if (!editable) {

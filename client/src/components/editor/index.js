@@ -7,31 +7,8 @@ import Relationship from "./nodes/relationship";
 function Editor() {
   const [entities, setEntities] = useState([]);
   const [relationships, setRelationships] = useState([]);
-  const [focus, setFocus] = useState(null);
-
-  // Add entity
-  const addEntity = () => {
-    const newEntity = {
-      pos: {
-        x: 50,
-        y: 250,
-      },
-      text: "",
-    };
-    setEntities([...entities, newEntity]);
-  };
-
-  // Add relationship
-  const addRelationship = () => {
-    const newRelationship = {
-      pos: {
-        x: 100,
-        y: 250,
-      },
-      text: "",
-    };
-    setRelationships([...relationships, newRelationship]);
-  };
+  const [focusEntity, setFocusEntity] = useState(null);
+  const [focusRs, setFocusRs] = useState(null);
 
   // Update position of entity
   const updateEntityPos = (data, index) => {
@@ -52,24 +29,27 @@ function Editor() {
     let newEntities = [...entities];
     newEntities[index].text = text;
     setEntities(newEntities);
-    setFocus(null);
+    setFocusEntity(null);
   };
 
-  // Blurs if some entity is in focus
-  const blurStyle =
-    focus !== null ? { filter: "blur(5px) brightness(75%)" } : null;
+  // // Blurs if some entity is in focus
+  // const blurStyle =
+  //   focusEntity !== null || focusRs !== null ? { filter: "blur(5px) brightness(75%)" } : null;
 
   return (
     <>
-      <Toolbar addEntity={addEntity} addRelationship={addRelationship} />
-      <div className="dnd" style={blurStyle} onClick={() => setFocus(null)}>
+      <Toolbar entities={entities} setEntities={setEntities} relationships={relationships} setRelationships={setRelationships} />
+      <div
+        className="dnd"
+        onClick={() => {setFocusEntity(null); setFocusRs(null)}}
+      >
         {entities.map((e, index) => (
           <Entity
             key={index}
             index={index}
             {...e}
             updatePos={updateEntityPos}
-            setFocus={setFocus}
+            setFocus={setFocusEntity}
           />
         ))}
 
@@ -79,18 +59,29 @@ function Editor() {
             index={index}
             {...e}
             updatePos={updateRelationshipPos}
-            setFocus={setFocus}
+            setFocus={setFocusRs}
             relationships={relationships}
             setRelationships={setRelationships}
           />
         ))}
       </div>
-      {focus !== null ? (
+      {focusEntity !== null ? (
         <Entity
-          index={focus}
-          {...entities[focus]}
+          index={focusEntity}
+          {...entities[focusEntity]}
           editable
           updateText={updateText}
+        />
+      ) : null}
+
+      {focusRs !== null ? (
+        <Relationship
+          index={focusRs}
+          {...relationships[focusRs]}
+          editable
+          setFocus={setFocusRs}
+          relationships={relationships}
+          setRelationships={setRelationships}
         />
       ) : null}
     </>
