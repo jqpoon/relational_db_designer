@@ -8,6 +8,9 @@ import {LHConstraint} from "../models/relationship";
 import {mockDriver} from 'neo-forgery'
 import { QueryResult } from "neo4j-driver";
 import _ from "lodash";
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 // run all tests with npx jest command
 
@@ -187,8 +190,6 @@ test('adding-relationships', async () => {
             var rsMatch:boolean = relationship.identifier == queriedRelationship.identifier;
             var attributeMatch:boolean = _.isEqual((relationship.attributes ?? []), (queriedRelationship.attributes ?? []));
             match = rsMatch && attributeMatch
-            if (match) break;
-            match = _.isEqual(relationship, queriedRelationship);
             if (match) break;
         }
         expect(match).toEqual(true);

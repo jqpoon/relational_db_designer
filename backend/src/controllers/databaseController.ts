@@ -11,7 +11,7 @@ class DatabaseController {
 
     private constructor() {
         // TODO use config or env to store variables
-        this.databaseDriver = neo4j.driver("bolt://localhost:7687", neo4j.auth.basic("neo4j", "123456"));
+        this.databaseDriver = neo4j.driver((process.env.NEO_URL ?? ""), neo4j.auth.basic((process.env.NEO_USERNAME ?? ""), (process.env.NEO_PASSWORD ?? "")));
     }
 
     public static getInstance(): DatabaseController {
