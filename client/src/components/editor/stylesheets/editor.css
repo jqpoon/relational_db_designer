@@ -1,5 +1,18 @@
+.editor {
+	display: flex;
+}
+
 .dnd {
-	width: 80vw;
-	margin-left: 10vw;
-	height: 100%;
+	width: 90vw;
+	height: 100vh;
+	/* Grid background */
+	background-image: radial-gradient(
+		circle at 1px 1px,
+		black 1px,
+		transparent 0
+	);
+	--size: calc(100% / 25);
+	--offset: calc(var(--size) / 2);
+	background-size: var(--size) var(--size);
+	background-position: var(--offset) var(--offset);
 }
