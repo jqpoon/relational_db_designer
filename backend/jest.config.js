@@ -7,7 +7,7 @@ module.exports = {
         "**/?(*.)+(spec|test).+(ts|tsx|js)"  
     ],  
     "transform": {    
-        "^.+\\.(ts|tsx)$": "ts-jest"  
+        "^.+\.tsx?$": "<rootDir>/node_modules/ts-jest/preprocessor.js"  
     },
     "globals": {
         "ts-jest": {
