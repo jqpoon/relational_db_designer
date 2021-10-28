@@ -28,6 +28,7 @@ jobs:
           NEO_USERNAME : ${{ secrets.NEO_USERNAME }}
           NEO_PASSWORD : ${{ secrets.NEO_PASSWORD }}
         run: |
+          cd backend
           npm ci
           npx jest
 
