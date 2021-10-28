@@ -28,13 +28,7 @@ jobs:
           NEO_USERNAME : ${{ secrets.NEO_USERNAME }}
           NEO_PASSWORD : ${{ secrets.NEO_PASSWORD }}
         run: |
-          pwd
-          ls
-          cd backend
-          pwd
-          ls
-          
-          npm ci --only=production
+          npm ci
           npx jest
 
   # Frontend is minified into a build folder and served from the backend
