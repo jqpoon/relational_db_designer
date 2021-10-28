@@ -2,6 +2,8 @@ import { useState } from "react";
 import Entity from "./nodes/entity";
 import Toolbar from "./toolbar";
 import "./stylesheets/editor.css";
+
+import Attribute from "./edges/attribute";
 import Relationship from "./nodes/relationship";
 import "./right_toolbar/toolbar-right.css";
 import { DummyEdge, DummyEntity, DummyRelationship } from "./nodes/dummy_nodes";
@@ -33,6 +35,7 @@ export const actions = {
 };
 
 function Editor() {
+  const [attributes, setAttributes] = useState([]);
   const [entities, setEntities] = useState([]);
   const [relationships, setRelationships] = useState([]);
   const [focusEntity, setFocusEntity] = useState(null);
@@ -44,6 +47,25 @@ function Editor() {
   const [action, setAction] = useState(actions.NORMAL);
   const [context, setContext] = useState(null);
   const [pendingChanges, setPendingChanges] = useState({ edges: [] });
+
+  // Add attribute
+  const addAttribute = () => {
+    const newAttribute = {
+      pos: {
+        x: 50,
+        y: 250,
+      },
+      text: "",
+    };
+    setAttributes([...attributes, newAttribute]);
+  };
+
+  // Update position of attribute
+  const updateAttributePos = (data, index) => {
+    let newAttributes = [...attributes];
+    newAttributes[index].pos = { x: data.x, y: data.y };
+    setAttributes(newAttributes);
+  };
 
   // Update position of entity
   const updateEntityPos = (data, index) => {
@@ -223,33 +245,43 @@ function Editor() {
   return (
     <>
       <Xwrapper>
-        <Toolbar entities={entities} setEntities={setEntities} relationships={relationships} setRelationships={setRelationships} addRelationship={enterAddRelationship} />
-<div
-        className="dnd"
-        onClick={() => {setFocusEntity(null); setFocusRs(null)}}
-      >
-        {entities.map((e, index) => (
-          <Entity
-            key={index}
-            index={index}
-            {...e}
-            updatePos={updateEntityPos}
-            setFocus={setFocusEntity}
-          />
-        ))}
+        <Toolbar entities={entities} setEntities={setEntities} relationships={relationships} setRelationships={setRelationships} addRelationship={enterAddRelationship} addAttribute={addAttribute} />
+        <div
+          className="dnd"
+          onClick={() => { setFocusEntity(null); setFocusRs(null) }}
+        >
+          {entities.map((e, index) => (
+            <Entity
+              key={index}
+              index={index}
+              {...e}
+              updatePos={updateEntityPos}
+              setFocus={setFocusEntity}
+            />
+          ))}
 
-        {relationships.map((e, index) => (
-          <Relationship
-            key={index}
-            index={index}
-            {...e}
-            updatePos={updateRelationshipPos}
-            setFocus={setFocusRs}
-            relationships={relationships}
-            setRelationships={setRelationships}
-          />
-        ))}
-        {dEntities.map((ent) => (
+          {relationships.map((e, index) => (
+            <Relationship
+              key={index}
+              index={index}
+              {...e}
+              updatePos={updateRelationshipPos}
+              setFocus={setFocusRs}
+              relationships={relationships}
+              setRelationships={setRelationships}
+            />
+          ))}
+
+          {attributes.map((e, index) => (
+            <Attribute
+              key={index}
+              index={index}
+              {...e}
+              updatePos={updateAttributePos}
+            />
+          ))}
+
+          {dEntities.map((ent) => (
             <DummyEntity {...ent} modifyContext={modifyContext} />
           ))}
           {dRelationships.map((rel) => (
@@ -259,26 +291,26 @@ function Editor() {
             <DummyEdge edge={edge} idx={idx} modifyContext={modifyContext} />
           ))}
           {showPendingChanges()}
-      </div>
-      {focusEntity !== null ? (
-        <Entity
-          index={focusEntity}
-          {...entities[focusEntity]}
-          editable
-          updateText={updateText}
-        />
-      ) : null}
+        </div>
+        {focusEntity !== null ? (
+          <Entity
+            index={focusEntity}
+            {...entities[focusEntity]}
+            editable
+            updateText={updateText}
+          />
+        ) : null}
 
-      {focusRs !== null ? (
-        <Relationship
-          index={focusRs}
-          {...relationships[focusRs]}
-          editable
-          setFocus={setFocusRs}
-          relationships={relationships}
-          setRelationships={setRelationships}
-        />
-      ) : null}
+        {focusRs !== null ? (
+          <Relationship
+            index={focusRs}
+            {...relationships[focusRs]}
+            editable
+            setFocus={setFocusRs}
+            relationships={relationships}
+            setRelationships={setRelationships}
+          />
+        ) : null}
         {showRightToolbar()}
       </Xwrapper>
     </>

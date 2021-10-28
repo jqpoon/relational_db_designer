@@ -2,7 +2,7 @@ import Draggable from "react-draggable";
 import { useRef } from "react";
 import "./stylesheets/toolbar.css";
 
-export default function Toolbar({ setEntities, entities, setRelationships, relationships }) {
+export default function Toolbar({ setEntities, entities, setRelationships, relationships, addAttribute }) {
   const entityToolRef = useRef(null);
   const relationshipToolRef = useRef(null);
 
@@ -52,6 +52,9 @@ export default function Toolbar({ setEntities, entities, setRelationships, relat
         Relationship
       </p>
 	  </Draggable>
+    <p onClick={ addAttribute }> 
+				Attribute 
+			</p>
     </div>
   );
 }
