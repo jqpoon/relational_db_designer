@@ -15,18 +15,21 @@ import SelectRelationship from "./right_toolbar/selectRelationship";
 import EdgeToRelationship from "./right_toolbar/edgeRelationship";
 import SelectEdge from "./right_toolbar/selectEdge";
 
-const sampleDEntities = [
-	{ idx: 0, pos: { x: 350, y: 250 }, id: "E0", type: "ent" },
-	{ idx: 1, pos: { x: 550, y: 250 }, id: "E1", type: "ent" },
-];
-const sampleDRelationships = [
-	{ idx: 0, pos: { x: 350, y: 100 }, id: "R0", type: "rel" },
-];
-const sampleEdges = [
-	{ start: "E0", end: "R0", labels: "Hello" },
-	// { start: "E0", end: "E0", labels: "World" },
-];
+/* Sample list of components that will be rendered. */
+const sampleEntities = {
+	E0: { text: "Entity-0", pos: { x: 350, y: 250 }, id: "E0", type: "ent" },
+	E1: { text: "Entity-1", pos: { x: 550, y: 250 }, id: "E1", type: "ent" },
+};
 
+const sampleRelationships = {
+	R0: { text: "Relationship-0", pos: { x: 350, y: 100 }, id: "R0", type: "rel" },
+};
+
+const sampleEdges = {
+	E0R0: { start: "E0", end: "R0", id:"E0R0", labels: "Hello" },
+};
+
+/* Enum definitions */
 export const actions = {
 	NORMAL: "normal",
 	SELECT: "select",
@@ -35,19 +38,29 @@ export const actions = {
 	RELATIONSHIP_ADD_CARDINALITY: "relationship_add_cardinality",
 };
 
+export const types = {
+	ENTITY: "entity",
+	RELATIONSHIP: "relationship",
+	EDGE: "edge",
+	ATTRIBUTE: "attribute"
+}
+
+/* Main function */
 function Editor() {
 	// Passed to children for metadata (eg width and height of main container)
 	const parentRef = useRef(null);
 
-	const [attributes, setAttributes] = useState([]);
-	const [entities, setEntities] = useState([]);
-	const [relationships, setRelationships] = useState([]);
+	// List of components that will be rendered
+	const [entities, setEntities] = useState(sampleEntities);
+	const [relationships, setRelationships] = useState(sampleRelationships);
+	const [edges, setEdges] = useState(sampleEdges);
+	const [attributes, setAttributes] = useState([])
+
+	// ?
 	const [focusEntity, setFocusEntity] = useState(null);
 	const [focusRs, setFocusRs] = useState(null);
 
-	const [dEntities, setDEntities] = useState(sampleDEntities);
-	const [dRelationships, setDRelationships] = useState(sampleDRelationships);
-	const [edges, setEdges] = useState(sampleEdges);
+	// ?
 	const [action, setAction] = useState(actions.NORMAL);
 	const [context, setContext] = useState(null);
 	const [pendingChanges, setPendingChanges] = useState({ edges: [] });
@@ -55,6 +68,43 @@ function Editor() {
 	// Zoom and pan states
 	const [panDisabled, setPanDisabled] = useState(false);
 	const [scale, setScale] = useState(1);
+
+	const nodeStates = {
+		[types.ENTITY] : entities,
+		[types.RELATIONSHIP]: relationships,
+		[types.EDGE]: edges,
+		[types.ATTRIBUTE]: attributes,
+	}
+	const nodeSetters = {
+		[types.ENTITY]: setEntities,
+		[types.RELATIONSHIP]: setRelationships,
+		[types.EDGE]: setEdges,
+		[types.ATTRIBUTE]: setAttributes,
+	}
+
+	// Generic update, add and delete functions for elements
+	// Element should be the (whole) updated element
+	const updateNode = (type, element) => {
+		let newNodeState = {...nodeStates[type]};
+		newNodeState[element.id] = element;
+		nodeSetters[type](newNodeState);
+	}
+
+	const addNode = (type, element) => {
+		let newNodeState = {...nodeStates[type]};
+		newNodeState.push({
+			key: element.id,
+			value: element
+		});
+		nodeSetters[type](newNodeState);
+	}
+
+	const deleteNode = (type, element) => {
+		let newNodeState = {...nodeStates[type]};
+		delete(newNodeState[element.id]);
+		// TODO: recursively remove other nodes/edges connected
+		nodeSetters[type](newNodeState);
+	}
 
 	// Add attribute
 	const addAttribute = () => {
@@ -132,22 +182,22 @@ function Editor() {
 	};
 
 	// All (what happens on click)
-	const modifyContext = (idx, type) => {
+	const modifyContext = (type, id) => {
 		const getElement = () => {
 			switch (type) {
 				case "rel":
-					return dRelationships[idx];
+					return relationships[id];
 				case "ent":
-					return dEntities[idx];
+					return entities[id];
 				case "edge":
-					return edges[idx];
+					return edges[id];
 				default:
 					return null;
 			}
 		};
 		const element = getElement();
 		let newContext = { ...context };
-		switch (action) {
+		switch (actions) {
 			case actions.NORMAL:
 				setAction(actions.SELECT);
 			case actions.SELECT:
@@ -279,11 +329,13 @@ function Editor() {
 							}}
 							ref={parentRef}
 						>
-							{entities.map((e, index) => (
+							{/* Entities: Dict[Id, EntityProps(Dict)] */}
+							{/* values.Entities: [EntityProps(Dict)] */}
+							{Object.values(entities).map((entity, index) => (
 								<Entity
 									key={index}
 									index={index}
-									{...e}
+									{...entity}
 									updatePos={updateEntityPos}
 									setFocus={setFocusEntity}
 									focus={focusEntity}
@@ -293,7 +345,7 @@ function Editor() {
 								/>
 							))}
 
-							{relationships.map((e, index) => (
+							{Object.values(relationships).map((e, index) => (
 								<Relationship
 									key={index}
 									index={index}
@@ -305,7 +357,7 @@ function Editor() {
 								/>
 							))}
 
-							{attributes.map((e, index) => (
+							{Object.values(attributes).map((e, index) => (
 								<Attribute
 									key={index}
 									index={index}
@@ -314,22 +366,11 @@ function Editor() {
 								/>
 							))}
 
-							{dEntities.map((ent) => (
-								<DummyEntity
-									{...ent}
-									modifyContext={modifyContext}
-								/>
-							))}
-							{dRelationships.map((rel) => (
-								<DummyRelationship
-									{...rel}
-									modifyContext={modifyContext}
-								/>
-							))}
 						</div>{" "}
 					</TransformComponent>
 				</TransformWrapper>
-				{edges.map((edge, idx) => (
+
+				{Object.values(edges).map((edge, idx) => (
 					<DummyEdge
 						edge={edge}
 						idx={idx}

@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import Draggable from "react-draggable";
+import { useXarrow } from 'react-xarrows';
 import "./stylesheets/entity.css";
 import "./stylesheets/relationship.css";
 
 export default function Relationship({
   index,
+  id,
   pos,
   text,
   editable,
@@ -12,7 +14,9 @@ export default function Relationship({
   setFocus,
   relationships,
   setRelationships,
+  modifyContext,
 }) {
+  const updateXarrow = useXarrow();
   const relationshipRef = useRef(null);
   const [value, setValue] = useState(text);
 
@@ -50,21 +54,29 @@ export default function Relationship({
     : null;
 
   let relationship = (
-    <div className="relationship" style={style} ref={relationshipRef}>
+    <div
+      id={id}
+      className="relationship"
+      style={style}
+      ref={relationshipRef}
+      onClick={() => modifyContext(index, "ent")}
+    >
       <div className="diamond">
-          {editable ? (
-        <div className="diamond-input">
-          <input
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === "Enter") {
-                updateText(value, index);
-              }
-            }}
-          />
-        </div>) :
-        (<div className="diamond-text">{text}</div>) }
+        {editable ? (
+          <div className="diamond-input">
+            <input
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === "Enter") {
+                  updateText(value, index);
+                }
+              }}
+            />
+          </div>
+        ) : (
+          <div className="diamond-text">{text}</div>
+        )}
       </div>
     </div>
   );
@@ -74,8 +86,10 @@ export default function Relationship({
       <Draggable
         nodeRef={relationshipRef}
         defaultPosition={pos}
+        onDrag={updateXarrow}
         onStop={(e, data) => {
           updatePos(data, index);
+          updateXarrow(e);
         }}
       >
         {relationship}
