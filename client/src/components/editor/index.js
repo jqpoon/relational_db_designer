@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import Entity from "./nodes/entity";
 import Toolbar from "./toolbar";
@@ -24,7 +24,6 @@ function Editor() {
 				y: 75,
 			},
 			text: "",
-			focus: true,
 		};
 		let updatedEntities = [...entities, newEntity];
 		setEntities(updatedEntities);
