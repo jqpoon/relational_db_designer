@@ -20,18 +20,18 @@ class SchemaController {
 
     public async addAllEntities(entities: Entity[]) {
         for (var entity of entities) {
-            DatabaseController.getInstance().createEntity(entity);
+            await DatabaseController.getInstance().createEntity(entity);
             for (var attribute of entity.attributes ?? []) {
-                DatabaseController.getInstance().addAttribute(entity, attribute);
+                await DatabaseController.getInstance().addAttribute(entity, attribute);
             }
         }
     }
 
     public async addAllRelationships(relationships: Relationship[]) {
         for (var relationship of relationships) {
-            DatabaseController.getInstance().addRelationship(relationship);
+            await DatabaseController.getInstance().addRelationship(relationship);
             for (var attribute of relationship.attributes ?? []) {
-                DatabaseController.getInstance().addRelationshipAttribute(relationship, attribute);
+                await DatabaseController.getInstance().addRelationshipAttribute(relationship, attribute);
             }
         }
     }
