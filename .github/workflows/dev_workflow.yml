@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - dev
-      - get_retrieving_schema
+      - backend_test_integration
 
 jobs:
   frontend_tests:
@@ -21,12 +21,14 @@ jobs:
     container: 
       image: node:16
     steps:
+      - uses: actions/checkout@v2
       - name: Backend tests
         env:
           NEO4J_URL : ${{ secrets.NEO4J_URL }}
           NEO4J_USERNAME : ${{ secrets.NEO4J_USERNAME }}
           NEO4J_PASSWORD : ${{ secrets.NEO4J_PASSWORD }}
         run: |
+          cd backend
           npm ci --only=production
           npx jest
 
