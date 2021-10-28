@@ -1,0 +1,59 @@
+.toolbar-right {
+  position: fixed;
+  top: 0;
+  left: 80vw;
+  width: 20vw;
+  height: 100%;
+  background-color: antiquewhite;
+  z-index: 6;
+  text-align: left;
+}
+
+.toolbar-header {
+  padding: 20px;
+  color: navy;
+  text-align: center;
+  font-weight: bold;
+}
+
+.section {
+  padding: 10px;
+  border: 1px solid navy;
+}
+
+.section-selected {
+  padding: 10px;
+  border: 3px solid navy;
+}
+
+.section-header {
+}
+
+.section-content {
+  padding: 10px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.selected-element {
+  margin: 10px;
+  padding: 7px;
+  border: 2px solid navy;
+  border-radius: 9px;
+  text-align: center;
+}
+
+/* TODO(change) */
+.tool-button {
+  padding: 8px;
+  margin: 5px;
+  width: 50%;
+  border: 2px solid navy;
+  border-radius: 9px;
+  text-align: center;
+}
+
+.forms {
+  width: 100%;
+}

@@ -69,10 +69,12 @@ export default function Entity({
 							value={value}
 							onChange={(e) => setValue(e.target.value)}
 							onClick={(e) => e.stopPropagation()}
+							onKeyPress={(e) => {
+								if (e.key === "Enter") {
+									updateText(value, index);
+								}
+							}}
 						/>
-						<button onClick={() => updateText(value, index)}>
-							Save
-						</button>
 					</div>
 				) : (
 					value
