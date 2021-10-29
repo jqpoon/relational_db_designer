@@ -3,6 +3,7 @@ import Draggable from "react-draggable";
 import "./stylesheets/entity.css";
 import Xarrow, { useXarrow, Xwrapper } from "react-xarrows";
 import { types } from "..";
+import { ContextMenu } from "../contextMenu";
 
 export default function Entity({
   id,
@@ -20,23 +21,25 @@ export default function Entity({
   const [value, setValue] = useState(text);
   // To set bounds of draggable
   const [dimensions, setDimensions] = useState({});
+  
 
   // Run on mount
-  useEffect(() => {
-    const entityCurr = entityRef.current;
-    setDimensions({
-      width: entityCurr.clientWidth,
-      height: entityCurr.clientHeight,
-    });
-    const handler = (e) => {
-      e.preventDefault();
-    };
-    // Right click
-    entityCurr?.addEventListener("contextmenu", handler);
-    return () => {
-      entityCurr?.removeEventListener("contextmenu", handler);
-    };
-  }, []);
+  // useEffect(() => {
+  //   const entityCurr = entityRef.current;
+  //   setDimensions({
+  //     width: entityCurr.clientWidth,
+  //     height: entityCurr.clientHeight,
+  //   });
+  //   const handler = (e) => {
+  //     e.preventDefault();
+  //     console.log("in entity");
+  //   };
+  //   // Right click
+  //   entityCurr?.addEventListener("contextmenu", handler);
+  //   return () => {
+  //     entityCurr?.removeEventListener("contextmenu", handler);
+  //   };
+  // }, []);
 
   // Highlight if selected
   // const border =

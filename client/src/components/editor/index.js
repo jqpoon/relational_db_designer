@@ -61,7 +61,6 @@ function EditorDead() {
 	const [context, setContext] = useState(null);
 	const [pendingChanges, setPendingChanges] = useState({ edges: [] });
 
-
 	// Normal mode
 	const resetToNormal = () => {
 		setAction(actions.NORMAL);

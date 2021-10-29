@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { initialEntities, initialRelationships, initialEdges } from "./initial";
-import { types } from "./types";
+import { actions, types } from "./types";
 import Entity from "./nodes/entity";
 import Relationship from "./nodes/relationship";
 import Edge from "./edges/edge";
@@ -9,24 +9,36 @@ import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import Toolbar from "./toolbar";
 import Attribute from "./edges/attribute";
 import "./stylesheets/editor.css";
+import { TestEntity, TestRelationship } from "./nodes/node";
+
+import SelectEntity from "./right_toolbar/selectEntity";
+import SelectRelationship from "./right_toolbar/selectRelationship";
+import Normal from "./right_toolbar/normal";
+import SelectEdge from "./right_toolbar/selectEdge";
+import { ContextMenu } from "./contextMenu";
 
 // TODO: update left,right toolbar to match new data structures
 // TODO: add initial attributes to initial.js + implement position update based on parent node of the attribute
 // TODO: migrate remaining functions from index.js
 // TODO: implement node editing by merging into actions + context
 // TODO: extract common base node in node.js
+// TODO: figure out where parentref should go and update render appropriately
 
 export default function Editor() {
   // Canvas states: passed to children for metadata (eg width and height of main container)
   const parentRef = useRef(null);
+  const [counter, setCounter] = useState(0);
   const [render, setRender] = useState(false);
   const [scale, setScale] = useState(1);
   const [panDisabled, setPanDisabled] = useState(false);
+
   // List of components that will be rendered
   const [entities, setEntities] = useState(initialEntities);
   const [relationships, setRelationships] = useState(initialRelationships);
   const [attributes, setAttributes] = useState({}); // TODO
   const [edges, setEdges] = useState(initialEdges);
+
+  const [context, setContext] = useState({ action: actions.NORMAL });
 
   useEffect(() => {
     setRender(true);
@@ -45,6 +57,12 @@ export default function Editor() {
     [types.EDGE]: setEdges,
   };
 
+  const getId = () => {
+    const id = counter;
+    setCounter(counter + 1);
+    return id;
+  };
+
   // TODO: instead of _Node, should probably rename to _Element since it applies to edges as well
   // Generic update, add and delete functions for elements
   // Element should be the (whole) updated element
@@ -59,11 +77,7 @@ export default function Editor() {
   };
 
   const addNode = (type, element) => {
-    let newNodeState = { ...nodeStates[type] };
-    newNodeState.push({
-      key: element.id,
-      value: element,
-    });
+    let newNodeState = { ...nodeStates[type], [element.id]: element };
     nodeSetters[type](newNodeState);
   };
 
@@ -79,16 +93,17 @@ export default function Editor() {
     getNode: getNode,
     addNode: addNode,
     deleteNode: deleteNode,
+    getId: getId,
   };
 
-  // TODO
   const generalFunctions = {
     setPanDisabled: setPanDisabled,
-    modifyContext: () => {},
+    setContext: setContext,
+    context: context,
   };
 
   const leftToolBarActions = {
-    addRelationship: () => {},
+    addEdgeToRelationship: () => {},
     addAttribute: () => {},
   };
 
@@ -109,7 +124,30 @@ export default function Editor() {
 
   // TODO
   const showPendingChanges = () => {};
-  const showRightToolbar = () => {};
+  const showRightToolbar = () => {
+    switch (context.action) {
+      case actions.NORMAL:
+        return <Normal />;
+      case actions.SELECT:
+        switch (context.selected.type) {
+          case types.ENTITY:
+            return <SelectEntity entity={entities[context.selected.id]} />;
+          case types.RELATIONSHIP:
+            return (
+              <SelectRelationship
+                relationship={relationships[context.selected.id]}
+              />
+            );
+          case types.EDGE:
+            return <SelectEdge edge={edges[context.selected.id]} />;
+          default:
+            return <Normal />; // TODO: type not found page
+        }
+      default:
+        // TODO
+        return <Normal />;
+    }
+  };
 
   return (
     <Xwrapper>
@@ -124,8 +162,9 @@ export default function Editor() {
                   // ref={parentRef}
                   onClick={() => setPanDisabled(false)}
                 >
+                  <ContextMenu />
                   {Object.values(entities).map((entity) => (
-                    <Entity
+                    <TestEntity
                       key={entity.id}
                       {...entity}
                       {...nodeConfig}
@@ -134,7 +173,7 @@ export default function Editor() {
                     />
                   ))}
                   {Object.values(relationships).map((relationship) => (
-                    <Relationship
+                    <TestRelationship
                       key={relationship.id}
                       {...relationship}
                       {...nodeConfig}
