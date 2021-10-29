@@ -55,99 +55,13 @@ function EditorDead() {
 	const [entities, setEntities] = useState(sampleEntities);
 	const [relationships, setRelationships] = useState(sampleRelationships);
 	const [edges, setEdges] = useState(sampleEdges);
-	const [attributes, setAttributes] = useState([])
-
-	// ?
-	const [focusEntity, setFocusEntity] = useState(null);
-	const [focusRs, setFocusRs] = useState(null);
 
 	// ?
 	const [action, setAction] = useState(actions.NORMAL);
 	const [context, setContext] = useState(null);
 	const [pendingChanges, setPendingChanges] = useState({ edges: [] });
 
-	// Zoom and pan states
-	const [panDisabled, setPanDisabled] = useState(false);
-	const [scale, setScale] = useState(1);
 
-	const nodeStates = {
-		[types.ENTITY] : entities,
-		[types.RELATIONSHIP]: relationships,
-		[types.EDGE]: edges,
-		[types.ATTRIBUTE]: attributes,
-	}
-	const nodeSetters = {
-		[types.ENTITY]: setEntities,
-		[types.RELATIONSHIP]: setRelationships,
-		[types.EDGE]: setEdges,
-		[types.ATTRIBUTE]: setAttributes,
-	}
-
-	// Generic update, add and delete functions for elements
-	// Element should be the (whole) updated element
-	const updateNode = (type, element) => {
-		let newNodeState = {...nodeStates[type]};
-		newNodeState[element.id] = element;
-		nodeSetters[type](newNodeState);
-	}
-
-	const addNode = (type, element) => {
-		let newNodeState = {...nodeStates[type]};
-		newNodeState.push({
-			key: element.id,
-			value: element
-		});
-		nodeSetters[type](newNodeState);
-	}
-
-	const deleteNode = (type, element) => {
-		let newNodeState = {...nodeStates[type]};
-		delete(newNodeState[element.id]);
-		// TODO: recursively remove other nodes/edges connected
-		nodeSetters[type](newNodeState);
-	}
-
-	// Add attribute
-	const addAttribute = () => {
-		const newAttribute = {
-			pos: {
-				x: 50,
-				y: 250,
-			},
-			text: "",
-		};
-		setAttributes([...attributes, newAttribute]);
-	};
-
-	// Update position of attribute
-	const updateAttributePos = (data, index) => {
-		let newAttributes = [...attributes];
-		newAttributes[index].pos = { x: data.x, y: data.y };
-		setAttributes(newAttributes);
-	};
-
-	// Update position of entity
-	const updateEntityPos = (data, index) => {
-		let newEntities = [...entities];
-		newEntities[index].pos = { x: data.x, y: data.y };
-		setEntities(newEntities);
-	};
-
-	// Update position of relationship
-	const updateRelationshipPos = (data, index) => {
-		let newRelationships = [...relationships];
-		newRelationships[index].pos = { x: data.x, y: data.y };
-		setRelationships(newRelationships);
-	};
-
-	// Update text in entity
-	const updateText = (text, index) => {
-		let newEntities = [...entities];
-		newEntities[index].text = text;
-		setEntities(newEntities);
-		setFocusEntity(null);
-		setPanDisabled(false);
-	};
 	// Normal mode
 	const resetToNormal = () => {
 		setAction(actions.NORMAL);
@@ -302,104 +216,9 @@ function EditorDead() {
 		);
 	};
 
-	const panProps = { disabled: panDisabled, excluded: ["input", "button"] };
-
 	return (
 		<div className="editor">
-			<Xwrapper>
-				<Toolbar
-					entities={entities}
-					setEntities={setEntities}
-					relationships={relationships}
-					setRelationships={setRelationships}
-					addRelationship={enterAddRelationship}
-					addAttribute={addAttribute}
-				/>
-				<TransformWrapper
-					panning={panProps}
-					onZoomStop={(ref) => setScale(ref.state.scale)}
-					doubleClick={{ disabled: true }}
-				>
-					<TransformComponent>
-						<div
-							className="dnd"
-							onClick={() => {
-								setFocusEntity(null);
-								setFocusRs(null);
-								setPanDisabled(false);
-							}}
-							ref={parentRef}
-						>
-							{/* Entities: Dict[Id, EntityProps(Dict)] */}
-							{/* values.Entities: [EntityProps(Dict)] */}
-							{Object.values(entities).map((entity, index) => (
-								<Entity
-									key={index}
-									index={index}
-									{...entity}
-									updatePos={updateEntityPos}
-									setFocus={setFocusEntity}
-									focus={focusEntity}
-									updateText={updateText}
-									parentRef={parentRef}
-									setPanDisabled={setPanDisabled}
-								/>
-							))}
-
-							{Object.values(relationships).map((e, index) => (
-								<Relationship
-									key={index}
-									index={index}
-									{...e}
-									updatePos={updateRelationshipPos}
-									setFocus={setFocusRs}
-									relationships={relationships}
-									setRelationships={setRelationships}
-								/>
-							))}
-
-							{Object.values(attributes).map((e, index) => (
-								<Attribute
-									key={index}
-									index={index}
-									{...e}
-									updatePos={updateAttributePos}
-								/>
-							))}
-
-						</div>{" "}
-					</TransformComponent>
-				</TransformWrapper>
-
-				{Object.values(edges).map((edge, idx) => (
-					<DummyEdge
-						edge={edge}
-						idx={idx}
-						modifyContext={modifyContext}
-					/>
-				))}
-				{showPendingChanges()}
-				{/* {focusEntity !== null ? (
-					<Entity
-						index={focusEntity}
-						{...entities[focusEntity]}
-						editable
-						updateText={updateText}
-					/>
-				) : null} */}
-
-				{focusRs !== null ? (
-					<Relationship
-						index={focusRs}
-						{...relationships[focusRs]}
-						editable
-						setFocus={setFocusRs}
-						relationships={relationships}
-						setRelationships={setRelationships}
-					/>
-				) : null}
-				{showRightToolbar()}
-			</Xwrapper>
+			Hello World
 		</div>
 	);
 }

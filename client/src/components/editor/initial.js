@@ -27,3 +27,5 @@ export const initialRelationships = {
 export const initialEdges = {
   E0R0: { start: "E0", end: "R0", id: "E0R0", labels: "Hello" },
 };
+
+// TODO: add initialAttributes

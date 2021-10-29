@@ -2,7 +2,7 @@
 	display: flex;
 }
 
-.dnd {
+.canvas {
 	width: 90vw;
 	height: 100vh;
 	/* Grid background */

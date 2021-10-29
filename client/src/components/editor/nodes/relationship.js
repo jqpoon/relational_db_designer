@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import Draggable from "react-draggable";
-import { useXarrow } from 'react-xarrows';
+import { useXarrow } from "react-xarrows";
 import "./stylesheets/entity.css";
 import "./stylesheets/relationship.css";
 import { types } from "..";
@@ -92,9 +92,9 @@ export default function Relationship({
         defaultPosition={pos}
         onDrag={updateXarrow}
         onStop={(e, data) => {
-          let newNode = getNode(types.RELATIONSHIP,id);
+          let newNode = getNode(types.RELATIONSHIP, id);
           newNode.pos = { x: data.x, y: data.y };
-          updateNode(newNode);
+          updateNode(types.RELATIONSHIP, newNode);
           updateXarrow(e);
         }}
       >

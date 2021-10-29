@@ -5,17 +5,14 @@ import Xarrow, { useXarrow, Xwrapper } from "react-xarrows";
 import { types } from "..";
 
 export default function Entity({
-  index,
   id,
   text,
   pos,
+  parentRef,
+  scale,
   updateNode,
   getNode,
-  focus,
-  setFocus,
-  scale,
   setPanDisabled,
-  parentRef,
   modifyContext,
 }) {
   const updateXarrow = useXarrow();
@@ -33,7 +30,6 @@ export default function Entity({
     });
     const handler = (e) => {
       e.preventDefault();
-      setFocus(index);
     };
     // Right click
     entityCurr?.addEventListener("contextmenu", handler);
@@ -43,12 +39,12 @@ export default function Entity({
   }, []);
 
   // Highlight if selected
-  const border =
-    focus === index
-      ? {
-          border: "2px solid orange",
-        }
-      : null;
+  // const border =
+  //   focus === index
+  //     ? {
+  //         border: "2px solid orange",
+  //       }
+  //     : null;
 
   return (
     <Draggable
@@ -58,7 +54,7 @@ export default function Entity({
       onDrag={updateXarrow}
       onStop={(e, data) => {
         //Update entity position
-        let newNode = getNode(types.ENTITY,id);
+        let newNode = getNode(types.ENTITY, id);
         newNode.pos = { x: data.x, y: data.y };
         updateNode(types.ENTITY, newNode);
         setPanDisabled(false);
@@ -75,30 +71,11 @@ export default function Entity({
       <div
         className="entity"
         id={id}
-        style={border}
+        // style={border}
         ref={entityRef}
-        onClick={() => modifyContext(index, "ent")}
+        onClick={() => modifyContext(id, types.ENTITY)}
       >
         {value}
-        {/* {focus === index ? (
-          <div className="entity-input">
-            <input
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              onClick={(e) => e.stopPropagation()}
-              onKeyPress={(e) => {
-                if (e.key === "Enter") {
-                  //Update entity position
-                  let newNode = nodeStates[types.ENTITY][id];
-                  newNode.text = text;
-                  updateNode(newNode);
-                }
-              }}
-            />
-          </div>
-        ) : (
-          value
-        )} */}
       </div>
     </Draggable>
   );
