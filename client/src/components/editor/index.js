@@ -33,6 +33,7 @@ const sampleEdges = {
 export const actions = {
 	NORMAL: "normal",
 	SELECT: "select",
+  NODE_EDIT: "node_edit",
 	RELATIONSHIP_ADD_SOURCE: "relationship_add_source",
 	RELATIONSHIP_ADD_TARGET: "relationship_add_target",
 	RELATIONSHIP_ADD_CARDINALITY: "relationship_add_cardinality",
@@ -46,7 +47,7 @@ export const types = {
 }
 
 /* Main function */
-function Editor() {
+function EditorDead() {
 	// Passed to children for metadata (eg width and height of main container)
 	const parentRef = useRef(null);
 
@@ -403,4 +404,4 @@ function Editor() {
 	);
 }
 
-export default Editor;
+export default EditorDead;

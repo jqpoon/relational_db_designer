@@ -3,14 +3,14 @@ import Draggable from "react-draggable";
 import "./stylesheets/entity.css";
 import Xarrow, { useXarrow, Xwrapper } from "react-xarrows";
 import { types } from "..";
+
 export default function Entity({
   index,
   id,
   text,
-  updateText,
   pos,
   updateNode,
-  nodeStates,
+  getNode,
   focus,
   setFocus,
   scale,
@@ -52,14 +52,14 @@ export default function Entity({
 
   return (
     <Draggable
-      nodeRef={entityRef}
+      nodeRef={entityRef} // TODO:This appears in the inner div as well
       defaultPosition={pos}
       onMouseDown={() => setPanDisabled(true)}
       onDrag={updateXarrow}
       onStop={(e, data) => {
-		//Update entity position
-		let newNode = nodeStates[types.ENTITY][id]
-		newNode.pos = { x: data.x, y: data.y };
+        //Update entity position
+        let newNode = getNode(types.ENTITY,id);
+        newNode.pos = { x: data.x, y: data.y };
         updateNode(types.ENTITY, newNode);
         setPanDisabled(false);
         updateXarrow(e);
@@ -74,12 +74,13 @@ export default function Entity({
     >
       <div
         className="entity"
-				id={id}
+        id={id}
         style={border}
         ref={entityRef}
         onClick={() => modifyContext(index, "ent")}
       >
-        {focus === index ? (
+        {value}
+        {/* {focus === index ? (
           <div className="entity-input">
             <input
               value={value}
@@ -87,17 +88,17 @@ export default function Entity({
               onClick={(e) => e.stopPropagation()}
               onKeyPress={(e) => {
                 if (e.key === "Enter") {
-					//Update entity position
-				  let newNode = nodeStates[types.ENTITY][id]
-		          newNode.text = text;
-                  updateNode(types.ENTITY, newNode);
+                  //Update entity position
+                  let newNode = nodeStates[types.ENTITY][id];
+                  newNode.text = text;
+                  updateNode(newNode);
                 }
               }}
             />
           </div>
         ) : (
           value
-        )}
+        )} */}
       </div>
     </Draggable>
   );
