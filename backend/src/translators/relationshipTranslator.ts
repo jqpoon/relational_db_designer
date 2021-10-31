@@ -3,7 +3,7 @@ import Relationship from "src/models/relationship";
 import TranslatedSchema, {AttributesSchema} from "./models/translatedSchema";
 import Translator from "./translator";
 
-class EntityTranslator implements Translator {
+class RelationshipTranslator implements Translator {
 
     relationship: Relationship;
 
