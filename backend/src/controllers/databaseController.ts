@@ -2,7 +2,6 @@ import neo4j, {Driver, QueryResult} from "neo4j-driver";
 import Entity from "../models/entity";
 import Attribute from "../models/attribute";
 import Relationship, { LHConstraint } from "../models/relationship";
-import {keys} from 'ts-transformer-keys';
 
 class DatabaseController {
 

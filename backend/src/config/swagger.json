@@ -1,0 +1,252 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "Swagger API Docs",
+    "version": "1.0.0",
+    "title": "Relational DB Designer",
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "definitions": {
+    "Attribute": {
+      "type": "object",
+      "required": [
+        "identifier",
+        "positionX",
+        "positionY",
+        "shapeWidth",
+        "shapeHeight",
+        "name",
+        "isPrimaryKey",
+        "isOptional"
+      ],
+      "properties": {
+        "identifier": {
+          "type": "number"
+        },
+        "positionX": {
+          "type": "number"
+        },
+        "positionY": {
+          "type": "number"
+        },
+        "shapeWidth": {
+          "type": "number"
+        },
+        "shapeHeight": {
+          "type": "number"
+        },
+        "name": {
+          "type": "string"
+        },
+        "isPrimaryKey": {
+          "type": "string"
+        },
+        "isOptional": {
+          "type": "string"
+        }
+      }
+    },
+    "Entity": {
+      "type": "object",
+      "required": [
+        "identifier",
+        "positionX",
+        "positionY",
+        "shapeWidth",
+        "shapeHeight",
+        "name"
+      ],
+      "properties": {
+        "identifier": {
+          "type": "number"
+        },
+        "positionX": {
+          "type": "number"
+        },
+        "positionY": {
+          "type": "number"
+        },
+        "shapeWidth": {
+          "type": "number"
+        },
+        "shapeHeight": {
+          "type": "number"
+        },
+        "name": {
+          "type": "string"
+        },
+        "isWeak": {
+          "type": "boolean"
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "identifier": {
+                "type": "number"
+              },
+              "positionX": {
+                "type": "number"
+              },
+              "positionY": {
+                "type": "number"
+              },
+              "shapeWidth": {
+                "type": "number"
+              },
+              "shapeHeight": {
+                "type": "number"
+              },
+              "name": {
+                "type": "string"
+              },
+              "isPrimaryKey": {
+                "type": "string"
+              },
+              "isOptional": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "subsets": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "Relationship": {
+      "type": "object",
+      "required": [
+        "identifier",
+        "positionX",
+        "positionY",
+        "shapeWidth",
+        "shapeHeight",
+        "name"
+      ],
+      "properties": {
+        "identifier": {
+          "type": "number"
+        },
+        "positionX": {
+          "type": "number"
+        },
+        "positionY": {
+          "type": "number"
+        },
+        "shapeWidth": {
+          "type": "number"
+        },
+        "shapeHeight": {
+          "type": "number"
+        },
+        "name": {
+          "type": "string"
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "identifier": {
+                "type": "number"
+              },
+              "positionX": {
+                "type": "number"
+              },
+              "positionY": {
+                "type": "number"
+              },
+              "shapeWidth": {
+                "type": "number"
+              },
+              "shapeHeight": {
+                "type": "number"
+              },
+              "name": {
+                "type": "string"
+              },
+              "isPrimaryKey": {
+                "type": "string"
+              },
+              "isOptional": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "lhConstraints": {
+          "type": "object",
+          "example": {
+            "1": "ONE_TO_ONE",
+            "2": "ONE_TO_MANY",
+            "3": "MANY_TO_ONE"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Entities",
+      "description": "ER Schema Entity"
+    },
+    {
+      "name": "Relationships",
+      "description": "ER Schema Relationships"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/schema/entites": {
+      "get": {
+        "tags": [
+          "Entities"
+        ],
+        "description": "Returns **ALL** entities",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Entity"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schema/relationship": {
+      "get": {
+        "tags": [
+          "Relationships"
+        ],
+        "description": "Returns **ALL** relationships",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Relationship"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
