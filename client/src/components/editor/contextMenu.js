@@ -10,6 +10,7 @@ export function ContextMenu(){
       <ul
           className="context-menu"
           style={{
+						position: "absolute",
             top: anchorPoint.y,
             left: anchorPoint.x
           }}
