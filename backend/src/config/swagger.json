@@ -210,7 +210,7 @@
     "application/json"
   ],
   "paths": {
-    "/schema/entites": {
+    "/schema/entities": {
       "get": {
         "tags": [
           "Entities"

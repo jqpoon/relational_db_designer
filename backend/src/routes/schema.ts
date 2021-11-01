@@ -95,16 +95,22 @@ router.get('/entities', async function (req, res, next) {
 
     const entities = SchemaController.getInstance().getAllEntities()
 
-    entities.then(function (result: Map<Number, Entity>) {
-        return res.status(OK).send(result);
+    entities.then(function (entityMap: Map<Number, Entity>) {
+        const entities = Array.from(entityMap.values())
+        return res.status(OK).json({
+            entities: entities
+        });
     })
 });
 
-router.get('/relationship', async function(req, res, next) {
+router.get('/relationship', async function (req, res, next) {
     const relationships = SchemaController.getInstance().getAllRelationships()
 
-    relationships.then(function (result) {
-        return res.status(OK).json({result});
+    relationships.then(function (relationshipMap: Map<Number, Relationship>) {
+        const relationships = Array.from(relationshipMap.values())
+        return res.status(OK).json({
+            relationships: relationships
+        });
     })
 });
 
