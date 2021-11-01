@@ -148,7 +148,8 @@
           "type": "number"
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "example": "Mock Relationship"
         },
         "attributes": {
           "type": "array",
@@ -171,24 +172,35 @@
                 "type": "number"
               },
               "name": {
-                "type": "string"
+                "type": "string",
+                "example": "Mock Attribute Relationship"
               },
               "isPrimaryKey": {
-                "type": "string"
+                "type": "boolean"
               },
               "isOptional": {
-                "type": "string"
+                "type": "boolean"
               }
             }
           }
         },
-        "lhConstraints": {
+        "lHConstraints": {
           "type": "object",
           "example": {
             "1": "ONE_TO_ONE",
-            "2": "ONE_TO_MANY",
-            "3": "MANY_TO_ONE"
+            "2": "ONE_TO_MANY"
           }
+        }
+      }
+    },
+    "InvalidResponse": {
+      "type": "object",
+      "properties": {
+        "statusCode": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
         }
       }
     }
@@ -201,6 +213,10 @@
     {
       "name": "Relationships",
       "description": "ER Schema Relationships"
+    },
+    {
+      "name": "General",
+      "description": "ER Schema General Functions"
     }
   ],
   "consumes": [
@@ -210,6 +226,123 @@
     "application/json"
   ],
   "paths": {
+    "/schema/all": {
+      "post": {
+        "tags": [
+          "General"
+        ],
+        "description": "Stores **FULL** schema into database",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "entities": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Entity"
+                  },
+                  "example": [
+                    {
+                      "identifier": 1,
+                      "positionX": 1,
+                      "positionY": 2,
+                      "shapeWidth": 4,
+                      "shapeHeight": 4,
+                      "name": "Mock Entity 1",
+                      "isWeak": true,
+                      "attributes": [
+                        {
+                          "identifier": 1,
+                          "positionX": 2,
+                          "positionY": 4,
+                          "shapeWidth": 4,
+                          "shapeHeight": 4,
+                          "name": "Mock Attribute 1",
+                          "isPrimaryKey": false,
+                          "isOptional": false
+                        }
+                      ]
+                    },
+                    {
+                      "identifier": 2,
+                      "positionX": 1,
+                      "positionY": 2,
+                      "shapeWidth": 4,
+                      "shapeHeight": 4,
+                      "name": "Mock Entity 2",
+                      "isWeak": true,
+                      "attributes": [
+                        {
+                          "identifier": 2,
+                          "positionX": 2,
+                          "positionY": 4,
+                          "shapeWidth": 4,
+                          "shapeHeight": 4,
+                          "name": "Mock Attribute 2",
+                          "isPrimaryKey": false,
+                          "isOptional": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "relationships": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Relationship"
+                  },
+                  "example": [
+                    {
+                      "identifier": 1,
+                      "positionX": 1,
+                      "positionY": 2,
+                      "shapeWidth": 4,
+                      "shapeHeight": 4,
+                      "name": "Mock Relationship",
+                      "attributes": [
+                        {
+                          "identifier": 3,
+                          "positionX": 2,
+                          "positionY": 4,
+                          "shapeWidth": 4,
+                          "shapeHeight": 4,
+                          "name": "Mock Attribute Relationship",
+                          "isPrimaryKey": false,
+                          "isOptional": false
+                        }
+                      ],
+                      "lHConstraints": {
+                        "1": "ONE_TO_MANY",
+                        "2": "ONE_TO_MANY"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "statusCode": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/schema/entities": {
       "get": {
         "tags": [

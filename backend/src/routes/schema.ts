@@ -8,12 +8,6 @@ import SchemaController from "../controllers/schemaController";
 const router = Router();
 
 router.get("/example", async function (req, res, next) {
-    // var modelAsJson = JSON.parse(req.body);
-
-    // var entities: Entity[] = JSON.parse(modelAsJson.entities);
-    // var relationships: Relationship[] = JSON.parse(modelAsJson.relationships);
-    // var disjoints: Disjoint[] = JSON.parse(modelAsJson.disjoints);
-
     var mockEntity = [
         {
             identifier: 1,
@@ -86,10 +80,32 @@ router.get("/example", async function (req, res, next) {
     }]
 
     SchemaController.getInstance().addAllEntities(mockEntity);
-    SchemaController.getInstance().addAllRelationships(mockRelationship);
 
     return res.status(OK).json({SUCCESS: true});
 });
+
+router.post('/all', async function (req, res, next) {
+    // TODO add error catching
+    var modelAsJson = req.body;
+
+    var entities: Entity[] = modelAsJson.entities;
+    var relationships: Relationship[] = modelAsJson.relationships;
+
+    relationships.map((relationship: Relationship) => {
+        const lHConstraintsConvertion: Map<number, LHConstraint> = new Map()
+        Object.entries(relationship.lHConstraints).map((values) => {
+            lHConstraintsConvertion.set(+values[0], values[1])
+        })
+
+        relationship.lHConstraints = lHConstraintsConvertion
+    })
+
+    SchemaController.getInstance().addAllEntities(entities);
+    SchemaController.getInstance().addAllRelationships(relationships);
+    // var disjoints: Disjoint[] = JSON.parse(modelAsJson.disjoints);
+
+    return res.status(OK).json({SUCCESS: true});
+})
 
 router.get('/entities', async function (req, res, next) {
 
