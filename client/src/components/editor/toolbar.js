@@ -61,9 +61,6 @@ export default function Toolbar({
       >
         <p className="entity-tool">Relationship</p>
       </Draggable>
-      <div className="tool" onClick={addAttribute}>
-        Attribute
-      </div>
       <div className="tool" onClick={addEdgeToRelationship}>
         Connect to Relationship
       </div>
