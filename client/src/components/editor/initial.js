@@ -28,4 +28,17 @@ export const initialEdges = {
   E0R0: { start: "E0", end: "R0", id: "E0R0", labels: "Hello" },
 };
 
-// TODO: add initialAttributes
+export const initialAttributes = {
+  E0A0: { start: "E0", 
+          id: "E0A0", 
+          text: "Attribute1",
+          relativePos: { x: -100, y: 0 },
+          type: types.ATTRIBUTE,
+        },
+  E0A1: { start: "E0", 
+        id: "E0A1", 
+        text: "Attribute2",
+        relativePos: { x: -100, y: 100 },
+        type: types.ATTRIBUTE,
+      }
+}

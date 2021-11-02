@@ -2,84 +2,68 @@ import { useRef, useState } from "react";
 import Draggable from "react-draggable";
 import Xarrow, { useXarrow } from 'react-xarrows';
 import "./stylesheets/attribute.css"
+import { types } from "../types";
 
 export default function Attribute({
-	index, // Index of attribute in attribute list
-	pos, // x, y position of attribute
-	entityRef, // Reference to entity this attribute should be joined to
+	id,
 	text, // Attribute name
-	updatePos, // Callback function to update position of attribute
-	updateText // Callback function to update attribute name
+	relativePos, // Relative x, y position of attribute to parent node
+	parentPos, // Position of parent node. If this field is null, then the parent's position will be obtained by going through list of entities/relationships
+	start, // Id of the node this attribute should be joined to
+	updateNode, // Generic update function for dict in editor.js
+	getNode // Generic getter for dict in editor.js
 }) {
+	// TODO: maybe include scale in function arguments?
 
-	const [attributeName, setAttributeName] = useState(text);
+	// Name of attribute to be displayed
+	const [name, setName] = useState(text);
+	// Ref of lollipop end
 	const attributeEndRef = useRef(null);
-	const attributeStartRef = useRef(null);
-	const updateXarrow = useXarrow();
 
-	/* Hacky way of extracting the x, y coordinates from entityRef!
-	   Relies on entity node using `translate({x}px, {y}px)` to define
-	   its position.
-	*/
-	// TODO: put into function
-	var attributeCurrent = attributeStartRef.current
-	if (attributeCurrent != null) {
-		const regex = /([0-9]+)px, ?([0-9]+)px/;
-		const found = attributeStartRef.current.style.transform.match(regex);
-		if (found == null) {
-			console.error("Entity not using translate({x}px, {y}px) to define position anymore! Check attribute.js.")
-		} else {
-			var entityX = found[1];
-			var entityY = found[2];
+	// Calculate position of entity end
+	const calculateEntityEndPos = () => {
+		if (parentPos == null || parentPos.x == null || parentPos.y == null) {
+			let parentNode = getNode(types.ENTITY, start); // assume only entities have attributes for now TODO: change to include other node types
+			parentPos = { x: parentNode.pos.x, y: parentNode.pos.y };
 		}
-	}
+		return {x: parentPos.x + relativePos.x, 
+				y: parentPos.y + relativePos.y};
+	};
+
+	let absolutePos = calculateEntityEndPos();
+	console.log(absolutePos);
+
+	// change style with transform(x, y) and re-render attribute
+	var chosenStyle = { transform: `translate(${absolutePos.x}px, ${absolutePos.y}px)`,};
 
 	/* Automatically adjusts text location based on where the arrow is. */
 	let leftStyle = { transform: "translate(-110%, -6.5px)", display: "inline-block" };
 	let rightStyle = { transform: "translate(20px, -6.5px)", display: "inline-block" };
+	var textStyle = leftStyle;
 
-	var chosenStyle = rightStyle;
-
-	if (entityX > pos.x) {
-		chosenStyle = leftStyle;
-	}
+	// if (absolutePos.x > parentPos.x) {
+	// 	chosenStyle = leftStyle;
+	// }
 
 	let attributeEnd = (
-		<Draggable
-			onDrag={updateXarrow}
-			onStop={updateXarrow}
-			onStop={(e, data) => {
-				updatePos(data, index);
-			}}
-			>
-			<div ref={attributeEndRef} className="attribute-end" >
-				<div style={chosenStyle}>
-					end
-				</div>
+		<div ref={attributeEndRef} 
+			 className="attribute-end" 
+			 style={chosenStyle}>
+			<div style={textStyle}>
+				{name}
 			</div>
-		</Draggable>
-	);
-
-	let attributeStart = (
-		<Draggable
-			onDrag={updateXarrow}
-			onStop={updateXarrow}>
-			<div ref={attributeStartRef} className="attribute-start">
-				<div style={chosenStyle}>
-					startsssssssssssssss
-				</div>
-			</div>
-		</Draggable>
+		</div>
 	);
 
 	let attribute = (
 			<div>
-				{attributeStart}
 				{attributeEnd}
 				<Xarrow 
-					start={attributeStartRef}
+					start={start}
 					end={attributeEndRef}
 					path="straight"
+					headSize="0"
+					zIndex="-10"
             	/>
 			</div>
 		);

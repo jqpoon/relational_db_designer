@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { initialEntities, initialRelationships, initialEdges } from "./initial";
+import { initialEntities, initialRelationships, initialEdges, initialAttributes } from "./initial";
 import { actions, types } from "./types";
 import Entity from "./nodes/entity";
 import Relationship from "./nodes/relationship";
@@ -35,7 +35,7 @@ export default function Editor() {
 	// List of components that will be rendered
 	const [entities, setEntities] = useState(initialEntities);
 	const [relationships, setRelationships] = useState(initialRelationships);
-	const [attributes, setAttributes] = useState({}); // TODO
+	const [attributes, setAttributes] = useState(initialAttributes);
 	const [edges, setEdges] = useState(initialEdges);
 
 	const [context, setContext] = useState({ action: actions.NORMAL });
