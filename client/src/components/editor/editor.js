@@ -163,6 +163,7 @@ export default function Editor() {
 		}
 	};
 
+	// Translates entire model state into a JSON object for backend. 
 	const toObject = () => {
 		let state = {
 			entities: [],
