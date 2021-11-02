@@ -163,6 +163,59 @@ export default function Editor() {
 		}
 	};
 
+	const toObject = () => {
+		let state = {
+			entities: [],
+			relationships: [],
+			disjoints: [],
+		};
+
+		let entities = nodeStates[types.ENTITY]; 
+		let relationships = nodeStates[types.RELATIONSHIP]; 
+		let edges = nodeStates[types.EDGE];
+	
+		// Entities. 
+		for (let entity in entities) {
+			let entityState = {
+				identifier: entity.id, 
+				positionX: entity.pos.x, 
+				positionY: entity.pos.y, 
+				shapeWidth: 0, // TODO
+				shapeHeight: 0, // TODO
+				name: entity.text, 
+				isWeak: false, // TODO
+				attributes: [], // TODO
+				subsets: [] // TODO
+			};
+
+			state.entities.push(entityState);
+		}
+
+		// Relationships and linking with entities. 
+		for (let relationship in relationships) {
+			let relationshipState = {
+				identifier: relationship.id,
+				positionX: relationship.pos.x,
+				positionY: relationship.pos.x, 
+				shapeWidth: 0, // TODO
+				shapeHeight: 0, // TODO
+				name: relationship.text,
+				attributes: [], // TODO
+				lHConstraints: {}, 
+			};
+
+			let links = edges.filter(edge => edge.start == relationship.id || edge.end == relationship.id); 
+			for (let link in links) {
+				let entityID = link.start == relationship.id ? link.end : link.start; 
+				relationshipState.lHConstraints[entityID] = link.labels; // TODO: Translate labels into a constraint enum type. 
+			}
+
+			state.relationships.push(relationshipState);
+		}
+
+		return state;
+	};
+
 	return (
 		<Xwrapper>
 			<div className="editor" ref={parentRef}>
