@@ -176,7 +176,7 @@ export default function Editor() {
 		let edges = nodeStates[types.EDGE];
 	
 		// Entities. 
-		for (let entity in entities) {
+		Object.values(entities).map(entity => {
 			let entityState = {
 				identifier: entity.id, 
 				positionX: entity.pos.x, 
@@ -190,10 +190,10 @@ export default function Editor() {
 			};
 
 			state.entities.push(entityState);
-		}
+		}); 
 
 		// Relationships and linking with entities. 
-		for (let relationship in relationships) {
+		Object.values(relationships).map(relationship => {
 			let relationshipState = {
 				identifier: relationship.id,
 				positionX: relationship.pos.x,
@@ -212,7 +212,7 @@ export default function Editor() {
 			}
 
 			state.relationships.push(relationshipState);
-		}
+		})
 
 		return state;
 	};
