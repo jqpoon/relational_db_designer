@@ -25,14 +25,15 @@ import { ContextMenu } from "./contextMenu";
 // TODO: figure out where parentref should go and update render appropriately
 
 export default function Editor() {
-	// Canvas states: passed to children for metadata (eg width and height of main container)
+	// Canvas states that are passed to children for metadata (e.g. width and height of main container). 
 	const parentRef = useRef(null);
 	const [counter, setCounter] = useState(0);
 	const [render, setRender] = useState(false);
 	const [scale, setScale] = useState(1);
 	const [panDisabled, setPanDisabled] = useState(false);
 
-	// List of components that will be rendered
+	// List of components that will be rendered. 
+	// TODO: Initialise these states as empty. Will be populated later. 
 	const [entities, setEntities] = useState(initialEntities);
 	const [relationships, setRelationships] = useState(initialRelationships);
 	const [attributes, setAttributes] = useState({}); // TODO
@@ -67,8 +68,8 @@ export default function Editor() {
 	};
 
 	// TODO: instead of _Node, should probably rename to _Element since it applies to edges as well
-	// Generic update, add and delete functions for elements
-	// Element should be the (whole) updated element
+	// Generic update, add and delete functions for elements. 
+	// Element should be the (whole) updated element. 
 	const updateNode = (type, element) => {
 		let newNodeState = { ...nodeStates[type] };
 		newNodeState[element.id] = element;
@@ -163,8 +164,43 @@ export default function Editor() {
 		}
 	};
 
+	// Translates entire model state from backend JSON into client components. 
+	const importStateFromObject = (state) => {
+		for (let entity in state.entities) {
+			let entityComponent = {
+				id: entity.indentifier, 
+				text: entity.name, 
+				pos: { x: entity.positionX, y: entity.positionY }, 
+				type: types.ENTITY
+			}; 
+			addNode(types.ENTITY, entityComponent)
+		}
+
+		for (let relationship in state.relationships) {
+			let relationshipComponent = {
+				id: relationship.indentifier, 
+				text: relationship.name, 
+				pos: { x: relationship.positionX, y: relationship.positionY }, 
+				type: types.RELATIONSHIP
+			}; 
+			addNode(types.RELATIONSHIP, relationshipComponent); 
+
+			Object.entries(relationship.lHConstraints).map((entityID, constraint) => {
+				let edgeComponent = {
+					start: entityID, 
+					end: relationship.identifier, 
+					id: entityID + relationship.identifier,
+					labels: constraint
+				}
+				addNode(types.EDGE, edgeComponent);
+			}); 
+		}
+
+		return;
+	};
+
 	// Translates entire model state into a JSON object for backend. 
-	const toObject = () => {
+	const exportStateToObject = () => {
 		let state = {
 			entities: [],
 			relationships: [],
