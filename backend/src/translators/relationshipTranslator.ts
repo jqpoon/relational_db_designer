@@ -1,5 +1,5 @@
-import Attribute from "src/models/attribute";
-import Relationship from "src/models/relationship";
+import Attribute from "../models/attribute";
+import Relationship from "../models/relationship";
 import TranslatedSchema, {AttributesSchema} from "./models/translatedSchema";
 import Translator from "./translator";
 
@@ -29,3 +29,5 @@ class RelationshipTranslator implements Translator {
     }
 
 }
+
+export default RelationshipTranslator

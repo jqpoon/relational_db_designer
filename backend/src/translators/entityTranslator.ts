@@ -1,5 +1,5 @@
-import Attribute from "src/models/attribute";
-import Entity from "src/models/entity";
+import Attribute from "../models/attribute";
+import Entity from "../models/entity";
 import TranslatedSchema, { AttributesSchema } from "./models/translatedSchema";
 import Translator from "./translator";
 
@@ -27,3 +27,5 @@ class EntityTranslator implements Translator {
         return translatedSchema
     }
 }
+
+export default EntityTranslator
