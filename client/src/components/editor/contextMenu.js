@@ -1,18 +1,18 @@
-import "./stylesheets/contextMenu.css"
-import useContextMenu from "./useContextMenu"
+import "./stylesheets/contextMenu.css";
+import useContextMenu from "./useContextMenu";
 
-export function ContextMenu(){
-    // For context menu: anchorPoint contains position of contextMenu and show controls when contextMenu will be shown
+export function ContextMenu() {
+  // For context menu: anchorPoint contains position of contextMenu and show controls when contextMenu will be shown
   const { anchorPoint, show } = useContextMenu();
-  if(show){
-    return(
+  if (show) {
+    return (
       <div>
-      <ul
+        <ul
           className="context-menu"
           style={{
-						position: "absolute",
+            position: "absolute",
             top: anchorPoint.y,
-            left: anchorPoint.x
+            left: anchorPoint.x,
           }}
         >
           <li>Edit Label</li>
@@ -21,9 +21,9 @@ export function ContextMenu(){
           <hr />
           <li>Something</li>
         </ul>
-        </div>
+      </div>
     );
   }
-  
+
   return null;
-  }
+}

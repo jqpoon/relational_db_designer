@@ -77,12 +77,39 @@ export default function Node({
   const onClick = () => {
     switch (context.action) {
       case actions.NORMAL:
-      case actions.SELECT:
+      case actions.SELECT.NORMAL:
         setContext({
-          action: actions.SELECT,
+          action: actions.SELECT.NORMAL,
           selected: { type: type, id: id },
         });
         break;
+      case actions.SELECT.ADD_RELATIONSHIP:
+        setContext((prev) => {
+          let newCtx = { ...prev };
+          newCtx.target = { type: type, id: id, cardinality: "" };
+          return newCtx;
+        });
+        break;
+      case actions.SELECT.ADD_SUPERSET:
+        setContext((prev) => {
+          let newCtx = { ...prev };
+          newCtx.target = { type: type, id: id };
+          return newCtx;
+        });
+        break;
+      case actions.RELATIONSHIP_ADD.SELECT_SOURCES: {
+        let newContext = { ...context };
+        newContext.sources[id] = { type: type, cardinality: "" };
+        setContext(newContext);
+        console.log(newContext);
+        break;
+      }
+      case actions.RELATIONSHIP_ADD.SELECT_TARGET: {
+        let newContext = { ...context };
+        newContext.target = { id: id, type: type };
+        setContext(newContext);
+        break;
+      }
       default:
     }
   };
@@ -139,9 +166,7 @@ export default function Node({
 
   return (
     <Draggable {...draggableConfig}>
-      <div {...contentsConfig}>
-        {normalMode}
-      </div>
+      <div {...contentsConfig}>{normalMode}</div>
     </Draggable>
   );
 }
