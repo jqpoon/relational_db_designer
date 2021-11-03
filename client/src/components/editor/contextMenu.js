@@ -1,21 +1,23 @@
 import "./stylesheets/contextMenu.css"
 import useContextMenu from "./useContextMenu"
-
-export function ContextMenu(){
+// takes in an editable id
+export function ContextMenu({setEditable, anchorPoint, show}){
     // For context menu: anchorPoint contains position of contextMenu and show controls when contextMenu will be shown
-  const { anchorPoint, show } = useContextMenu();
-  if(show){
+  //const { anchorPoint, show } = useContextMenu();
+  if (show){
+    console.log(anchorPoint);
     return(
       <div>
       <ul
           className="context-menu"
           style={{
 						position: "absolute",
-            top: anchorPoint.y,
-            left: anchorPoint.x
+            transform: `translate(${0}px, ${0}px)`,
+            // top: anchorPoint.y,
+            // left:anchorPoint.x,
           }}
         >
-          <li>Edit Label</li>
+          <li onClick={() => setEditable(true)} >Edit Label </li>
           <hr />
           <li>Add Attribute</li>
           <hr />
@@ -24,6 +26,6 @@ export function ContextMenu(){
         </div>
     );
   }
-  
+
   return null;
   }
