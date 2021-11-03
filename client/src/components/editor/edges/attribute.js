@@ -16,6 +16,8 @@ export default function Attribute({
 
 	// Name of attribute to be displayed
 	const [name, setName] = useState(text);
+	const [editable, setEditable] = useState(true);
+
 	// Ref of lollipop end
 	const attributeEndRef = useRef(null);
 
@@ -34,7 +36,7 @@ export default function Attribute({
 	// change style with transform(x, y) and re-render attribute
 	var chosenStyle = { transform: `translate(${absolutePos.x}px, ${absolutePos.y}px)`,};
 
-	/* Automatically adjusts text location based on where the arrow is. */
+	// Automatically adjusts text location based on where the arrow is.
 	let leftStyle = { transform: "translate(-110%, -6.5px)", display: "inline-block" };
 	let rightStyle = { transform: "translate(20px, -6.5px)", display: "inline-block" };
 	let bottomStyle = { transform: "translate(-40%, 20px)", display: "inline-block" };
@@ -48,12 +50,37 @@ export default function Attribute({
 		textStyle = rightStyle;
 	}
 
+	// Used for editing name of attribute
+	const editingMode = () => {
+		return ( editable ? (
+		  <div>
+			<input
+			  value={name}
+			  placeholder="Attribute"
+			  onChange={(e) => setName(e.target.value)}
+			  onClick={(e) => e.stopPropagation()}
+			  onKeyPress={(e) => {
+				if (e.key === "Enter") {
+				  // Update node text
+				  let newNode = getNode(types.ATTRIBUTE, id);
+				  newNode.text = name;
+				  updateNode(types.ATTRIBUTE, newNode);
+				  setEditable(false);
+				}
+			  }}
+			/>
+		  </div>
+		) : <div>{text}</div>
+		);
+	  };
+
 	let attributeEnd = (
 		<div ref={attributeEndRef} 
 			 className="attribute-end" 
-			 style={chosenStyle}>
+			 style={chosenStyle}
+			 onClick={ () => {setEditable(true)}}>
 			<div style={textStyle}>
-				{name}
+				{editingMode()}
 			</div>
 		</div>
 	);
@@ -66,7 +93,7 @@ export default function Attribute({
 					end={attributeEndRef}
 					path="straight"
 					headSize="0"
-					zIndex="1"
+					zIndex={-10}
             	/>
 			</div>
 		);
@@ -77,7 +104,7 @@ export default function Attribute({
 // Class to store global count of attributes, so that we can generate
 // new attribute ids
 class idCounter {
-	static counter = 0;
+	static counter = 1;
 	static getCount() {
 		return idCounter.counter++;
 	}

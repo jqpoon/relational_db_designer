@@ -30,6 +30,7 @@ export default function Node({
   scale,
   updateNode,
   getNode,
+  addNode,
   setPanDisabled,
   context,
   setContext,
@@ -38,7 +39,7 @@ export default function Node({
   const nodeRef = useRef(null);
   // Name of node which will be displayed
   const [name, setName] = useState(text);
-  // ?
+
   // To set bounds of draggable
   const [dimensions, setDimensions] = useState({});
 
@@ -49,8 +50,7 @@ export default function Node({
 	const handleContextMenu = useCallback(
 		(event) => {
 			event.preventDefault();
-
-			setAnchorPoint({ x: event.clientX - pos.x, y: event.clientY - pos.y });
+			setAnchorPoint({ x: 0, y: 0 }); // TODO: figure out how to fix anchor point
 			setShow(true);
 		},
 		[]
@@ -59,7 +59,6 @@ export default function Node({
   // Hides the context menu if we left click again
 	const handleClick = useCallback(
 		() => {
-      console.log('clicked');
       setShow(false);
     },
 		[show]
@@ -172,7 +171,15 @@ export default function Node({
   return (
     <Draggable style={{width: "150px", height: "75px"}} {...draggableConfig} >
       <div {...contentsConfig}>
-      <ContextMenu anchorPoint={anchorPoint} show={show} setEditable={setEditable} />
+        <ContextMenu 
+          anchorPoint={anchorPoint} 
+          show={show} 
+          setEditable={setEditable} 
+          id={id}
+          updateNode={updateNode}
+          addNode={addNode}
+          getNode={getNode}
+        />
         {normalMode}
       </div>
     </Draggable>
