@@ -1,7 +1,7 @@
 .node-wrapper {
   position: absolute;
-  width: 100px;
-  height: 100px;
+  width: 150px;
+  height: 75px;
   /* Important Below */
   display: flex;
   justify-content: center;

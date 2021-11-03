@@ -38,11 +38,16 @@ export default function Attribute({
 	/* Automatically adjusts text location based on where the arrow is. */
 	let leftStyle = { transform: "translate(-110%, -6.5px)", display: "inline-block" };
 	let rightStyle = { transform: "translate(20px, -6.5px)", display: "inline-block" };
-	var textStyle = leftStyle;
+	let bottomStyle = { transform: "translate(-40%, 20px)", display: "inline-block" };
 
-	// if (absolutePos.x > parentPos.x) {
-	// 	chosenStyle = leftStyle;
-	// }
+	let textStyle = null;
+	if (relativePos.x < 0) {
+		textStyle = leftStyle;
+	} else if (relativePos.y > 100) {
+		textStyle = bottomStyle;
+	} else {
+		textStyle = rightStyle;
+	}
 
 	let attributeEnd = (
 		<div ref={attributeEndRef} 
@@ -62,13 +67,23 @@ export default function Attribute({
 					end={attributeEndRef}
 					path="straight"
 					headSize="0"
-					zIndex="-10"
+					zIndex="1"
             	/>
 			</div>
 		);
 
 	return attribute;
 }
+
+// Class to store global count of attributes, so that we can generate
+// new attribute ids
+class idCounter {
+	static counter = 0;
+	static getCount() {
+		return idCounter.counter++;
+	}
+}
+
 
 export function addAttributeToNode(
 	updateNode, // Generic update node function from editor.js
@@ -79,14 +94,13 @@ export function addAttributeToNode(
 ) {
 	// Assume only entities have attributes for now TODO: change to include other node types
 	const parentNode = getNode(types.ENTITY, parentId);
-	// Count number of attributes parent node has
-	const attributeCount = 0;
+	const attributeCount = parentNode.entityList.length;
 
-	// somehow calculate relative pos (maybe based on number of attributes parent has?)
-	
+	// Calculate relative position based on number of attributes parent has
+
 	const attributeEntry = {
 		start: parentId,
-		id: parentId + "A3",
+		id: parentId + "A" + idCounter.getCount(),
 		text: text,
 		relativePos: { x: 100, y: -100},
 		type: types.ATTRIBUTE
