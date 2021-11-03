@@ -45,6 +45,16 @@ export default function Editor() {
 	const forceRerender = () => setRerender((rerender) => !rerender);
 
 	useEffect(() => {
+		const requestOptions = {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: null
+		};
+		// Initialise the state of Editor from the backend JSON. 
+		fetch('TODO', requestOptions)
+			.then(response => response.json())
+			.then(data => importStateFromObject(data));
+
 		setRender(true);
 	}, []);
 
