@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useCallback, useState, useRef, useEffect } from "react";
 import Draggable from "react-draggable";
 import { useXarrow } from "react-xarrows";
 import { types } from "..";
@@ -25,6 +25,7 @@ export default function Node({
   type,
   text,
   pos,
+  editable,
   parentRef,
   scale,
   updateNode,
@@ -32,6 +33,7 @@ export default function Node({
   setPanDisabled,
   context,
   setContext,
+  setEditableId,
 }) {
   // Reference to self allows info about self to be propagated
   const nodeRef = useRef(null);
@@ -41,6 +43,33 @@ export default function Node({
   // To set bounds of draggable
   const [dimensions, setDimensions] = useState({});
 
+  const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
+	const [show, setShow] = useState(false);
+
+	const handleContextMenu = useCallback(
+		(event) => {
+			// if (
+			// 	event.target.classList.contains("canvas") ||
+			// 	event.target.classList.contains("toolbar")
+			// )
+			// 	return;
+			event.preventDefault();
+
+			setAnchorPoint({ x: event.clientX - pos.x, y: event.clientY - pos.y });
+			setShow(true);
+		},
+		[]
+	);
+
+  // Hides the context menu if we left click again
+	const handleClick = useCallback(
+		() => {
+      console.log('clicked');
+      setShow(false);
+    },
+		[show]
+	);
+
   // Set dimensions on mount
   useEffect(() => {
     const curNode = nodeRef.current;
@@ -48,15 +77,13 @@ export default function Node({
       width: curNode.clientWidth,
       height: curNode.clientHeight,
     });
-    // TODO: add right click event handlers
-    // const handler = (e) => {
-    //   e.preventDefault();
-    // };
-    // // Right click
-    // entityCurr?.addEventListener("contextmenu", handler);
-    // return () => {
-    //   entityCurr?.removeEventListener("contextmenu", handler);
-    // };
+    // Right click
+    document?.addEventListener("click", handleClick);
+    curNode?.addEventListener("contextmenu", handleContextMenu);
+    return () => {
+      document?.removeEventListener("click", handleClick);
+      curNode?.removeEventListener("contextmenu", handleContextMenu);
+    };
   }, []);
 
   // For updating edges connected to the node
@@ -112,34 +139,42 @@ export default function Node({
 
   // Contents displayed in node
   const editingMode = () => {
-    return (
+    return ( editable ? (
       <div className="node-content-input">
         <input
-          value={text}
+          value={name}
           onChange={(e) => setName(e.target.value)}
           onClick={(e) => e.stopPropagation()}
           onKeyPress={(e) => {
             if (e.key === "Enter") {
               // Update node text
               let newNode = getNode(type, id);
-              newNode.text = text;
-              updateNode(newNode);
+              newNode.text = name;
+              newNode.editable = false;
+              console.log(newNode);
+              updateNode(type, newNode);
             }
           }}
         />
       </div>
+    ) : <></>
     );
   };
+
   const normalMode = (
     <div className={classFromNodeType[type]}>
-      <div>{text}</div>
+      {editingMode()}
+      <div>
+        {text}
+      </div>
     </div>
   );
   // TODO:conditional rendering
 
   return (
-    <Draggable {...draggableConfig}>
+    <Draggable style={{width: "150px", height: "75px"}} {...draggableConfig} >
       <div {...contentsConfig}>
+      <ContextMenu anchorPoint={anchorPoint} show={show} />
         {normalMode}
       </div>
     </Draggable>

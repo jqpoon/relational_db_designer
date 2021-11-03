@@ -27,10 +27,11 @@ import { ContextMenu } from "./contextMenu";
 export default function Editor() {
 	// Canvas states: passed to children for metadata (eg width and height of main container)
 	const parentRef = useRef(null);
-	const [counter, setCounter] = useState(0);
+	const [counter, setCounter] = useState(1);
 	const [render, setRender] = useState(false);
 	const [scale, setScale] = useState(1);
 	const [panDisabled, setPanDisabled] = useState(false);
+  const [editableId, setEditableId] = useState(0);
 
 	// List of components that will be rendered
 	const [entities, setEntities] = useState(initialEntities);
@@ -97,6 +98,7 @@ export default function Editor() {
 		addNode: addNode,
 		deleteNode: deleteNode,
 		getId: getId,
+    setEditableId: setEditableId,
 	};
 
 	const generalFunctions = {
@@ -169,7 +171,7 @@ export default function Editor() {
 				{render ? (
 					<>
 						<Toolbar {...nodeFunctions} {...leftToolBarActions} />
-						<ContextMenu />
+						{/* <ContextMenu editableId={editableId} /> */}
 						<TransformWrapper {...canvasConfig}>
 							<TransformComponent>
 								<div
