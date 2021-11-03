@@ -29,7 +29,6 @@ export default function Attribute({
 		return {x: parentPos.x + relativePos.x, 
 				y: parentPos.y + relativePos.y};
 	};
-
 	let absolutePos = calculateEntityEndPos();
 
 	// change style with transform(x, y) and re-render attribute
@@ -94,15 +93,31 @@ export function addAttributeToNode(
 ) {
 	// Assume only entities have attributes for now TODO: change to include other node types
 	const parentNode = getNode(types.ENTITY, parentId);
-	const attributeCount = parentNode.entityList.length;
+	const attributeCount = parentNode.attributeList.length;
 
 	// Calculate relative position based on number of attributes parent has
+	const preconfiguredRelativePositions = [
+		{x: -100, y: -30},
+		{x: -100, y: 30},
+		{x: -100, y: 90},
+		{x: 0, y: 150},
+		{x: 68, y: 150},
+		{x: 136, y: 150},
+		{x: 230, y: 90},
+		{x: 230, y: 30},
+		{x: 230, y: -30}
+	];
+	let relativePos = preconfiguredRelativePositions[attributeCount % 9];
+
+	// Update parent node's attribute list
+	const attributeId = parentId + "A" + idCounter.getCount();
+	parentNode.attributeList.push(attributeId);
 
 	const attributeEntry = {
 		start: parentId,
-		id: parentId + "A" + idCounter.getCount(),
+		id: attributeId,
 		text: text,
-		relativePos: { x: 100, y: -100},
+		relativePos: relativePos,
 		type: types.ATTRIBUTE
 	}
 
