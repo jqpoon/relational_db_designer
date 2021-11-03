@@ -6,6 +6,7 @@ import { ContextMenu } from "../contextMenu";
 import { actions } from "../types";
 import "./stylesheets/node.css";
 
+
 export function TestRelationship(props) {
   return <Node {...props} />;
 }
@@ -25,7 +26,6 @@ export default function Node({
   type,
   text,
   pos,
-  editable,
   parentRef,
   scale,
   updateNode,
@@ -33,7 +33,6 @@ export default function Node({
   setPanDisabled,
   context,
   setContext,
-  setEditableId,
 }) {
   // Reference to self allows info about self to be propagated
   const nodeRef = useRef(null);
@@ -45,14 +44,10 @@ export default function Node({
 
   const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
 	const [show, setShow] = useState(false);
+  const [editable, setEditable] = useState(false);
 
 	const handleContextMenu = useCallback(
 		(event) => {
-			// if (
-			// 	event.target.classList.contains("canvas") ||
-			// 	event.target.classList.contains("toolbar")
-			// )
-			// 	return;
 			event.preventDefault();
 
 			setAnchorPoint({ x: event.clientX - pos.x, y: event.clientY - pos.y });
@@ -139,8 +134,15 @@ export default function Node({
 
   // Contents displayed in node
   const editingMode = () => {
+    var className;
+    if(type === types.ENTITY){
+      className = "entity-input";
+    }else if(type === types.RELATIONSHIP){
+      className ="diamond-input";
+    }
+
     return ( editable ? (
-      <div className="node-content-input">
+      <div className={className}>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -150,23 +152,19 @@ export default function Node({
               // Update node text
               let newNode = getNode(type, id);
               newNode.text = name;
-              newNode.editable = false;
-              console.log(newNode);
               updateNode(type, newNode);
+              setEditable(false);
             }
           }}
         />
       </div>
-    ) : <></>
+    ) : <div>{text}</div>
     );
   };
 
   const normalMode = (
     <div className={classFromNodeType[type]}>
       {editingMode()}
-      <div>
-        {text}
-      </div>
     </div>
   );
   // TODO:conditional rendering
@@ -174,7 +172,7 @@ export default function Node({
   return (
     <Draggable style={{width: "150px", height: "75px"}} {...draggableConfig} >
       <div {...contentsConfig}>
-      <ContextMenu anchorPoint={anchorPoint} show={show} />
+      <ContextMenu anchorPoint={anchorPoint} show={show} setEditable={setEditable} />
         {normalMode}
       </div>
     </Draggable>

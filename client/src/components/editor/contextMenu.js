@@ -1,7 +1,7 @@
 import "./stylesheets/contextMenu.css"
 import useContextMenu from "./useContextMenu"
 // takes in an editable id
-export function ContextMenu({editableId, anchorPoint, show}){
+export function ContextMenu({setEditable, anchorPoint, show}){
     // For context menu: anchorPoint contains position of contextMenu and show controls when contextMenu will be shown
   //const { anchorPoint, show } = useContextMenu();
   if (show){
@@ -17,7 +17,7 @@ export function ContextMenu({editableId, anchorPoint, show}){
             // left:anchorPoint.x,
           }}
         >
-          <li onClick={() => console.log(editableId)} >Edit Label </li>
+          <li onClick={() => setEditable(true)} >Edit Label </li>
           <hr />
           <li>Add Attribute</li>
           <hr />

@@ -21,7 +21,6 @@ export default function Toolbar({
       },
       text: "",
       type: types.ENTITY,
-      editable: false,
     };
     addNode(types.ENTITY, newEntity);
   };
@@ -35,7 +34,6 @@ export default function Toolbar({
       },
       text: "",
       type: types.RELATIONSHIP,
-      editable: false,
     };
     addNode(types.RELATIONSHIP, newRelationship);
   };
