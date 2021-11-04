@@ -24,6 +24,8 @@ import { ContextMenu } from "./contextMenu";
 // TODO: extract common base node in node.js
 // TODO: figure out where parentref should go and update render appropriately
 
+const UNDO_STACK_LIMIT = 25;
+
 export default function Editor() {
 	// Canvas states: passed to children for metadata (eg width and height of main container)
 	const parentRef = useRef(null);
@@ -37,6 +39,7 @@ export default function Editor() {
 	const [relationships, setRelationships] = useState(initialRelationships);
 	const [attributes, setAttributes] = useState({}); // TODO
 	const [edges, setEdges] = useState(initialEdges);
+	const [stack, setStack] = useState([]);
 
 	const [context, setContext] = useState({ action: actions.NORMAL });
 
@@ -53,6 +56,7 @@ export default function Editor() {
 		[types.ATTRIBUTE]: attributes,
 		[types.EDGE]: edges,
 	};
+
 	const nodeSetters = {
 		[types.ENTITY]: setEntities,
 		[types.RELATIONSHIP]: setRelationships,
@@ -66,29 +70,56 @@ export default function Editor() {
 		return id;
 	};
 
+	const addToUndo = (action, type, element) => {
+		let undoFunc = {
+			action,
+			type,
+			element,
+		};
+		let newStack = [...stack, undoFunc];
+		if (newStack.length > UNDO_STACK_LIMIT) {
+			newStack.shift();
+		}
+		setStack(newStack);
+	};
+
+	const undo = () => {
+		let stackClone = [...stack];
+		let top = stackClone.pop();
+		if (!top) return;
+		nodeFunctions[top["action"]](top["type"], top["element"], true);
+		setStack(stackClone);
+	};
+
 	// TODO: instead of _Node, should probably rename to _Element since it applies to edges as well
 	// Generic update, add and delete functions for elements
 	// Element should be the (whole) updated element
-	const updateNode = (type, element) => {
+	const updateNode = (type, element, isUndo) => {
+		if (!isUndo) {
+			addToUndo("updateNode", type, { ...nodeStates[type][element.id] });
+		}
 		let newNodeState = { ...nodeStates[type] };
 		newNodeState[element.id] = element;
 		nodeSetters[type](newNodeState);
 	};
 
 	const getNode = (type, id) => {
-		return nodeStates[type][id];
+		return { ...nodeStates[type][id] };
 	};
 
-	const addNode = (type, element) => {
+	const addNode = (type, element, isUndo) => {
 		let newNodeState = { ...nodeStates[type], [element.id]: element };
 		nodeSetters[type](newNodeState);
+		// TODO UNDO BUG
+		if (!isUndo) addToUndo("deleteNode", type, { ...element });
 	};
 
-	const deleteNode = (type, element) => {
+	const deleteNode = (type, element, isUndo) => {
 		let newNodeState = { ...nodeStates[type] };
 		delete newNodeState[element.id];
-		// TODO: recursively remove other nodes/edges connected
+		// TODO: recursively remove other nodes/edges connected + undo
 		nodeSetters[type](newNodeState);
+		setContext({ action: actions.NORMAL });
 	};
 
 	const nodeFunctions = {
@@ -97,6 +128,7 @@ export default function Editor() {
 		addNode: addNode,
 		deleteNode: deleteNode,
 		getId: getId,
+		undo: undo,
 	};
 
 	const generalFunctions = {
