@@ -137,7 +137,7 @@ export default function Node({
 
   // Configurations for rendered elements
   const draggableConfig = {
-    defaultPosition: pos,
+    position: pos,
     scale: scale,
     bounds: {
       // ?
