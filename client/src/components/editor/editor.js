@@ -170,6 +170,8 @@ export default function Editor() {
             return (
               <SelectRelationship
                 relationship={relationships[context.selected.id]}
+                {...nodeFunctions}
+                {...generalFunctions}
               />
             );
           case types.EDGE.RELATIONSHIP:

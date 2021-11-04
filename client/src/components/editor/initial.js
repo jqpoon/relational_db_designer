@@ -36,6 +36,7 @@ export const initialRelationships = {
     text: "Works In",
     pos: { x: 550, y: 250 },
     type: types.RELATIONSHIP,
+    edges: ["E0R0", "E2R0"]
   },
 };
 
@@ -46,6 +47,7 @@ export const initialEdges = {
     id: "E0R0",
     cardinality: "ONE_TO_ONE",
     type: types.EDGE.RELATIONSHIP,
+    source_type: types.ENTITY,
   },
   E2R0: {
     start: "E2",
@@ -53,12 +55,14 @@ export const initialEdges = {
     id: "E2R0",
     cardinality: "ZERO_TO_MANY",
     type: types.EDGE.RELATIONSHIP,
+    source_type: types.ENTITY,
   },
   E1E0: {
     start: "E1",
     end: "E0",
     id: "E1E0",
     type: types.EDGE.HIERARCHY,
+    source_type: types.ENTITY,
   },
 };
 

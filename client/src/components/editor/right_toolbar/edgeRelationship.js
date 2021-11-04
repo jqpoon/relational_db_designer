@@ -31,6 +31,7 @@ export default function EdgeToRelationship({
         id: id,
         cardinality: c.cardinality,
         type: types.EDGE.RELATIONSHIP,
+        source_type: c.type
       });
     }
     for (const edge of newEdges) {
@@ -38,10 +39,13 @@ export default function EdgeToRelationship({
       addNode(types.EDGE.RELATIONSHIP, edge);
       // update source
       // TODO: source can also be of relationship type
-      let node = getNode(types.ENTITY, edge.start);
+      let node = getNode(edge.source_type, edge.start);
       node.edges.push(edge.id);
-      updateNode(types.ENTITY, node);
-      // TODO: update target
+      updateNode(edge.source_type, node);
+      // update target
+      let rel = getNode(context.target.type, context.target.id);
+      rel.edges.push(edge.id);
+      updateNode(context.target.type, rel);
     }
     setContext({ action: actions.NORMAL });
   };

@@ -1,10 +1,7 @@
 import { actions, cardinality, types } from "../types";
 import "./toolbar-right.css";
 import CardinalityChoices from "./utilities/cardinality";
-
-function Divider() {
-  return <hr className="divider" />;
-}
+import Divider from "./utilities/divider";
 
 export default function SelectEntity({
   entity,
@@ -29,7 +26,7 @@ export default function SelectEntity({
       <div className="toolbar-header">Entity</div>
       {/* Name Section */}
       <div className="section">
-        <div className="section-header">Text: {entity.text}</div>
+        <div className="section-header">Name: {entity.text}</div>
         <div className="section-content">(TODO: make editable)</div>
       </div>
       {/* Attributes Section */}
@@ -85,11 +82,15 @@ export default function SelectEntity({
                     cardinality: context.target.cardinality,
                     id: "Edge" + sourceID + targetID,
                     type: types.EDGE.RELATIONSHIP,
+                    source_type: types.ENTITY,
                   };
                   addNode(types.EDGE.RELATIONSHIP, edge);
                   let node = getNode(types.ENTITY, sourceID);
                   node.edges.push(edge.id);
                   updateNode(types.ENTITY, node);
+                  let rel = getNode(context.target.type, context.target.id);
+                  rel.edges.push(edge.id);
+                  updateNode(context.target.type, rel);
                   setContext((prev) => {
                     let ctx = { ...prev };
                     ctx.action = actions.SELECT.NORMAL;
