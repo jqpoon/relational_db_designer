@@ -1,5 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { initialEntities, initialRelationships, initialEdges, initialAttributes } from "./initial";
+import {
+	initialEntities,
+	initialRelationships,
+	initialEdges,
+	initialAttributes,
+} from "./initial";
 import { actions, types } from "./types";
 import Edge from "./edges/edge";
 import { Xwrapper } from "react-xarrows";
@@ -23,6 +28,8 @@ import EdgeToRelationship from "./right_toolbar/edgeRelationship";
 // TODO: extract common base node in node.js
 // TODO: figure out where parentref should go and update render appropriately
 
+const UNDO_STACK_LIMIT = 25;
+
 export default function Editor() {
 	// Canvas states: passed to children for metadata (eg width and height of main container)
 	const parentRef = useRef(null);
@@ -30,13 +37,14 @@ export default function Editor() {
 	const [render, setRender] = useState(false);
 	const [scale, setScale] = useState(1);
 	const [panDisabled, setPanDisabled] = useState(false);
-  const [editableId, setEditableId] = useState(0);
+	const [editableId, setEditableId] = useState(0);
 
 	// List of components that will be rendered
 	const [entities, setEntities] = useState(initialEntities);
 	const [relationships, setRelationships] = useState(initialRelationships);
 	const [attributes, setAttributes] = useState(initialAttributes);
 	const [edges, setEdges] = useState(initialEdges);
+	const [stack, setStack] = useState([]);
 
 	const [context, setContext] = useState({ action: actions.NORMAL });
 
@@ -49,17 +57,18 @@ export default function Editor() {
 
 	const nodeStates = {
 		[types.ENTITY]: entities,
-    [types.RELATIONSHIP]: relationships,
-    [types.ATTRIBUTE]: attributes,
-    [types.EDGE.RELATIONSHIP]: edges,
-    [types.EDGE.HIERARCHY]: edges,
+		[types.RELATIONSHIP]: relationships,
+		[types.ATTRIBUTE]: attributes,
+		[types.EDGE.RELATIONSHIP]: edges,
+		[types.EDGE.HIERARCHY]: edges,
 	};
+
 	const nodeSetters = {
 		[types.ENTITY]: setEntities,
-    [types.RELATIONSHIP]: setRelationships,
-    [types.ATTRIBUTE]: setAttributes,
-    [types.EDGE.RELATIONSHIP]: setEdges,
-    [types.EDGE.HIERARCHY]: setEdges,
+		[types.RELATIONSHIP]: setRelationships,
+		[types.ATTRIBUTE]: setAttributes,
+		[types.EDGE.RELATIONSHIP]: setEdges,
+		[types.EDGE.HIERARCHY]: setEdges,
 	};
 
 	const getId = () => {
@@ -68,29 +77,58 @@ export default function Editor() {
 		return id;
 	};
 
+	const addToUndo = (action, type, element) => {
+		let undoFunc = {
+			action,
+			type,
+			element,
+		};
+		let newStack = [...stack, undoFunc];
+		if (newStack.length > UNDO_STACK_LIMIT) {
+			newStack.shift();
+		}
+		setStack(newStack);
+	};
+
+	const undo = () => {
+		let stackClone = [...stack];
+		let top = stackClone.pop();
+		if (!top) return;
+		nodeFunctions[top["action"]](top["type"], top["element"], true);
+		setStack(stackClone);
+	};
+
 	// TODO: instead of _Node, should probably rename to _Element since it applies to edges as well
 	// Generic update, add and delete functions for elements
 	// Element should be the (whole) updated element
-	const updateNode = (type, element) => {
+	const updateNode = (type, element, isUndo) => {
+		if (!isUndo) {
+			addToUndo("updateNode", type, { ...nodeStates[type][element.id] });
+		}
 		let newNodeState = { ...nodeStates[type] };
 		newNodeState[element.id] = element;
 		nodeSetters[type](newNodeState);
 	};
 
 	const getNode = (type, id) => {
-		return nodeStates[type][id];
+		return { ...nodeStates[type][id] };
 	};
 
-	const addNode = (type, element) => {
-    // TODO: update other functions into callbacks
-		nodeSetters[type]((prevState) => ({ ...prevState, [element.id]: element }));
+	const addNode = (type, element, isUndo) => {
+		if (!isUndo) addToUndo("deleteNode", type, { ...element });
+		// TODO: update other functions into callbacks
+		nodeSetters[type]((prevState) => ({
+			...prevState,
+			[element.id]: element,
+		}));
 	};
 
-	const deleteNode = (type, element) => {
+	const deleteNode = (type, element, isUndo) => {
 		let newNodeState = { ...nodeStates[type] };
 		delete newNodeState[element.id];
-		// TODO: recursively remove other nodes/edges connected
+		// TODO: recursively remove other nodes/edges connected + undo
 		nodeSetters[type](newNodeState);
+		setContext({ action: actions.NORMAL });
 	};
 
 	const nodeFunctions = {
@@ -99,7 +137,8 @@ export default function Editor() {
 		addNode: addNode,
 		deleteNode: deleteNode,
 		getId: getId,
-    setEditableId: setEditableId,
+		undo: undo,
+		setEditableId: setEditableId,
 	};
 
 	const generalFunctions = {
@@ -110,20 +149,20 @@ export default function Editor() {
 
 	const leftToolBarActions = {
 		addEdgeToRelationship: () => {
-      setContext({
-        action: actions.RELATIONSHIP_ADD.SELECT_TARGET,
-        sources: {},
-        target: null,
-      });
-    },
-    addAttribute: () => {},
+			setContext({
+				action: actions.RELATIONSHIP_ADD.SELECT_TARGET,
+				sources: {},
+				target: null,
+			});
+		},
+		addAttribute: () => {},
 	};
 
-  const rightToolBarActions = {
-    cancel: () => {
-      setContext({ action: actions.NORMAL });
-    },
-  };
+	const rightToolBarActions = {
+		cancel: () => {
+			setContext({ action: actions.NORMAL });
+		},
+	};
 
 	const canvasConfig = {
 		panning: {
@@ -147,51 +186,53 @@ export default function Editor() {
 
 	// TODO
 	const showPendingChanges = () => {};
-  const showRightToolbar = () => {
-    switch (context.action) {
-      case actions.NORMAL:
-        return <Normal />;
-      case actions.SELECT.NORMAL:
-      case actions.SELECT.ADD_RELATIONSHIP:
-      case actions.SELECT.ADD_SUPERSET:
-      case actions.SELECT.ADD_SUBSET:
-        switch (context.selected.type) {
-          case types.ENTITY:
-            return (
-              <SelectEntity
-                entity={entities[context.selected.id]}
-                {...nodeFunctions}
-                {...generalFunctions}
-              />
-            );
-          case types.RELATIONSHIP:
-            return (
-              <SelectRelationship
-                relationship={relationships[context.selected.id]}
-                {...nodeFunctions}
-                {...generalFunctions}
-              />
-            );
-          case types.EDGE.RELATIONSHIP:
-          case types.EDGE.HIERARCHY:
-            return <SelectEdge edge={edges[context.selected.id]} />;
-          default:
-            return <Normal />; // TODO: type not found page
-        }
-      case actions.RELATIONSHIP_ADD.SELECT_SOURCES:
-      case actions.RELATIONSHIP_ADD.SELECT_TARGET:
-        return (
-          <EdgeToRelationship
-            {...nodeFunctions}
-            {...rightToolBarActions}
-            {...generalFunctions}
-          />
-        );
-      default:
-        // TODO
-        return <Normal />;
-    }
-  };
+	const showRightToolbar = () => {
+		switch (context.action) {
+			case actions.NORMAL:
+				return <Normal />;
+			case actions.SELECT.NORMAL:
+			case actions.SELECT.ADD_RELATIONSHIP:
+			case actions.SELECT.ADD_SUPERSET:
+			case actions.SELECT.ADD_SUBSET:
+				switch (context.selected.type) {
+					case types.ENTITY:
+						return (
+							<SelectEntity
+								entity={entities[context.selected.id]}
+								{...nodeFunctions}
+								{...generalFunctions}
+							/>
+						);
+					case types.RELATIONSHIP:
+						return (
+							<SelectRelationship
+								relationship={
+									relationships[context.selected.id]
+								}
+								{...nodeFunctions}
+								{...generalFunctions}
+							/>
+						);
+					case types.EDGE.RELATIONSHIP:
+					case types.EDGE.HIERARCHY:
+						return <SelectEdge edge={edges[context.selected.id]} />;
+					default:
+						return <Normal />; // TODO: type not found page
+				}
+			case actions.RELATIONSHIP_ADD.SELECT_SOURCES:
+			case actions.RELATIONSHIP_ADD.SELECT_TARGET:
+				return (
+					<EdgeToRelationship
+						{...nodeFunctions}
+						{...rightToolBarActions}
+						{...generalFunctions}
+					/>
+				);
+			default:
+				// TODO
+				return <Normal />;
+		}
+	};
 
 	return (
 		<Xwrapper>

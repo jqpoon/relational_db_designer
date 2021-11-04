@@ -8,6 +8,7 @@ export default function Toolbar({
   addEdgeToRelationship,
   getId,
   addNode,
+  undo,
 }) {
   const entityToolRef = useRef(null);
   const relationshipToolRef = useRef(null);
@@ -68,6 +69,9 @@ export default function Toolbar({
         Connect to Relationship
       </div>
       <div className="footer">
+        <div className="tool" onClick={undo}>
+          Undo
+        </div>
         <div className="tool">Load</div>
         <div className="tool">Save</div>
         <div className="tool">Translate</div>
