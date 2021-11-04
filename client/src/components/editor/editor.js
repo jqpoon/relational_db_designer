@@ -1,8 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import { initialEntities, initialRelationships, initialEdges } from "./initial";
+import {
+	initialEntities,
+	initialRelationships,
+	initialEdges,
+	initialAttributes,
+} from "./initial";
 import { actions, types } from "./types";
-import Entity from "./nodes/entity";
-import Relationship from "./nodes/relationship";
 import Edge from "./edges/edge";
 import { Xwrapper } from "react-xarrows";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
@@ -16,6 +19,7 @@ import SelectRelationship from "./right_toolbar/selectRelationship";
 import Normal from "./right_toolbar/normal";
 import SelectEdge from "./right_toolbar/selectEdge";
 import { ContextMenu } from "./contextMenu";
+import EdgeToRelationship from "./right_toolbar/edgeRelationship";
 
 // TODO: update left,right toolbar to match new data structures
 // TODO: add initial attributes to initial.js + implement position update based on parent node of the attribute
@@ -29,15 +33,16 @@ const UNDO_STACK_LIMIT = 25;
 export default function Editor() {
 	// Canvas states: passed to children for metadata (eg width and height of main container)
 	const parentRef = useRef(null);
-	const [counter, setCounter] = useState(0);
+	const [counter, setCounter] = useState(1);
 	const [render, setRender] = useState(false);
 	const [scale, setScale] = useState(1);
 	const [panDisabled, setPanDisabled] = useState(false);
+	const [editableId, setEditableId] = useState(0);
 
 	// List of components that will be rendered
 	const [entities, setEntities] = useState(initialEntities);
 	const [relationships, setRelationships] = useState(initialRelationships);
-	const [attributes, setAttributes] = useState({}); // TODO
+	const [attributes, setAttributes] = useState(initialAttributes);
 	const [edges, setEdges] = useState(initialEdges);
 	const [stack, setStack] = useState([]);
 
@@ -54,14 +59,16 @@ export default function Editor() {
 		[types.ENTITY]: entities,
 		[types.RELATIONSHIP]: relationships,
 		[types.ATTRIBUTE]: attributes,
-		[types.EDGE]: edges,
+		[types.EDGE.RELATIONSHIP]: edges,
+		[types.EDGE.HIERARCHY]: edges,
 	};
 
 	const nodeSetters = {
 		[types.ENTITY]: setEntities,
 		[types.RELATIONSHIP]: setRelationships,
 		[types.ATTRIBUTE]: setAttributes,
-		[types.EDGE]: setEdges,
+		[types.EDGE.RELATIONSHIP]: setEdges,
+		[types.EDGE.HIERARCHY]: setEdges,
 	};
 
 	const getId = () => {
@@ -108,10 +115,12 @@ export default function Editor() {
 	};
 
 	const addNode = (type, element, isUndo) => {
-		let newNodeState = { ...nodeStates[type], [element.id]: element };
-		nodeSetters[type](newNodeState);
-		// TODO UNDO BUG
 		if (!isUndo) addToUndo("deleteNode", type, { ...element });
+		// TODO: update other functions into callbacks
+		nodeSetters[type]((prevState) => ({
+			...prevState,
+			[element.id]: element,
+		}));
 	};
 
 	const deleteNode = (type, element, isUndo) => {
@@ -129,6 +138,7 @@ export default function Editor() {
 		deleteNode: deleteNode,
 		getId: getId,
 		undo: undo,
+		setEditableId: setEditableId,
 	};
 
 	const generalFunctions = {
@@ -138,8 +148,20 @@ export default function Editor() {
 	};
 
 	const leftToolBarActions = {
-		addEdgeToRelationship: () => {},
+		addEdgeToRelationship: () => {
+			setContext({
+				action: actions.RELATIONSHIP_ADD.SELECT_TARGET,
+				sources: {},
+				target: null,
+			});
+		},
 		addAttribute: () => {},
+	};
+
+	const rightToolBarActions = {
+		cancel: () => {
+			setContext({ action: actions.NORMAL });
+		},
 	};
 
 	const canvasConfig = {
@@ -168,12 +190,17 @@ export default function Editor() {
 		switch (context.action) {
 			case actions.NORMAL:
 				return <Normal />;
-			case actions.SELECT:
+			case actions.SELECT.NORMAL:
+			case actions.SELECT.ADD_RELATIONSHIP:
+			case actions.SELECT.ADD_SUPERSET:
+			case actions.SELECT.ADD_SUBSET:
 				switch (context.selected.type) {
 					case types.ENTITY:
 						return (
 							<SelectEntity
 								entity={entities[context.selected.id]}
+								{...nodeFunctions}
+								{...generalFunctions}
 							/>
 						);
 					case types.RELATIONSHIP:
@@ -182,13 +209,25 @@ export default function Editor() {
 								relationship={
 									relationships[context.selected.id]
 								}
+								{...nodeFunctions}
+								{...generalFunctions}
 							/>
 						);
-					case types.EDGE:
+					case types.EDGE.RELATIONSHIP:
+					case types.EDGE.HIERARCHY:
 						return <SelectEdge edge={edges[context.selected.id]} />;
 					default:
 						return <Normal />; // TODO: type not found page
 				}
+			case actions.RELATIONSHIP_ADD.SELECT_SOURCES:
+			case actions.RELATIONSHIP_ADD.SELECT_TARGET:
+				return (
+					<EdgeToRelationship
+						{...nodeFunctions}
+						{...rightToolBarActions}
+						{...generalFunctions}
+					/>
+				);
 			default:
 				// TODO
 				return <Normal />;
@@ -201,7 +240,6 @@ export default function Editor() {
 				{render ? (
 					<>
 						<Toolbar {...nodeFunctions} {...leftToolBarActions} />
-						<ContextMenu />
 						<TransformWrapper {...canvasConfig}>
 							<TransformComponent>
 								<div
