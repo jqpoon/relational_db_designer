@@ -27,8 +27,6 @@ export function ContextMenu({
           <li onClick={() => setEditable(true)} >Edit Label </li>
           <hr />
           <li onClick={() => addAttributeToNode(updateNode, addNode, getNode, "Attribute", id)}>Add Attribute</li>
-          <hr />
-          <li>Something</li>
         </ul>
       </div>
     );
