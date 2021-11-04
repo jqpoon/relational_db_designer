@@ -9,6 +9,7 @@ export const initialEntities = {
     edges: ["E0R0"],
     parents: [],
     children: ["E1E0"],
+    attributeList: ["E0A0"]
   },
   E1: {
     id: "E1",
@@ -18,6 +19,7 @@ export const initialEntities = {
     edges: [],
     parents: ["E1E0"],
     children: [],
+    attributeList: []
   },
   E2: {
     id: "E2",
@@ -27,6 +29,7 @@ export const initialEntities = {
     edges: ["E2R0"],
     parents: [],
     children: [],
+    attributeList: []
   },
 };
 
@@ -66,4 +69,11 @@ export const initialEdges = {
   },
 };
 
-// TODO: add initialAttributes
+export const initialAttributes = {
+  E0A0: { start: "E0", 
+          id: "E0A0", 
+          text: "Attribute1",
+          relativePos: { x: -100, y: -30 },
+          type: types.ATTRIBUTE,
+        },
+}

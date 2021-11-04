@@ -47,7 +47,6 @@ export default function Toolbar({
       <Draggable
         ref={entityToolRef}
         onStop={(e, data) => {
-          console.log("NewEntity");
           addEntity(data.x - 125, data.y);
           entityToolRef.current.state.x = 0;
           entityToolRef.current.state.y = 0;

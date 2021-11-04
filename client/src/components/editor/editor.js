@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { initialEntities, initialRelationships, initialEdges } from "./initial";
+import { initialEntities, initialRelationships, initialEdges, initialAttributes } from "./initial";
 import { actions, types } from "./types";
 import Edge from "./edges/edge";
 import { Xwrapper } from "react-xarrows";
@@ -24,94 +24,92 @@ import EdgeToRelationship from "./right_toolbar/edgeRelationship";
 // TODO: figure out where parentref should go and update render appropriately
 
 export default function Editor() {
-  // Canvas states: passed to children for metadata (eg width and height of main container)
-  const parentRef = useRef(null);
-  const [counter, setCounter] = useState(0);
-  const [render, setRender] = useState(false);
-  const [scale, setScale] = useState(1);
-  const [panDisabled, setPanDisabled] = useState(false);
+	// Canvas states: passed to children for metadata (eg width and height of main container)
+	const parentRef = useRef(null);
+	const [counter, setCounter] = useState(1);
+	const [render, setRender] = useState(false);
+	const [scale, setScale] = useState(1);
+	const [panDisabled, setPanDisabled] = useState(false);
+  const [editableId, setEditableId] = useState(0);
 
-  // List of components that will be rendered
-  const [entities, setEntities] = useState(initialEntities);
-  const [relationships, setRelationships] = useState(initialRelationships);
-  const [attributes, setAttributes] = useState({}); // TODO
-  const [edges, setEdges] = useState(initialEdges);
+	// List of components that will be rendered
+	const [entities, setEntities] = useState(initialEntities);
+	const [relationships, setRelationships] = useState(initialRelationships);
+	const [attributes, setAttributes] = useState(initialAttributes);
+	const [edges, setEdges] = useState(initialEdges);
 
-  const [context, setContext] = useState({ action: actions.NORMAL });
+	const [context, setContext] = useState({ action: actions.NORMAL });
 
-  const [, setRerender] = useState(false);
-  const forceRerender = () => setRerender((rerender) => !rerender);
+	const [, setRerender] = useState(false);
+	const forceRerender = () => setRerender((rerender) => !rerender);
 
-  useEffect(() => {
-    setRender(true);
-  }, []);
+	useEffect(() => {
+		setRender(true);
+	}, []);
 
-  const nodeStates = {
-    [types.ENTITY]: entities,
+	const nodeStates = {
+		[types.ENTITY]: entities,
     [types.RELATIONSHIP]: relationships,
     [types.ATTRIBUTE]: attributes,
     [types.EDGE.RELATIONSHIP]: edges,
     [types.EDGE.HIERARCHY]: edges,
-  };
-  const nodeSetters = {
-    [types.ENTITY]: setEntities,
+	};
+	const nodeSetters = {
+		[types.ENTITY]: setEntities,
     [types.RELATIONSHIP]: setRelationships,
     [types.ATTRIBUTE]: setAttributes,
     [types.EDGE.RELATIONSHIP]: setEdges,
     [types.EDGE.HIERARCHY]: setEdges,
-  };
+	};
 
-  const getId = () => {
-    console.log("id: ");
-    console.log(counter);
-    const id = counter;
-    setCounter(counter + 1);
-    return id;
-  };
+	const getId = () => {
+		const id = counter;
+		setCounter(counter + 1);
+		return id;
+	};
 
-  // TODO: instead of _Node, should probably rename to _Element since it applies to edges as well
-  // Generic update, add and delete functions for elements
-  // Element should be the (whole) updated element
-  const updateNode = (type, element) => {
-    let newNodeState = { ...nodeStates[type] };
-    newNodeState[element.id] = element;
-    nodeSetters[type](newNodeState);
-  };
+	// TODO: instead of _Node, should probably rename to _Element since it applies to edges as well
+	// Generic update, add and delete functions for elements
+	// Element should be the (whole) updated element
+	const updateNode = (type, element) => {
+		let newNodeState = { ...nodeStates[type] };
+		newNodeState[element.id] = element;
+		nodeSetters[type](newNodeState);
+	};
 
-  const getNode = (type, id) => {
-    return nodeStates[type][id];
-  };
+	const getNode = (type, id) => {
+		return nodeStates[type][id];
+	};
 
-  const addNode = (type, element) => {
-    console.log("Adding node: ");
-    console.log("Element id: " + element.id);
+	const addNode = (type, element) => {
     // TODO: update other functions into callbacks
-    nodeSetters[type]((prevState) => ({ ...prevState, [element.id]: element }));
-  };
+		nodeSetters[type]((prevState) => ({ ...prevState, [element.id]: element }));
+	};
 
-  const deleteNode = (type, element) => {
-    let newNodeState = { ...nodeStates[type] };
-    delete newNodeState[element.id];
-    // TODO: recursively remove other nodes/edges connected
-    nodeSetters[type](newNodeState);
-  };
+	const deleteNode = (type, element) => {
+		let newNodeState = { ...nodeStates[type] };
+		delete newNodeState[element.id];
+		// TODO: recursively remove other nodes/edges connected
+		nodeSetters[type](newNodeState);
+	};
 
-  const nodeFunctions = {
-    updateNode: updateNode,
-    getNode: getNode,
-    addNode: addNode,
-    deleteNode: deleteNode,
-    getId: getId,
-  };
+	const nodeFunctions = {
+		updateNode: updateNode,
+		getNode: getNode,
+		addNode: addNode,
+		deleteNode: deleteNode,
+		getId: getId,
+    setEditableId: setEditableId,
+	};
 
-  const generalFunctions = {
-    setPanDisabled: setPanDisabled,
-    setContext: setContext,
-    context: context,
-  };
+	const generalFunctions = {
+		setPanDisabled: setPanDisabled,
+		setContext: setContext,
+		context: context,
+	};
 
-  const leftToolBarActions = {
-    addEdgeToRelationship: () => {
+	const leftToolBarActions = {
+		addEdgeToRelationship: () => {
       setContext({
         action: actions.RELATIONSHIP_ADD.SELECT_TARGET,
         sources: {},
@@ -119,7 +117,7 @@ export default function Editor() {
       });
     },
     addAttribute: () => {},
-  };
+	};
 
   const rightToolBarActions = {
     cancel: () => {
@@ -127,28 +125,28 @@ export default function Editor() {
     },
   };
 
-  const canvasConfig = {
-    panning: {
-      disabled: panDisabled,
-      excluded: ["input", "button"],
-      velocityDisabled: true,
-    },
-    // TODO: check if we need scale here
-    onZoomStop: (ref) => setScale(ref.state.scale),
-    onZoom: forceRerender,
-    onPanning: forceRerender,
-    alignmentAnimation: { animationTime: 0 },
-    onAlignBound: forceRerender,
-    doubleClick: { disabled: true },
-  };
+	const canvasConfig = {
+		panning: {
+			disabled: panDisabled,
+			excluded: ["input", "button"],
+			velocityDisabled: true,
+		},
+		// TODO: check if we need scale here
+		onZoomStop: (ref) => setScale(ref.state.scale),
+		onZoom: forceRerender,
+		onPanning: forceRerender,
+		alignmentAnimation: { animationTime: 0 },
+		onAlignBound: forceRerender,
+		doubleClick: { disabled: true },
+	};
 
-  const nodeConfig = {
-    parentRef: parentRef,
-    scale: scale, // TODO
-  };
+	const nodeConfig = {
+		parentRef: parentRef,
+		scale: scale, // TODO
+	};
 
-  // TODO
-  const showPendingChanges = () => {};
+	// TODO
+	const showPendingChanges = () => {};
   const showRightToolbar = () => {
     switch (context.action) {
       case actions.NORMAL:
@@ -195,56 +193,59 @@ export default function Editor() {
     }
   };
 
-  return (
-    <Xwrapper>
-      <div className="editor" ref={parentRef}>
-        {render ? (
-          <>
-            <Toolbar {...nodeFunctions} {...leftToolBarActions} />
-            <ContextMenu />
-            <TransformWrapper {...canvasConfig}>
-              <TransformComponent>
-                <div
-                  className="canvas" // TODO: previously "dnd"
-                  // ref={parentRef}
-                  onClick={() => setPanDisabled(false)}
-                >
-                  {Object.values(entities).map((entity) => (
-                    <TestEntity
-                      key={entity.id}
-                      {...entity}
-                      {...nodeConfig}
-                      {...nodeFunctions}
-                      {...generalFunctions}
-                    />
-                  ))}
-                  {Object.values(relationships).map((relationship) => (
-                    <TestRelationship
-                      key={relationship.id}
-                      {...relationship}
-                      {...nodeConfig}
-                      {...nodeFunctions}
-                      {...generalFunctions}
-                    />
-                  ))}
-                  {Object.values(attributes).map((attribute) => (
-                    <Attribute
-                      key={attribute.id}
-                      {...attribute}
-                      {...nodeFunctions}
-                    />
-                  ))}
-                </div>
-              </TransformComponent>
-            </TransformWrapper>
-            {Object.values(edges).map((edge) => (
-              <Edge edge={edge} />
-            ))}
-            {showPendingChanges()}
-            {showRightToolbar()}
-          </>
-        ) : null}
-      </div>
-    </Xwrapper>
-  );
+	return (
+		<Xwrapper>
+			<div className="editor" ref={parentRef}>
+				{render ? (
+					<>
+						<Toolbar {...nodeFunctions} {...leftToolBarActions} />
+						<TransformWrapper {...canvasConfig}>
+							<TransformComponent>
+								<div
+									className="canvas" // TODO: previously "dnd"
+									// ref={parentRef}
+									onClick={() => setPanDisabled(false)}
+								>
+									{Object.values(entities).map((entity) => (
+										<TestEntity
+											key={entity.id}
+											{...entity}
+											{...nodeConfig}
+											{...nodeFunctions}
+											{...generalFunctions}
+										/>
+									))}
+									{Object.values(relationships).map(
+										(relationship) => (
+											<TestRelationship
+												key={relationship.id}
+												{...relationship}
+												{...nodeConfig}
+												{...nodeFunctions}
+												{...generalFunctions}
+											/>
+										)
+									)}
+									{Object.values(attributes).map(
+										(attribute) => (
+											<Attribute
+												key={attribute.id}
+												{...attribute}
+												{...nodeFunctions}
+											/>
+										)
+									)}
+								</div>
+							</TransformComponent>
+						</TransformWrapper>
+						{Object.values(edges).map((edge) => (
+							<Edge edge={edge} />
+						))}
+						{showPendingChanges()}
+						{showRightToolbar()}
+					</>
+				) : null}
+			</div>
+		</Xwrapper>
+	);
 }
