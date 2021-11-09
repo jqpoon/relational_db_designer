@@ -28,7 +28,7 @@ import EdgeToRelationship from "./right_toolbar/edgeRelationship";
 // TODO: extract common base node in node.js
 // TODO: figure out where parentref should go and update render appropriately
 
-const UNDO_STACK_LIMIT = 25;
+const STACK_LIMIT = 25;
 
 export default function Editor() {
 	// Canvas states: passed to children for metadata (eg width and height of main container)
@@ -44,7 +44,7 @@ export default function Editor() {
 	const [relationships, setRelationships] = useState(initialRelationships);
 	const [attributes, setAttributes] = useState(initialAttributes);
 	const [edges, setEdges] = useState(initialEdges);
-	const [stack, setStack] = useState([]);
+	const [undoStack, setUndoStack] = useState([]);
 
 	const [context, setContext] = useState({ action: actions.NORMAL });
 
@@ -83,19 +83,19 @@ export default function Editor() {
 			type,
 			element,
 		};
-		let newStack = [...stack, undoFunc];
-		if (newStack.length > UNDO_STACK_LIMIT) {
-			newStack.shift();
+		let newUndoStack = [...undoStack, undoFunc];
+		if (newUndoStack.length > STACK_LIMIT) {
+			newUndoStack.shift();
 		}
-		setStack(newStack);
+		setUndoStack(newUndoStack);
 	};
 
 	const undo = () => {
-		let stackClone = [...stack];
-		let top = stackClone.pop();
-		if (!top) return;
+		let undoStackClone = [...undoStack];
+		if (undoStackClone.length === 0) return;
+		let top = undoStackClone.pop();
 		nodeFunctions[top["action"]](top["type"], top["element"], true);
-		setStack(stackClone);
+		setUndoStack(undoStackClone);
 	};
 
 	// TODO: instead of _Node, should probably rename to _Element since it applies to edges as well
