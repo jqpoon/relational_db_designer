@@ -45,6 +45,7 @@ export default function Editor() {
 	const [attributes, setAttributes] = useState(initialAttributes);
 	const [edges, setEdges] = useState(initialEdges);
 	const [undoStack, setUndoStack] = useState([]);
+	const [redoStack, setRedoStack] = useState([]);
 
 	const [context, setContext] = useState({ action: actions.NORMAL });
 
@@ -77,33 +78,67 @@ export default function Editor() {
 		return id;
 	};
 
-	const addToUndo = (action, type, element) => {
-		let undoFunc = {
+	// Utility for adding to undo and redo
+	const addToHistory = (action, type, id, isUndo) => {
+		// Toggle between undo and redo
+		let state = isUndo ? undoStack : redoStack;
+		let setter = isUndo ? setUndoStack : setRedoStack;
+
+		// Build func object (Note that element should be passed in as a copy)
+		let func = {
 			action,
 			type,
-			element,
+			id,
+			element: { ...nodeStates[type][id] },
 		};
-		let newUndoStack = [...undoStack, undoFunc];
-		if (newUndoStack.length > STACK_LIMIT) {
-			newUndoStack.shift();
-		}
-		setUndoStack(newUndoStack);
-	};
 
-	const undo = () => {
-		let undoStackClone = [...undoStack];
-		if (undoStackClone.length === 0) return;
-		let top = undoStackClone.pop();
-		nodeFunctions[top["action"]](top["type"], top["element"], true);
-		setUndoStack(undoStackClone);
+		// Update state within limit
+		let stateClone = [...state, func];
+		if (stateClone.length > STACK_LIMIT) {
+			stateClone.shift();
+		}
+		setter(stateClone);
 	};
+	const addToUndo = (action, type, id) =>
+		addToHistory(action, type, id, true);
+	const addToRedo = (action, type, id) =>
+		addToHistory(action, type, id, false);
+
+	// Utility for executing undo and redo
+	const execHistory = (isUndo) => {
+		// Toggle between undo and redo
+		let state = isUndo ? undoStack : redoStack;
+		let setter = isUndo ? setUndoStack : setRedoStack;
+		let addFunc = isUndo ? addToRedo : addToUndo;
+
+		// Nothing to do
+		if (state.length === 0) return;
+
+		// Grab top of stack
+		let stateClone = [...state];
+		let top = stateClone.pop();
+
+		// Add to undo/redo stack current state
+		addFunc(nodeFunctionsOpposite[top["action"]], top["type"], top["id"]);
+
+		// Run and update state
+		let element =
+			top["element"] && Object.keys(top["element"]).length > 0
+				? top["element"]
+				: { ...nodeStates[top["type"]][top["id"]] };
+		nodeFunctions[top["action"]](top["type"], element, true);
+		setter(stateClone);
+	};
+	const undo = () => execHistory(true);
+	const redo = () => execHistory(false);
 
 	// TODO: instead of _Node, should probably rename to _Element since it applies to edges as well
 	// Generic update, add and delete functions for elements
 	// Element should be the (whole) updated element
-	const updateNode = (type, element, isUndo) => {
-		if (!isUndo) {
-			addToUndo("updateNode", type, { ...nodeStates[type][element.id] });
+	const updateNode = (type, element, isHistory) => {
+		if (!isHistory) {
+			addToUndo(nodeFunctionsOpposite["updateNode"], type, element.id);
+			setRedoStack([]);
 		}
 		let newNodeState = { ...nodeStates[type] };
 		newNodeState[element.id] = element;
@@ -114,8 +149,11 @@ export default function Editor() {
 		return { ...nodeStates[type][id] };
 	};
 
-	const addNode = (type, element, isUndo) => {
-		if (!isUndo) addToUndo("deleteNode", type, { ...element });
+	const addNode = (type, element, isHistory) => {
+		if (!isHistory) {
+			addToUndo(nodeFunctionsOpposite["addNode"], type, element.id);
+			setRedoStack([]);
+		}
 		// TODO: update other functions into callbacks
 		nodeSetters[type]((prevState) => ({
 			...prevState,
@@ -138,7 +176,14 @@ export default function Editor() {
 		deleteNode: deleteNode,
 		getId: getId,
 		undo: undo,
+		redo: redo,
 		setEditableId: setEditableId,
+	};
+
+	const nodeFunctionsOpposite = {
+		updateNode: "updateNode",
+		addNode: "deleteNode",
+		deleteNode: "addNode",
 	};
 
 	const generalFunctions = {
