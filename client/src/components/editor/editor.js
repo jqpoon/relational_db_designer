@@ -222,7 +222,7 @@ export default function Editor() {
 		let edges = nodeStates[types.EDGE];
 	
 		// Entities. 
-		Object.values(entities).map(entity => {
+		Object.values(entities).forEach(entity => {
 			let entityState = {
 				identifier: entity.id, 
 				positionX: entity.pos.x, 
@@ -239,7 +239,7 @@ export default function Editor() {
 		}); 
 
 		// Relationships and linking with entities. 
-		Object.values(relationships).map(relationship => {
+		Object.values(relationships).forEach(relationship => {
 			let relationshipState = {
 				identifier: relationship.id,
 				positionX: relationship.pos.x,
@@ -251,9 +251,9 @@ export default function Editor() {
 				lHConstraints: {}, 
 			};
 
-			let links = edges.filter(edge => edge.start == relationship.id || edge.end == relationship.id); 
+			let links = edges.filter(edge => edge.start === relationship.id || edge.end === relationship.id); 
 			for (let link in links) {
-				let entityID = link.start == relationship.id ? link.end : link.start; 
+				let entityID = link.start === relationship.id ? link.end : link.start; 
 				relationshipState.lHConstraints[entityID] = link.labels; // TODO: Translate labels into a constraint enum type. 
 			}
 
