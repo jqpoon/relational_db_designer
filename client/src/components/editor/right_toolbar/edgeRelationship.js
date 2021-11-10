@@ -1,6 +1,7 @@
 import "./toolbar-right.css";
 import { types, actions } from "../types";
 import CardinalityChoices from "./utilities/cardinality";
+import { generateID } from "./utilities/general";
 
 function Divider() {
   return <hr className="divider" />;
@@ -15,37 +16,33 @@ export default function EdgeToRelationship({
   updateNode,
   getId,
 }) {
+  const updateNodeWithEdge = (nodeID, nodeType, edge) => {
+    let node = getNode(nodeType, nodeID);
+    node.edges[edge.id] = { type: edge.type };
+    updateNode(nodeType, node);
+  };
   const addEdge = () => {
     const newEdges = [];
-    for (const [s, c] of Object.entries(context.sources)) {
-      if (c.cardinality === "") {
+    for (const [source_id, source_info] of Object.entries(context.sources)) {
+      if (source_info.cardinality === "") {
         alert("Required cardinality field missing.");
         return;
       }
-      // id was not updating
-      // const id = getId();
-      const id = "Edge-" + s + "-" + context.target.id;
       newEdges.push({
-        start: s,
+        id: generateID(source_id, context.target.id),
+        start: source_id,
         end: context.target.id,
-        id: id,
-        cardinality: c.cardinality,
+        source_type: source_info.type,
+        target_type: types.RELATIONSHIP,
+        cardinality: source_info.cardinality,
         type: types.EDGE.RELATIONSHIP,
-        source_type: c.type
       });
     }
     for (const edge of newEdges) {
       // TODO: implement addNodes([List of nodes])
       addNode(types.EDGE.RELATIONSHIP, edge);
-      // update source
-      // TODO: source can also be of relationship type
-      let node = getNode(edge.source_type, edge.start);
-      node.edges.push(edge.id);
-      updateNode(edge.source_type, node);
-      // update target
-      let rel = getNode(context.target.type, context.target.id);
-      rel.edges.push(edge.id);
-      updateNode(context.target.type, rel);
+      updateNodeWithEdge(edge.start, edge.source_type, edge);
+      updateNodeWithEdge(edge.end, edge.target_type, edge);
     }
     setContext({ action: actions.NORMAL });
   };

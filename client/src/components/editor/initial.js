@@ -6,30 +6,31 @@ export const initialEntities = {
     text: "Person",
     pos: { x: 300, y: 250 },
     type: types.ENTITY,
-    edges: ["E0R0"],
-    parents: [],
-    children: ["E1E0"],
-    attributeList: ["E0A0"]
+    edges: {
+      E0R0: { type: types.EDGE.RELATIONSHIP },
+      E1E0: { type: types.EDGE.HIERARCHY },
+    },
+    attributeList: ["E0A0"],
   },
   E1: {
     id: "E1",
     text: "Manager",
     pos: { x: 100, y: 250 },
     type: types.ENTITY,
-    edges: [],
-    parents: ["E1E0"],
-    children: [],
-    attributeList: []
+    edges: {
+      E1E0: { type: types.EDGE.HIERARCHY },
+    },
+    attributeList: [],
   },
   E2: {
     id: "E2",
     text: "Department",
     pos: { x: 750, y: 250 },
     type: types.ENTITY,
-    edges: ["E2R0"],
-    parents: [],
-    children: [],
-    attributeList: []
+    edges: {
+      E2R0: { type: types.EDGE.RELATIONSHIP },
+    },
+    attributeList: [],
   },
 };
 
@@ -39,7 +40,10 @@ export const initialRelationships = {
     text: "Works In",
     pos: { x: 550, y: 250 },
     type: types.RELATIONSHIP,
-    edges: ["E0R0", "E2R0"]
+    edges: {
+      E0R0: { type: types.EDGE.RELATIONSHIP },
+      E2R0: { type: types.EDGE.RELATIONSHIP },
+    },
   },
 };
 
@@ -51,6 +55,7 @@ export const initialEdges = {
     cardinality: "ONE_TO_ONE",
     type: types.EDGE.RELATIONSHIP,
     source_type: types.ENTITY,
+    target_type: types.RELATIONSHIP,
   },
   E2R0: {
     start: "E2",
@@ -59,6 +64,7 @@ export const initialEdges = {
     cardinality: "ZERO_TO_MANY",
     type: types.EDGE.RELATIONSHIP,
     source_type: types.ENTITY,
+    target_type: types.RELATIONSHIP,
   },
   E1E0: {
     start: "E1",
@@ -66,14 +72,16 @@ export const initialEdges = {
     id: "E1E0",
     type: types.EDGE.HIERARCHY,
     source_type: types.ENTITY,
+    target_type: types.ENTITY,
   },
 };
 
 export const initialAttributes = {
-  E0A0: { start: "E0", 
-          id: "E0A0", 
-          text: "Attribute1",
-          relativePos: { x: -100, y: -30 },
-          type: types.ATTRIBUTE,
-        },
-}
+  E0A0: {
+    start: "E0",
+    id: "E0A0",
+    text: "Attribute1",
+    relativePos: { x: -100, y: -30 },
+    type: types.ATTRIBUTE,
+  },
+};

@@ -22,9 +22,7 @@ export default function Toolbar({
       },
       text: "Enter Text",
       type: types.ENTITY,
-      edges: [],
-      parents: [],
-      children: [],
+      edges: {},
     };
     addNode(types.ENTITY, newEntity);
   };
@@ -38,7 +36,7 @@ export default function Toolbar({
       },
       text: "",
       type: types.RELATIONSHIP,
-      edges: [],
+      edges: {},
     };
     addNode(types.RELATIONSHIP, newRelationship);
   };

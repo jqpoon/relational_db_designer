@@ -111,6 +111,7 @@ export default function Editor() {
 	};
 
 	const getNode = (type, id) => {
+		console.log(`getNode(type:${type}, id:${id})`)
 		return { ...nodeStates[type][id] };
 	};
 

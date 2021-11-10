@@ -6,7 +6,6 @@ import { ContextMenu } from "../contextMenu";
 import { actions } from "../types";
 import "./stylesheets/node.css";
 
-
 export function TestRelationship(props) {
   return <Node {...props} />;
 }
@@ -44,25 +43,19 @@ export default function Node({
   const [dimensions, setDimensions] = useState({});
 
   const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
-	const [show, setShow] = useState(false);
+  const [show, setShow] = useState(false);
   const [editable, setEditable] = useState(false);
 
-	const handleContextMenu = useCallback(
-		(event) => {
-			event.preventDefault();
-			setAnchorPoint({ x: 0, y: 0 }); // TODO: figure out how to fix anchor point
-			setShow(true);
-		},
-		[]
-	);
+  const handleContextMenu = useCallback((event) => {
+    event.preventDefault();
+    setAnchorPoint({ x: 0, y: 0 }); // TODO: figure out how to fix anchor point
+    setShow(true);
+  }, []);
 
   // Hides the context menu if we left click again
-	const handleClick = useCallback(
-		() => {
-      setShow(false);
-    },
-		[show]
-	);
+  const handleClick = useCallback(() => {
+    setShow(false);
+  }, [show]);
 
   // Set dimensions on mount
   useEffect(() => {
@@ -112,6 +105,7 @@ export default function Node({
         });
         break;
       case actions.SELECT.ADD_SUPERSET:
+      case actions.SELECT.ADD_SUBSET:
         setContext((prev) => {
           let newCtx = { ...prev };
           newCtx.target = { type: type, id: id };
@@ -161,13 +155,13 @@ export default function Node({
   // Contents displayed in node
   const editingMode = () => {
     var className;
-    if(type === types.ENTITY){
+    if (type === types.ENTITY) {
       className = "entity-input";
-    }else if(type === types.RELATIONSHIP){
-      className ="diamond-input";
+    } else if (type === types.RELATIONSHIP) {
+      className = "diamond-input";
     }
 
-    return ( editable ? (
+    return editable ? (
       <div className={className}>
         <input
           value={name}
@@ -184,24 +178,23 @@ export default function Node({
           }}
         />
       </div>
-    ) : <div>{text}</div>
+    ) : (
+      <div>{text}</div>
     );
   };
 
   const normalMode = (
-    <div className={classFromNodeType[type]}>
-      {editingMode()}
-    </div>
+    <div className={classFromNodeType[type]}>{editingMode()}</div>
   );
   // TODO:conditional rendering
 
   return (
-    <Draggable style={{width: "150px", height: "75px"}} {...draggableConfig} >
+    <Draggable style={{ width: "150px", height: "75px" }} {...draggableConfig}>
       <div {...contentsConfig}>
-        <ContextMenu 
-          anchorPoint={anchorPoint} 
-          show={show} 
-          setEditable={setEditable} 
+        <ContextMenu
+          anchorPoint={anchorPoint}
+          show={show}
+          setEditable={setEditable}
           id={id}
           updateNode={updateNode}
           addNode={addNode}

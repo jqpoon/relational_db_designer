@@ -1,7 +1,16 @@
-import { actions, cardinality, types } from "../types";
+import {
+  DisplayRelationships,
+  DisplaySubsets,
+  DisplaySupersets,
+} from "./utilities/listDisplay";
+import {
+  AddingRelationship,
+  AddingSubset,
+  AddingSuperset,
+} from "./utilities/addEdge";
+import { actions, types } from "../types";
+
 import "./toolbar-right.css";
-import CardinalityChoices from "./utilities/cardinality";
-import Divider from "./utilities/divider";
 
 export default function SelectEntity({
   entity,
@@ -21,6 +30,28 @@ export default function SelectEntity({
   };
   const addRelationship = () => updateAction(actions.SELECT.ADD_RELATIONSHIP);
   const addSuperset = () => updateAction(actions.SELECT.ADD_SUPERSET);
+  const addSubset = () => updateAction(actions.SELECT.ADD_SUBSET);
+
+  // Split edges into relevant groups
+  let relationships = [];
+  let parents = [];
+  let children = [];
+  Object.entries(entity.edges).forEach(([id, { type }]) => {
+    switch (type) {
+      case types.EDGE.RELATIONSHIP:
+        relationships.push(id);
+        break;
+      case types.EDGE.HIERARCHY:
+        // TODO: add null check?
+        const isParent = getNode(type, id).end === context.selected.id;
+        const group = isParent ? children : parents;
+        group.push(id);
+        break;
+      default:
+        console.log(`Error: Invalid edge type "${type}"`);
+    }
+  });
+
   return (
     <div className="toolbar-right">
       <div className="toolbar-header">Entity</div>
@@ -37,72 +68,19 @@ export default function SelectEntity({
       {/* Relationships Section */}
       <div className="section">
         <div className="section-header">Relationships</div>
-        {entity.edges.length === 0 ? null : <Divider />}
-        <div>
-          {entity.edges.map((id) => {
-            const edge = getNode(types.EDGE.RELATIONSHIP, id);
-            return (
-              <div>
-                <div className="selected-element">
-                  <div>
-                    <div>Rel: {getNode(types.RELATIONSHIP, edge.end).text}</div>
-                    <div>Cardinality: {cardinality[edge.cardinality]}</div>
-                  </div>
-                </div>
-                <Divider />
-              </div>
-            );
-          })}
-        </div>
+        <DisplayRelationships
+          relationships={relationships}
+          getNode={getNode}
+          isSource={true}
+        />
         {context.action === actions.SELECT.ADD_RELATIONSHIP ? (
-          context.target === null ? (
-            <div>Choose a target relationship</div>
-          ) : (
-            <div>
-              <div>
-                Rel: {getNode(context.target.type, context.target.id).text}
-              </div>
-              <CardinalityChoices
-                value={context.target.cardinality}
-                onChange={(e) => {
-                  setContext((prev) => {
-                    let ctx = { ...prev };
-                    ctx.target.cardinality = e.target.value;
-                    return ctx;
-                  });
-                }}
-              />
-              <div
-                onClick={() => {
-                  const sourceID = context.selected.id;
-                  const targetID = context.target.id;
-                  let edge = {
-                    start: sourceID,
-                    end: targetID,
-                    cardinality: context.target.cardinality,
-                    id: "Edge" + sourceID + targetID,
-                    type: types.EDGE.RELATIONSHIP,
-                    source_type: types.ENTITY,
-                  };
-                  addNode(types.EDGE.RELATIONSHIP, edge);
-                  let node = getNode(types.ENTITY, sourceID);
-                  node.edges.push(edge.id);
-                  updateNode(types.ENTITY, node);
-                  let rel = getNode(context.target.type, context.target.id);
-                  rel.edges.push(edge.id);
-                  updateNode(context.target.type, rel);
-                  setContext((prev) => {
-                    let ctx = { ...prev };
-                    ctx.action = actions.SELECT.NORMAL;
-                    delete ctx.target;
-                    return ctx;
-                  });
-                }}
-              >
-                Add
-              </div>
-            </div>
-          )
+          <AddingRelationship
+            {...context}
+            setContext={setContext}
+            getNode={getNode}
+            addNode={addNode}
+            updateNode={updateNode}
+          />
         ) : (
           <div className="section-tool" onClick={addRelationship}>
             + Add Relationship
@@ -112,59 +90,15 @@ export default function SelectEntity({
       {/* Superset sections */}
       <div className="section">
         <div className="section-header">Superset(s)</div>
-        <div>
-          {entity.parents.length === 0 ? null : <Divider />}
-          {entity.parents.map((id) => {
-            const edge = getNode(types.EDGE.HIERARCHY, id);
-            return (
-              <div>
-                <div className="selected-element">
-                  <div>
-                    <div>Ent: {getNode(types.ENTITY, edge.end).text}</div>
-                  </div>
-                </div>
-                <Divider />
-              </div>
-            );
-          })}
-        </div>
+        <DisplaySupersets parents={parents} getNode={getNode} />
         {context.action === actions.SELECT.ADD_SUPERSET ? (
-          context.target === null ? (
-            <div>Choose a target superset</div>
-          ) : (
-            <div>
-              <div>
-                Ent: {getNode(context.target.type, context.target.id).text}
-              </div>
-              <div
-                onClick={() => {
-                  const sourceID = context.selected.id;
-                  const targetID = context.target.id;
-                  let edge = {
-                    start: sourceID,
-                    end: targetID,
-                    id: "Edge" + sourceID + targetID,
-                    type: types.EDGE.HIERARCHY,
-                  };
-                  addNode(types.EDGE.HIERARCHY, edge);
-                  let child = getNode(types.ENTITY, sourceID);
-                  child.parents.push(edge.id);
-                  let parent = getNode(types.ENTITY, targetID);
-                  parent.children.push(edge.id);
-                  updateNode(types.ENTITY, child);
-                  updateNode(types.ENTITY, parent);
-                  setContext((prev) => {
-                    let ctx = { ...prev };
-                    ctx.action = actions.SELECT.NORMAL;
-                    delete ctx.target;
-                    return ctx;
-                  });
-                }}
-              >
-                Add
-              </div>
-            </div>
-          )
+          <AddingSuperset
+            {...context}
+            setContext={setContext}
+            getNode={getNode}
+            addNode={addNode}
+            updateNode={updateNode}
+          />
         ) : (
           <div className="section-tool" onClick={addSuperset}>
             + Add Superset
@@ -174,23 +108,20 @@ export default function SelectEntity({
       {/* Subset sections */}
       <div className="section">
         <div className="section-header">Subset(s)</div>
-        <div className="section-content">
-          {entity.children.length === 0 ? null : <Divider />}
-          {entity.children.map((id) => {
-            const edge = getNode(types.EDGE.HIERARCHY, id);
-            return (
-              <div>
-                <div className="selected-element">
-                  <div>
-                    <div>Ent: {getNode(types.ENTITY, edge.start).text}</div>
-                  </div>
-                </div>
-                <Divider />
-              </div>
-            );
-          })}
-        </div>
-        <div className="section-tool">+ Add Subset</div>
+        <DisplaySubsets children={children} getNode={getNode} />
+        {context.action === actions.SELECT.ADD_SUBSET ? (
+          <AddingSubset
+            {...context}
+            setContext={setContext}
+            getNode={getNode}
+            addNode={addNode}
+            updateNode={updateNode}
+          />
+        ) : (
+          <div className="section-tool" onClick={addSubset}>
+            + Add Subset
+          </div>
+        )}
       </div>
     </div>
   );
