@@ -75,10 +75,12 @@ export default function Attribute({
 	  };
 
 	let attributeEnd = (
-		<div ref={attributeEndRef} 
-			 className="attribute-end" 
+		<div className="attribute-end" 
 			 style={chosenStyle}
 			 onClick={ () => {setEditable(true)}}>
+			<div className="attribute-end-center"
+				 ref={attributeEndRef}> 
+			</div>
 			<div style={textStyle}>
 				{editingMode()}
 			</div>
