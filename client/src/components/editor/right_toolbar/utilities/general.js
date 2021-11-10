@@ -1,5 +1,14 @@
+import { types } from "../../types";
+
 export function typeToString(type) {
-  return type;
+  const typesString = {
+    [types.ENTITY]: "Entity",
+    [types.RELATIONSHIP]: "Relationship",
+    [types.ATTRIBUTE]: "Attribute",
+    [types.EDGE.HIERARCHY]: "Edge",
+    [types.EDGE.RELATIONSHIP]: "Edge",
+  };
+  return typesString[type];
 }
 
 export function generateID(x, y) {

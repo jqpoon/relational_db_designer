@@ -1,9 +1,10 @@
-import { actions, types } from "../../types";
+import { actions, cardinality, types } from "../../types";
 import { generateID, typeToString } from "./general";
 import CardinalityChoices from "./cardinality";
 
+// Generic function for adding a single edge
 function AddingEdge({
-  action,
+  action, // should be in actions.SELECT
   selected,
   target,
   setContext,
@@ -11,6 +12,7 @@ function AddingEdge({
   addNode,
   updateNode,
   createEdge,
+  validate,
 }) {
   const reset = () => {
     setContext((prev) => {
@@ -27,11 +29,13 @@ function AddingEdge({
     updateNode(nodeType, node);
   };
   const addEdge = () => {
-    const edge = createEdge(selected, target);
-    addNode(edge.type, edge);
-    updateNodeWithEdge(edge.start, edge.source_type, edge);
-    updateNodeWithEdge(edge.end, edge.target_type, edge);
-    reset();
+    if (validate === null || validate(target)) {
+      const edge = createEdge(selected, target);
+      addNode(edge.type, edge);
+      updateNodeWithEdge(edge.start, edge.source_type, edge);
+      updateNodeWithEdge(edge.end, edge.target_type, edge);
+      reset();
+    }
   };
   const updateCardinality = (e) => {
     setContext((prev) => {
@@ -48,8 +52,32 @@ function AddingEdge({
       </>
     );
   }
+
   const node = getNode(target.type, target.id);
-  const nodeType = typeToString(target.type); // TODO
+  const nodeType = typeToString(target.type);
+
+  let warning = null;
+  switch (action) {
+    case actions.SELECT.ADD_RELATIONSHIP:
+      if (
+        selected.type === types.ENTITY &&
+        target.type !== types.RELATIONSHIP
+      ) {
+        warning = <div>! Target selected must be of 'Relationship' type</div>;
+      }
+      break;
+    case actions.SELECT.ADD_SUBSET:
+    case actions.SELECT.ADD_SUPERSET:
+      console.assert(selected.type === types.ENTITY);
+      if (target.type !== types.ENTITY) {
+        warning = (
+          <div>
+            ! Target selected as superset/subset must be of 'Entity' type
+          </div>
+        );
+      }
+  }
+
   return (
     <>
       <div>
@@ -61,6 +89,7 @@ function AddingEdge({
           onChange={updateCardinality}
         />
       ) : null}
+      {warning}
       <div onClick={addEdge}>Confirm</div>
       <div onClick={reset}>Cancel</div>
     </>
@@ -81,8 +110,14 @@ export function RelationshipAdding(props) {
     };
     return newEdge;
   };
-
-  return <AddingEdge {...props} createEdge={createEdge} />;
+  const validate = (target) => {
+    if (!(target.cardinality in cardinality)) {
+      alert("Cardinality must be selected.");
+      return false;
+    }
+    return true;
+  };
+  return <AddingEdge {...props} createEdge={createEdge} validate={validate} />;
 }
 
 // Adding relationship to entity node
@@ -99,7 +134,18 @@ export function AddingRelationship(props) {
     };
     return newEdge;
   };
-  return <AddingEdge {...props} createEdge={createEdge} />;
+  const validate = (target) => {
+    if (target.type !== types.RELATIONSHIP) {
+      alert("Target selected must be of 'Relationship' type.");
+      return false;
+    }
+    if (!(target.cardinality in cardinality)) {
+      alert("Cardinality must be selected.");
+      return false;
+    }
+    return true;
+  };
+  return <AddingEdge {...props} createEdge={createEdge} validate={validate} />;
 }
 
 export function AddingSuperset(props) {

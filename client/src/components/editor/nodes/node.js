@@ -1,9 +1,8 @@
 import { useCallback, useState, useRef, useEffect } from "react";
 import Draggable from "react-draggable";
 import { useXarrow } from "react-xarrows";
-import { types } from "..";
 import { ContextMenu } from "../contextMenu";
-import { actions } from "../types";
+import { actions, types } from "../types";
 import "./stylesheets/node.css";
 
 export function TestRelationship(props) {
