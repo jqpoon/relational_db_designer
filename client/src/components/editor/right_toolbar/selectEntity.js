@@ -1,4 +1,5 @@
 import {
+  DisplayAttributes,
   DisplayRelationships,
   DisplaySubsets,
   DisplaySupersets,
@@ -63,7 +64,7 @@ export default function SelectEntity({
       {/* Attributes Section */}
       <div className="section">
         <div className="section-header">Attributes</div>
-        <div className="section-content">TODO</div>
+        <DisplayAttributes attributes={entity.attributeList} getNode={getNode} />
       </div>
       {/* Relationships Section */}
       <div className="section">
