@@ -13,25 +13,30 @@ class SchemaController {
 
     public static getInstance(): SchemaController {
         if (!SchemaController.instance) {
-            SchemaController.instance = new SchemaController();
+            SchemaController.instance = new SchemaController()
         }
-        return SchemaController.instance;
+        return SchemaController.instance
     }
 
     public async addAllEntities(entities: Entity[]) {
         for (var entity of entities) {
             DatabaseController.getInstance().createEntity(entity);
             for (var attribute of entity.attributes ?? []) {
-                DatabaseController.getInstance().addAttribute(entity, attribute);
+                DatabaseController.getInstance().addAttribute(entity, attribute)
+            }
+
+            for (var subset of entity.subsets ?? []) {
+                DatabaseController.getInstance().createSubset(subset)
+                DatabaseController.getInstance().addSubsets(entity, subset)
             }
         }
     }
 
     public async addAllRelationships(relationships: Relationship[]) {
         for (var relationship of relationships) {
-            DatabaseController.getInstance().addRelationship(relationship);
+            DatabaseController.getInstance().addRelationship(relationship)
             for (var attribute of relationship.attributes ?? []) {
-                DatabaseController.getInstance().addRelationshipAttribute(relationship, attribute);
+                DatabaseController.getInstance().addRelationshipAttribute(relationship, attribute)
             }
         }
     }
@@ -64,6 +69,21 @@ class SchemaController {
 
             if (entitiesHashMap.get(nodeID) !== undefined) {
                 entitiesHashMap.get(nodeID)!.attributes = entityAttributesList
+            }
+        }
+
+        const entityWithSubsetsResult: QueryResult = await DatabaseController.getInstance().getAllSubsets()
+
+        for (var e of entityWithSubsetsResult.records) {
+            var nodeID = e.toObject()['{ nodeID: n.identifier, subsets: collect(subsets) }'].nodeID
+            var subsets = e.toObject()['{ nodeID: n.identifier, subsets: collect(subsets) }'].subsets
+
+            const subsetsList: Array<Entity> = subsets.map(
+                (e: { properties: any; }) => e.properties
+            )
+
+            if (entitiesHashMap.get(nodeID) !== undefined) {
+                entitiesHashMap.get(nodeID)!.subsets = subsetsList
             }
         }
 

@@ -170,6 +170,52 @@ class DatabaseController {
         }
     }
 
+    public async createSubset(subset: Entity) {
+        const session = this.databaseDriver.session()
+
+        var entityKeys = ['identifier', 'positionX', 'positionY', 'shapeWidth', 'shapeHeight', 'name']
+        if (subset.isWeak !== undefined) {
+            entityKeys.push('isWeak')
+        }
+
+        entityKeys = entityKeys.map((key) => {
+            return `e.${key} = $${key}`
+        })
+
+        try {
+            const result: QueryResult = await session.writeTransaction(tx =>
+                tx.run(
+                    `CREATE (e:SUBSET) SET ${entityKeys.join(', ')} RETURN e.name`,
+                    subset,
+                )
+            )
+            DatabaseController.verifyDatabaseUpdate(result)
+        } finally {
+            await session.close()
+        }
+    }
+
+    public async addSubsets(entity: Entity, subset: Entity): Promise<QueryResult> {
+        const session = this.databaseDriver.session()
+
+        try {
+            const entities = await session.writeTransaction(tx =>
+                tx.run(
+                    'MATCH (a:ENTITY), (b:SUBSET) WHERE a.identifier = $entityIdentifier AND b.identifier = $subsetIdentifier ' +
+                    `CREATE (a)-[r:SUBSET]->(b) RETURN type(r)`,
+                    {
+                        entityIdentifier: entity.identifier,
+                        subsetIdentifier: subset.identifier,
+                    },
+                )
+            )
+            DatabaseController.verifyDatabaseUpdate(entities)
+            return entities
+        } finally {
+            await session.close()
+        }
+    }
+
     public async getAllEntities(): Promise<QueryResult> {
         const session = this.databaseDriver.session()
 
@@ -203,6 +249,23 @@ class DatabaseController {
             await session.close()
         }
 
+    }
+
+    public async getAllSubsets(): Promise<QueryResult> {
+        const session = this.databaseDriver.session()
+
+        try {
+            const entitiesWithAttributes = await session.writeTransaction(tx =>
+                tx.run(
+                    'MATCH (n:ENTITY)-[r]->(s:SUBSET) WITH n, s as subsets RETURN { nodeID: n.identifier, ' +
+                    'subsets: collect(subsets) }',
+                )
+            )
+            DatabaseController.verifyDatabaseUpdate(entitiesWithAttributes)
+            return entitiesWithAttributes
+        } finally {
+            await session.close()
+        }
     }
 
     public async getAllRelationships(): Promise<QueryResult> {
