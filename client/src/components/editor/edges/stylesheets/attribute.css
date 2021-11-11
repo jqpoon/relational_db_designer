@@ -1,6 +1,6 @@
 .attribute-end {
-    width: 10px;
-    height: 10px;
+    width: 15px;
+    height: 15px;
     background-color:white;
     border-radius: 50%;
     border-style: solid;
@@ -8,6 +8,13 @@
     border-color: red;
     margin: 0 auto;
     position: absolute;
+    display: flex;
+    justify-content: center;
+}
+
+.attribute-end-center {
+    position: absolute;
+    top: 50%;
 }
 
 .attribute-text { 

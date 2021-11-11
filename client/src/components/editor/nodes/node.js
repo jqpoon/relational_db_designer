@@ -2,7 +2,7 @@ import { useCallback, useState, useRef, useEffect } from "react";
 import Draggable from "react-draggable";
 import { useXarrow } from "react-xarrows";
 import { types } from "..";
-import { ContextMenu } from "../contextMenu";
+import { EntityContextMenu } from "../contextMenus/entityContextMenu";
 import { actions } from "../types";
 import "./stylesheets/node.css";
 
@@ -198,7 +198,7 @@ export default function Node({
   return (
     <Draggable style={{width: "150px", height: "75px"}} {...draggableConfig} >
       <div {...contentsConfig}>
-        <ContextMenu 
+        <EntityContextMenu 
           anchorPoint={anchorPoint} 
           show={show} 
           setEditable={setEditable} 

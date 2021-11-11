@@ -75,5 +75,7 @@ export const initialAttributes = {
           text: "Attribute1",
           relativePos: { x: -100, y: -30 },
           type: types.ATTRIBUTE,
+          isOptional: false,
+          isPrimaryKey: false
         },
 }
