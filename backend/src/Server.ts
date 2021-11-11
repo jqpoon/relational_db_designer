@@ -11,6 +11,9 @@ import BaseRouter from './routes';
 import SchemaRouter from './routes/schema';
 import logger from '@shared/Logger';
 
+import swaggerUi from 'swagger-ui-express';
+import * as swaggerDocument from './config/swagger.json';
+
 const app = express();
 const { BAD_REQUEST } = StatusCodes;
 
@@ -37,6 +40,11 @@ if (process.env.NODE_ENV === 'production') {
 // Add APIs
 app.use('/api', BaseRouter);
 app.use('/schema', SchemaRouter);
+app.use(
+    "/docs",
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerDocument)
+);
 
 // Print API errors
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

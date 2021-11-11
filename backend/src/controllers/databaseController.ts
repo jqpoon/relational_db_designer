@@ -4,6 +4,7 @@ import Attribute from "../models/attribute";
 import Relationship, { LHConstraint } from "../models/relationship";
 import { driver } from "neo4j-driver-core";
 
+
 class DatabaseController {
 
     private static instance: DatabaseController;
@@ -171,11 +172,10 @@ class DatabaseController {
         try {
             await this.createRelationship(relationship);
             for (var entityIdentifier of relationship.lHConstraints.keys()) {
-                console.log(entityIdentifier)
                 const firstRelation = await session.writeTransaction(tx =>
                     tx.run(
                         'MATCH (a:ENTITY), (b:RELATIONSHIP) WHERE a.identifier = $entityIdentifier AND b.identifier = $relationshipIdentifier ' +
-                        `CREATE (a)-[r:${LHConstraint[relationship.lHConstraints.get(entityIdentifier)!]}]->(b) RETURN type(r)`,
+                        `CREATE (a)-[r:${relationship.lHConstraints.get(entityIdentifier)!}]->(b) RETURN type(r)`,
                         {
                             entityIdentifier: entityIdentifier,
                             relationshipIdentifier: relationship.identifier,
