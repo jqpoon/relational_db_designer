@@ -1,7 +1,8 @@
-import { useRef, useState } from "react";
-import Xarrow from "react-xarrows";
-import "./stylesheets/attribute.css";
+import { useRef, useState, useEffect, useCallback } from "react";
+import Xarrow from 'react-xarrows';
+import "./stylesheets/attribute.css"
 import { types } from "../types";
+import { AttributeContextMenu } from "../contextMenus/attributeContextMenu";
 
 export default function Attribute({
   parentType,
@@ -19,9 +20,43 @@ export default function Attribute({
   // Name of attribute to be displayed
   const [name, setName] = useState(text);
   const [editable, setEditable] = useState(true);
+  const [isKeyAttribute, setIsKeyAttribute] = useState(false);
+	const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 }); // Context menu stuff
+	const [show, setShow] = useState(false); // State to show context menu
 
   // Ref of lollipop end
   const attributeEndRef = useRef(null);
+  const attributeEndRefCenter = useRef(null);
+
+  // Hides the context menu if we left click again
+	const handleClick = useCallback(
+		() => {
+      setShow(false);
+    },
+		[show]
+	);
+
+	// Show context menu
+	const handleContextMenu = useCallback(
+		(event) => {
+			event.preventDefault();
+			setAnchorPoint({ x: 0, y: 0 }); // TODO: figure out how to fix anchor point
+			setShow(true);
+		},
+		[]
+	);
+
+	// Handle context menus callbacks on mount
+	useEffect(() => {
+		const curAttr = attributeEndRef.current;
+		// Right click
+		document?.addEventListener("click", handleClick);
+		curAttr?.addEventListener("contextmenu", handleContextMenu);
+		return () => {
+		  document?.removeEventListener("click", handleClick);
+		  curAttr?.removeEventListener("contextmenu", handleContextMenu);
+		};
+	  }, []);
 
   // Calculate position of entity end
   const calculateEntityEndPos = () => {
@@ -61,10 +96,24 @@ export default function Attribute({
     textStyle = rightStyle;
   }
 
+  // Toggles key attribute feature
+	const toggleKeyAttribute = () => {
+		let attrNode = getElement(types.ATTRIBUTE, id, parentType, parentId);
+		if (isKeyAttribute) {
+			setIsKeyAttribute(false);
+			attrNode['isPrimaryKey'] = false;
+		} else {
+			setIsKeyAttribute(true);
+			attrNode['isPrimaryKey'] = true;
+		}
+
+		updateElement(types.ATTRIBUTE, attrNode);
+	}
+
   // Used for editing name of attribute
   const editingMode = () => {
-    return editable ? (
-      <div>
+    if (editable) {
+      return <div>
         <input
           value={name}
           placeholder="Attribute"
@@ -86,38 +135,50 @@ export default function Attribute({
           }}
         />
       </div>
-    ) : (
-      <div>{text}</div>
-    );
-  };
+     } 
+     if (isKeyAttribute) {
+			return <u>{text}</u>
+		} else {
+			return <div>{text}</div>
+		}
 
-  let attributeEnd = (
-    <div
-      ref={attributeEndRef}
-      className="attribute-end"
-      style={chosenStyle}
-      onClick={() => {
-        setEditable(true);
-      }}
-    >
-      <div style={textStyle}>{editingMode()}</div>
-    </div>
-  );
+  // Define component to be rendered
+	let attributeEnd = (
+		<div ref={attributeEndRef}
+			 className="attribute-end" 
+			 style={chosenStyle}
+			 onDoubleClick={ () => {setEditable(true)}}>
 
-  let attribute = (
-    <div>
-      {attributeEnd}
-      <Xarrow
-        start={parentId}
-        end={attributeEndRef}
-        path="straight"
-        headSize="0"
-        zIndex={-10}
-      />
-    </div>
-  );
+			<AttributeContextMenu
+				anchorPoint={anchorPoint}
+				show={show}
+				setEditable={setEditable}
+				toggleKeyAttribute={toggleKeyAttribute}
+			/>
+			<div className="attribute-end-center"
+				 ref={attributeEndRefCenter}> 
+			</div>
+			<div style={textStyle}>
+				{editingMode()}
+			</div>
+		</div>
+	);
+
+	let attribute = (
+			<div>
+				{attributeEnd}
+				<Xarrow 
+					start={start}
+					end={attributeEndRefCenter}
+					path="straight"
+					headSize="0"
+					zIndex={-10}
+            	/>
+			</div>
+		);
 
   return attribute;
+}
 }
 
 // Class to store global count of attributes, so that we can generate

@@ -21,7 +21,7 @@ import EdgeToRelationship from "./right_toolbar/edgeRelationship";
 // TODO: extract common base node in node.js
 // TODO: figure out where parentref should go and update render appropriately
 
-const UNDO_STACK_LIMIT = 25;
+const STACK_LIMIT = 25;
 
 export default function Editor() {
   // Canvas states: passed to children for metadata (eg width and height of main container)
@@ -36,7 +36,8 @@ export default function Editor() {
   const [entities, setEntities] = useState(initialEntities);
   const [relationships, setRelationships] = useState(initialRelationships);
   const [edges, setEdges] = useState(initialEdges);
-  const [stack, setStack] = useState([]);
+  const [undoStack, setUndoStack] = useState([]);
+	const [redoStack, setRedoStack] = useState([]);
 
   const [context, setContext] = useState({ action: actions.NORMAL });
 
@@ -108,23 +109,23 @@ export default function Editor() {
     [types.EDGE.GENERALISATION]: edgeSetter,
   };
 
-  const addElement = (type, element, isUndo) => {
-    setElement(type, element, true, isUndo);
+  const nodeFunctionsOpposite = {
+		updateNode: "updateNode",
+		addNode: "deleteNode",
+		deleteNode: "addNode",
+	};
+
+  const addElement = (type, element, isHistory) => {
+    setElement(type, element, true, isHistory);
   };
-  const updateElement = (type, element, isUndo) => {
-    setElement(type, element, false, isUndo);
+  const updateElement = (type, element, isHistory) => {
+    setElement(type, element, false, isHistory);
   };
-  const setElement = (type, element, add, isUndo) => {
-    if (!isUndo) {
-      const inverse = add ? "deleteNode" : "updateNode";
-      const inverseObj = add
-        ? { ...element }
-        : elementGetters[type](
-            element.id,
-            element.parentType,
-            element.parentId
-          );
-      addToUndo(inverse, type, inverseObj);
+  const setElement = (type, element, add, isHistory) => {
+    if (!isHistory) {
+      const inverse = nodeFunctionsOpposite[add ? "addNode" : "updateNode"];
+      addToUndo(inverse, type, element.id);
+      setRedoStack([])
     }
     elementSetters[type](element);
   };
@@ -135,18 +136,60 @@ export default function Editor() {
     return id;
   };
 
-  const addToUndo = (action, type, element) => {
-    let undoFunc = {
-      action,
-      type,
-      element,
-    };
-    let newStack = [...stack, undoFunc];
-    if (newStack.length > UNDO_STACK_LIMIT) {
-      newStack.shift();
-    }
-    setStack(newStack);
-  };
+  const addToUndo = (action, type, id) =>
+		addToHistory(action, type, id, true);
+	const addToRedo = (action, type, id) =>
+		addToHistory(action, type, id, false);
+  // Utility for adding to undo and redo
+	const addToHistory = (action, type, id, isUndo) => {
+		// Toggle between undo and redo
+		let state = isUndo ? undoStack : redoStack;
+		let setter = isUndo ? setUndoStack : setRedoStack;
+
+		// Build func object (Note that element should be passed in as a copy)
+		let func = {
+			action,
+			type,
+			id,
+			element: { ...nodeStates[type][id] },
+		};
+
+		// Update state within limit
+		let stateClone = [...state, func];
+		if (stateClone.length > STACK_LIMIT) {
+			stateClone.shift();
+		}
+		setter(stateClone);
+	};
+
+  const undo = () => execHistory(true);
+	const redo = () => execHistory(false);
+  // Utility for executing undo and redo
+	const execHistory = (isUndo) => {
+		// Toggle between undo and redo
+		let state = isUndo ? undoStack : redoStack;
+		let setter = isUndo ? setUndoStack : setRedoStack;
+		let addFunc = isUndo ? addToRedo : addToUndo;
+
+		// Nothing to do
+		if (state.length === 0) return;
+
+		// Grab top of stack
+		let stateClone = [...state];
+		let top = stateClone.pop();
+
+		// Add to undo/redo stack current state
+		addFunc(nodeFunctionsOpposite[top["action"]], top["type"], top["id"]);
+
+		// Run and update state
+		let element =
+			top["element"] && Object.keys(top["element"]).length > 0
+				? top["element"]
+				: { ...nodeStates[top["type"]][top["id"]] };
+		nodeFunctions[top["action"]](top["type"], element, true);
+		setter(stateClone);
+	};
+
 
   const undo = () => {
     let stackClone = [...stack];

@@ -1,9 +1,9 @@
 import { useCallback, useState, useRef, useEffect } from "react";
 import Draggable from "react-draggable";
 import { useXarrow } from "react-xarrows";
-import { ContextMenu } from "../contextMenu";
 import Attribute from "../edges/attribute";
 import { actions, types } from "../types";
+import { EntityContextMenu } from "../contextMenus/entityContextMenu";
 import "./stylesheets/node.css";
 
 export function TestRelationship(props) {
@@ -200,7 +200,7 @@ export default function Node({
         {...draggableConfig}
       >
         <div {...contentsConfig}>
-          <ContextMenu
+          <EntityContextMenu
             anchorPoint={anchorPoint}
             show={show}
             setEditable={setEditable}

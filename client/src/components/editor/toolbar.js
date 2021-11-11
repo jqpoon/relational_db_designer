@@ -8,6 +8,7 @@ export default function Toolbar({
   getId,
   addElement,
   undo,
+	redo,
 }) {
   const entityToolRef = useRef(null);
   const relationshipToolRef = useRef(null);
@@ -68,6 +69,9 @@ export default function Toolbar({
       <div className="footer">
         <div className="tool" onClick={undo}>
           Undo
+        </div>
+				<div className="tool" onClick={redo}>
+          Redo
         </div>
         <div className="tool">Load</div>
         <div className="tool">Save</div>

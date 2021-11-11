@@ -1,10 +1,10 @@
-import "./stylesheets/contextMenu.css";
-import { addAttributeToNode } from "./edges/attribute";
+import "./stylesheets/contextMenu.css"
+import { addAttributeToNode } from "../edges/attribute";
 
-export function ContextMenu({
-  id,
-  setEditable,
-  anchorPoint,
+export function EntityContextMenu({
+  id, 
+  setEditable, 
+  anchorPoint, 
   show,
   getElement,
   addElement, 
