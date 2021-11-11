@@ -1,13 +1,10 @@
 import { useState, useRef } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
-import Entity from "./nodes/entity";
 import Toolbar from "./toolbar";
 import "./stylesheets/editor.css";
 
 import Attribute from "./edges/attribute";
-import Relationship from "./nodes/relationship";
 import "./right_toolbar/toolbar-right.css";
-import { DummyEdge, DummyEntity, DummyRelationship } from "./nodes/dummy_nodes";
 import Xarrow, { Xwrapper } from "react-xarrows";
 import Normal from "./right_toolbar/normal";
 import SelectEntity from "./right_toolbar/selectEntity";

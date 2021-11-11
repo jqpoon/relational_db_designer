@@ -1,10 +1,11 @@
-import { useState, useRef, useEffect } from "react";
+import { useCallback, useState, useRef, useEffect } from "react";
 import Draggable from "react-draggable";
 import { useXarrow } from "react-xarrows";
 import { types } from "..";
 import { ContextMenu } from "../contextMenu";
 import { actions } from "../types";
 import "./stylesheets/node.css";
+
 
 export function TestRelationship(props) {
   return <Node {...props} />;
@@ -29,6 +30,7 @@ export default function Node({
   scale,
   updateNode,
   getNode,
+  addNode,
   setPanDisabled,
   context,
   setContext,
@@ -37,9 +39,30 @@ export default function Node({
   const nodeRef = useRef(null);
   // Name of node which will be displayed
   const [name, setName] = useState(text);
-  // ?
+
   // To set bounds of draggable
   const [dimensions, setDimensions] = useState({});
+
+  const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
+	const [show, setShow] = useState(false);
+  const [editable, setEditable] = useState(false);
+
+	const handleContextMenu = useCallback(
+		(event) => {
+			event.preventDefault();
+			setAnchorPoint({ x: 0, y: 0 }); // TODO: figure out how to fix anchor point
+			setShow(true);
+		},
+		[]
+	);
+
+  // Hides the context menu if we left click again
+	const handleClick = useCallback(
+		() => {
+      setShow(false);
+    },
+		[show]
+	);
 
   // Set dimensions on mount
   useEffect(() => {
@@ -48,15 +71,13 @@ export default function Node({
       width: curNode.clientWidth,
       height: curNode.clientHeight,
     });
-    // TODO: add right click event handlers
-    // const handler = (e) => {
-    //   e.preventDefault();
-    // };
-    // // Right click
-    // entityCurr?.addEventListener("contextmenu", handler);
-    // return () => {
-    //   entityCurr?.removeEventListener("contextmenu", handler);
-    // };
+    // Right click
+    document?.addEventListener("click", handleClick);
+    curNode?.addEventListener("contextmenu", handleContextMenu);
+    return () => {
+      document?.removeEventListener("click", handleClick);
+      curNode?.removeEventListener("contextmenu", handleContextMenu);
+    };
   }, []);
 
   // For updating edges connected to the node
@@ -77,19 +98,46 @@ export default function Node({
   const onClick = () => {
     switch (context.action) {
       case actions.NORMAL:
-      case actions.SELECT:
+      case actions.SELECT.NORMAL:
         setContext({
-          action: actions.SELECT,
+          action: actions.SELECT.NORMAL,
           selected: { type: type, id: id },
         });
         break;
+      case actions.SELECT.ADD_RELATIONSHIP:
+        setContext((prev) => {
+          let newCtx = { ...prev };
+          newCtx.target = { type: type, id: id, cardinality: "" };
+          return newCtx;
+        });
+        break;
+      case actions.SELECT.ADD_SUPERSET:
+        setContext((prev) => {
+          let newCtx = { ...prev };
+          newCtx.target = { type: type, id: id };
+          return newCtx;
+        });
+        break;
+      case actions.RELATIONSHIP_ADD.SELECT_SOURCES: {
+        let newContext = { ...context };
+        newContext.sources[id] = { type: type, cardinality: "" };
+        setContext(newContext);
+        console.log(newContext);
+        break;
+      }
+      case actions.RELATIONSHIP_ADD.SELECT_TARGET: {
+        let newContext = { ...context };
+        newContext.target = { id: id, type: type };
+        setContext(newContext);
+        break;
+      }
       default:
     }
   };
 
   // Configurations for rendered elements
   const draggableConfig = {
-    defaultPosition: pos,
+    position: pos,
     scale: scale,
     bounds: {
       // ?
@@ -112,34 +160,53 @@ export default function Node({
 
   // Contents displayed in node
   const editingMode = () => {
-    return (
-      <div className="node-content-input">
+    var className;
+    if(type === types.ENTITY){
+      className = "entity-input";
+    }else if(type === types.RELATIONSHIP){
+      className ="diamond-input";
+    }
+
+    return ( editable ? (
+      <div className={className}>
         <input
-          value={text}
+          value={name}
           onChange={(e) => setName(e.target.value)}
           onClick={(e) => e.stopPropagation()}
           onKeyPress={(e) => {
             if (e.key === "Enter") {
               // Update node text
               let newNode = getNode(type, id);
-              newNode.text = text;
-              updateNode(newNode);
+              newNode.text = name;
+              updateNode(type, newNode);
+              setEditable(false);
             }
           }}
         />
       </div>
+    ) : <div>{text}</div>
     );
   };
+
   const normalMode = (
     <div className={classFromNodeType[type]}>
-      <div>{text}</div>
+      {editingMode()}
     </div>
   );
   // TODO:conditional rendering
 
   return (
-    <Draggable {...draggableConfig}>
+    <Draggable style={{width: "150px", height: "75px"}} {...draggableConfig} >
       <div {...contentsConfig}>
+        <ContextMenu 
+          anchorPoint={anchorPoint} 
+          show={show} 
+          setEditable={setEditable} 
+          id={id}
+          updateNode={updateNode}
+          addNode={addNode}
+          getNode={getNode}
+        />
         {normalMode}
       </div>
     </Draggable>

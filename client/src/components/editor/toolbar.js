@@ -8,6 +8,8 @@ export default function Toolbar({
   addEdgeToRelationship,
   getId,
   addNode,
+  undo,
+	redo,
 }) {
   const entityToolRef = useRef(null);
   const relationshipToolRef = useRef(null);
@@ -19,8 +21,11 @@ export default function Toolbar({
         x: x,
         y: y,
       },
-      text: "",
+      text: "Enter Text",
       type: types.ENTITY,
+      edges: [],
+      parents: [],
+      children: [],
     };
     addNode(types.ENTITY, newEntity);
   };
@@ -34,6 +39,7 @@ export default function Toolbar({
       },
       text: "",
       type: types.RELATIONSHIP,
+      edges: [],
     };
     addNode(types.RELATIONSHIP, newRelationship);
   };
@@ -43,13 +49,12 @@ export default function Toolbar({
       <Draggable
         ref={entityToolRef}
         onStop={(e, data) => {
-          console.log('NewEntity');
           addEntity(data.x - 125, data.y);
           entityToolRef.current.state.x = 0;
           entityToolRef.current.state.y = 0;
         }}
       >
-        <p className="entity-tool">Entity</p>
+        <p className="tool">Entity</p>
       </Draggable>
       <Draggable
         ref={relationshipToolRef}
@@ -59,10 +64,22 @@ export default function Toolbar({
           relationshipToolRef.current.state.y = 0;
         }}
       >
-        <p className="entity-tool">Relationship</p>
+        <p className="tool">Relationship</p>
       </Draggable>
       <div className="tool" onClick={addEdgeToRelationship}>
         Connect to Relationship
+      </div>
+      <div className="footer">
+        <div className="tool" onClick={undo}>
+          Undo
+        </div>
+				<div className="tool" onClick={redo}>
+          Redo
+        </div>
+        <div className="tool">Load</div>
+        <div className="tool">Save</div>
+        <div className="tool">Translate</div>
+        <div className="tool">Validate</div>
       </div>
     </div>
   );

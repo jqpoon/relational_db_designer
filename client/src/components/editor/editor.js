@@ -1,8 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import { initialEntities, initialRelationships, initialEdges } from "./initial";
+import {
+	initialEntities,
+	initialRelationships,
+	initialEdges,
+	initialAttributes,
+} from "./initial";
 import { actions, types } from "./types";
-import Entity from "./nodes/entity";
-import Relationship from "./nodes/relationship";
 import Edge from "./edges/edge";
 import { Xwrapper } from "react-xarrows";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
@@ -16,6 +19,7 @@ import SelectRelationship from "./right_toolbar/selectRelationship";
 import Normal from "./right_toolbar/normal";
 import SelectEdge from "./right_toolbar/selectEdge";
 import { ContextMenu } from "./contextMenu";
+import EdgeToRelationship from "./right_toolbar/edgeRelationship";
 
 // TODO: update left,right toolbar to match new data structures
 // TODO: add initial attributes to initial.js + implement position update based on parent node of the attribute
@@ -24,20 +28,25 @@ import { ContextMenu } from "./contextMenu";
 // TODO: extract common base node in node.js
 // TODO: figure out where parentref should go and update render appropriately
 
+const STACK_LIMIT = 25;
+
 export default function Editor() {
-	// Canvas states that are passed to children for metadata (e.g. width and height of main container). 
+	// Canvas states that are passed to children for metadata (e.g. width and height of main container).
 	const parentRef = useRef(null);
-	const [counter, setCounter] = useState(0);
+	const [counter, setCounter] = useState(1);
 	const [render, setRender] = useState(false);
 	const [scale, setScale] = useState(1);
 	const [panDisabled, setPanDisabled] = useState(false);
+	const [editableId, setEditableId] = useState(0);
 
-	// List of components that will be rendered. 
-	// TODO: Initialise these states as empty. Will be populated later. 
+	// List of components that will be rendered.
+	// TODO: Initialise these states as empty. Will be populated later.
 	const [entities, setEntities] = useState(initialEntities);
 	const [relationships, setRelationships] = useState(initialRelationships);
-	const [attributes, setAttributes] = useState({}); // TODO
+	const [attributes, setAttributes] = useState(initialAttributes);
 	const [edges, setEdges] = useState(initialEdges);
+	const [undoStack, setUndoStack] = useState([]);
+	const [redoStack, setRedoStack] = useState([]);
 
 	const [context, setContext] = useState({ action: actions.NORMAL });
 
@@ -46,14 +55,14 @@ export default function Editor() {
 
 	useEffect(() => {
 		const requestOptions = {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: null
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: null,
 		};
-		// Initialise the state of Editor from the backend JSON. 
-		fetch('TODO', requestOptions)
-			.then(response => response.json())
-			.then(data => importStateFromObject(data));
+		// Initialise the state of Editor from the backend JSON.
+		fetch("TODO", requestOptions)
+			.then((response) => response.json())
+			.then((data) => importStateFromObject(data));
 
 		setRender(true);
 	}, []);
@@ -62,13 +71,16 @@ export default function Editor() {
 		[types.ENTITY]: entities,
 		[types.RELATIONSHIP]: relationships,
 		[types.ATTRIBUTE]: attributes,
-		[types.EDGE]: edges,
+		[types.EDGE.RELATIONSHIP]: edges,
+		[types.EDGE.HIERARCHY]: edges,
 	};
+
 	const nodeSetters = {
 		[types.ENTITY]: setEntities,
 		[types.RELATIONSHIP]: setRelationships,
 		[types.ATTRIBUTE]: setAttributes,
-		[types.EDGE]: setEdges,
+		[types.EDGE.RELATIONSHIP]: setEdges,
+		[types.EDGE.HIERARCHY]: setEdges,
 	};
 
 	const getId = () => {
@@ -77,29 +89,95 @@ export default function Editor() {
 		return id;
 	};
 
+	// Utility for adding to undo and redo
+	const addToHistory = (action, type, id, isUndo) => {
+		// Toggle between undo and redo
+		let state = isUndo ? undoStack : redoStack;
+		let setter = isUndo ? setUndoStack : setRedoStack;
+
+		// Build func object (Note that element should be passed in as a copy)
+		let func = {
+			action,
+			type,
+			id,
+			element: { ...nodeStates[type][id] },
+		};
+
+		// Update state within limit
+		let stateClone = [...state, func];
+		if (stateClone.length > STACK_LIMIT) {
+			stateClone.shift();
+		}
+		setter(stateClone);
+	};
+	const addToUndo = (action, type, id) =>
+		addToHistory(action, type, id, true);
+	const addToRedo = (action, type, id) =>
+		addToHistory(action, type, id, false);
+
+	// Utility for executing undo and redo
+	const execHistory = (isUndo) => {
+		// Toggle between undo and redo
+		let state = isUndo ? undoStack : redoStack;
+		let setter = isUndo ? setUndoStack : setRedoStack;
+		let addFunc = isUndo ? addToRedo : addToUndo;
+
+		// Nothing to do
+		if (state.length === 0) return;
+
+		// Grab top of stack
+		let stateClone = [...state];
+		let top = stateClone.pop();
+
+		// Add to undo/redo stack current state
+		addFunc(nodeFunctionsOpposite[top["action"]], top["type"], top["id"]);
+
+		// Run and update state
+		let element =
+			top["element"] && Object.keys(top["element"]).length > 0
+				? top["element"]
+				: { ...nodeStates[top["type"]][top["id"]] };
+		nodeFunctions[top["action"]](top["type"], element, true);
+		setter(stateClone);
+	};
+	const undo = () => execHistory(true);
+	const redo = () => execHistory(false);
+
 	// TODO: instead of _Node, should probably rename to _Element since it applies to edges as well
-	// Generic update, add and delete functions for elements. 
-	// Element should be the (whole) updated element. 
-	const updateNode = (type, element) => {
+	// Generic update, add and delete functions for elements
+	// Element should be the (whole) updated element
+	const updateNode = (type, element, isHistory) => {
+		if (!isHistory) {
+			addToUndo(nodeFunctionsOpposite["updateNode"], type, element.id);
+			setRedoStack([]);
+		}
 		let newNodeState = { ...nodeStates[type] };
 		newNodeState[element.id] = element;
 		nodeSetters[type](newNodeState);
 	};
 
 	const getNode = (type, id) => {
-		return nodeStates[type][id];
+		return { ...nodeStates[type][id] };
 	};
 
-	const addNode = (type, element) => {
-		let newNodeState = { ...nodeStates[type], [element.id]: element };
-		nodeSetters[type](newNodeState);
+	const addNode = (type, element, isHistory) => {
+		if (!isHistory) {
+			addToUndo(nodeFunctionsOpposite["addNode"], type, element.id);
+			setRedoStack([]);
+		}
+		// TODO: update other functions into callbacks
+		nodeSetters[type]((prevState) => ({
+			...prevState,
+			[element.id]: element,
+		}));
 	};
 
-	const deleteNode = (type, element) => {
+	const deleteNode = (type, element, isUndo) => {
 		let newNodeState = { ...nodeStates[type] };
 		delete newNodeState[element.id];
-		// TODO: recursively remove other nodes/edges connected
+		// TODO: recursively remove other nodes/edges connected + undo
 		nodeSetters[type](newNodeState);
+		setContext({ action: actions.NORMAL });
 	};
 
 	const nodeFunctions = {
@@ -108,6 +186,15 @@ export default function Editor() {
 		addNode: addNode,
 		deleteNode: deleteNode,
 		getId: getId,
+		undo: undo,
+		redo: redo,
+		setEditableId: setEditableId,
+	};
+
+	const nodeFunctionsOpposite = {
+		updateNode: "updateNode",
+		addNode: "deleteNode",
+		deleteNode: "addNode",
 	};
 
 	const generalFunctions = {
@@ -117,8 +204,20 @@ export default function Editor() {
 	};
 
 	const leftToolBarActions = {
-		addEdgeToRelationship: () => {},
+		addEdgeToRelationship: () => {
+			setContext({
+				action: actions.RELATIONSHIP_ADD.SELECT_TARGET,
+				sources: {},
+				target: null,
+			});
+		},
 		addAttribute: () => {},
+	};
+
+	const rightToolBarActions = {
+		cancel: () => {
+			setContext({ action: actions.NORMAL });
+		},
 	};
 
 	const canvasConfig = {
@@ -147,12 +246,17 @@ export default function Editor() {
 		switch (context.action) {
 			case actions.NORMAL:
 				return <Normal />;
-			case actions.SELECT:
+			case actions.SELECT.NORMAL:
+			case actions.SELECT.ADD_RELATIONSHIP:
+			case actions.SELECT.ADD_SUPERSET:
+			case actions.SELECT.ADD_SUBSET:
 				switch (context.selected.type) {
 					case types.ENTITY:
 						return (
 							<SelectEntity
 								entity={entities[context.selected.id]}
+								{...nodeFunctions}
+								{...generalFunctions}
 							/>
 						);
 					case types.RELATIONSHIP:
@@ -161,55 +265,69 @@ export default function Editor() {
 								relationship={
 									relationships[context.selected.id]
 								}
+								{...nodeFunctions}
+								{...generalFunctions}
 							/>
 						);
-					case types.EDGE:
+					case types.EDGE.RELATIONSHIP:
+					case types.EDGE.HIERARCHY:
 						return <SelectEdge edge={edges[context.selected.id]} />;
 					default:
 						return <Normal />; // TODO: type not found page
 				}
+			case actions.RELATIONSHIP_ADD.SELECT_SOURCES:
+			case actions.RELATIONSHIP_ADD.SELECT_TARGET:
+				return (
+					<EdgeToRelationship
+						{...nodeFunctions}
+						{...rightToolBarActions}
+						{...generalFunctions}
+					/>
+				);
 			default:
 				// TODO
 				return <Normal />;
 		}
 	};
 
-	// Translates entire model state from backend JSON into client components. 
+	// Translates entire model state from backend JSON into client components.
 	const importStateFromObject = (state) => {
 		for (let entity in state.entities) {
 			let entityComponent = {
-				id: entity.indentifier, 
-				text: entity.name, 
-				pos: { x: entity.positionX, y: entity.positionY }, 
-				type: types.ENTITY
-			}; 
-			addNode(types.ENTITY, entityComponent)
+				id: entity.indentifier,
+				text: entity.name,
+				pos: { x: entity.positionX, y: entity.positionY },
+				type: types.ENTITY,
+			};
+			addNode(types.ENTITY, entityComponent);
 		}
 
 		for (let relationship in state.relationships) {
 			let relationshipComponent = {
-				id: relationship.indentifier, 
-				text: relationship.name, 
-				pos: { x: relationship.positionX, y: relationship.positionY }, 
-				type: types.RELATIONSHIP
-			}; 
-			addNode(types.RELATIONSHIP, relationshipComponent); 
+				id: relationship.indentifier,
+				text: relationship.name,
+				pos: { x: relationship.positionX, y: relationship.positionY },
+				type: types.RELATIONSHIP,
+			};
+			addNode(types.RELATIONSHIP, relationshipComponent);
 
-			Object.entries(relationship.lHConstraints).map((entityID, constraint) => {
-				let edgeComponent = {
-					start: entityID, 
-					end: relationship.identifier, 
-					id: entityID + relationship.identifier,
-					labels: constraint
+			Object.entries(relationship.lHConstraints).map(
+				(entityID, constraint) => {
+					let edgeComponent = {
+						start: entityID,
+						end: relationship.identifier,
+						id: entityID + relationship.identifier,
+						labels: constraint,
+					};
+					addNode(types.EDGE, edgeComponent);
 				}
-				addNode(types.EDGE, edgeComponent);
-			}); 
+			);
 		}
 
 		return;
 	};
 
-	// Translates entire model state into a JSON object for backend. 
+	// Translates entire model state into a JSON object for backend.
 	const exportStateToObject = () => {
 		let state = {
 			entities: [],
@@ -217,48 +335,53 @@ export default function Editor() {
 			disjoints: [],
 		};
 
-		let entities = nodeStates[types.ENTITY]; 
-		let relationships = nodeStates[types.RELATIONSHIP]; 
+		let entities = nodeStates[types.ENTITY];
+		let relationships = nodeStates[types.RELATIONSHIP];
 		let edges = nodeStates[types.EDGE];
-	
-		// Entities. 
-		Object.values(entities).forEach(entity => {
+
+		// Entities.
+		Object.values(entities).forEach((entity) => {
 			let entityState = {
-				identifier: entity.id, 
-				positionX: entity.pos.x, 
-				positionY: entity.pos.y, 
+				identifier: entity.id,
+				positionX: entity.pos.x,
+				positionY: entity.pos.y,
 				shapeWidth: 0, // TODO
 				shapeHeight: 0, // TODO
-				name: entity.text, 
+				name: entity.text,
 				isWeak: false, // TODO
 				attributes: [], // TODO
-				subsets: [] // TODO
+				subsets: [], // TODO
 			};
 
 			state.entities.push(entityState);
-		}); 
+		});
 
-		// Relationships and linking with entities. 
-		Object.values(relationships).forEach(relationship => {
+		// Relationships and linking with entities.
+		Object.values(relationships).forEach((relationship) => {
 			let relationshipState = {
 				identifier: relationship.id,
 				positionX: relationship.pos.x,
-				positionY: relationship.pos.x, 
+				positionY: relationship.pos.x,
 				shapeWidth: 0, // TODO
 				shapeHeight: 0, // TODO
 				name: relationship.text,
 				attributes: [], // TODO
-				lHConstraints: {}, 
+				lHConstraints: {},
 			};
 
-			let links = edges.filter(edge => edge.start === relationship.id || edge.end === relationship.id); 
+			let links = edges.filter(
+				(edge) =>
+					edge.start === relationship.id ||
+					edge.end === relationship.id
+			);
 			for (let link in links) {
-				let entityID = link.start === relationship.id ? link.end : link.start; 
-				relationshipState.lHConstraints[entityID] = link.labels; // TODO: Translate labels into a constraint enum type. 
+				let entityID =
+					link.start === relationship.id ? link.end : link.start;
+				relationshipState.lHConstraints[entityID] = link.labels; // TODO: Translate labels into a constraint enum type.
 			}
 
 			state.relationships.push(relationshipState);
-		})
+		});
 
 		return state;
 	};
@@ -269,7 +392,6 @@ export default function Editor() {
 				{render ? (
 					<>
 						<Toolbar {...nodeFunctions} {...leftToolBarActions} />
-						<ContextMenu />
 						<TransformWrapper {...canvasConfig}>
 							<TransformComponent>
 								<div
