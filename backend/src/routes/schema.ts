@@ -100,8 +100,8 @@ router.post('/all', async function (req, res, next) {
         relationship.lHConstraints = lHConstraintsConvertion
     })
 
-    SchemaController.getInstance().addAllEntities(entities);
-    SchemaController.getInstance().addAllRelationships(relationships);
+    await SchemaController.getInstance().addAllEntities(entities);
+    await SchemaController.getInstance().addAllRelationships(relationships);
     // var disjoints: Disjoint[] = JSON.parse(modelAsJson.disjoints);
 
     return res.status(OK).json({SUCCESS: true});

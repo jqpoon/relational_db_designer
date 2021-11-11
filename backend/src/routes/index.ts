@@ -1,5 +1,8 @@
 import { Router } from 'express';
 import { getAllUsers, addOneUser, updateOneUser, deleteOneUser } from './Users';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 
 // User-route
