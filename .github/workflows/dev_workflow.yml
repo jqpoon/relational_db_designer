@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - dev
-      - devops_deployment # Temporary, until setting up of infra is complete
+      - backend_test_integration
 
 jobs:
   frontend_tests:
@@ -21,14 +21,21 @@ jobs:
     container: 
       image: node:16
     steps:
+      - uses: actions/checkout@v2
       - name: Backend tests
+        env:
+          NEO_URL : ${{ secrets.NEO_URL }}
+          NEO_USERNAME : ${{ secrets.NEO_USERNAME }}
+          NEO_PASSWORD : ${{ secrets.NEO_PASSWORD }}
         run: |
-          echo "Backend test commands here"
-          node --help
+          cd backend
+          npm ci
+          npx jest
 
   # Frontend is minified into a build folder and served from the backend
   backend_deploy:
     runs-on: ubuntu-latest
+    needs: [frontend_tests, backend_tests]
     steps:
       - uses: actions/checkout@v2
 
@@ -49,5 +56,6 @@ jobs:
 
   database_deploy:
     runs-on: ubuntu-latest
+    needs: [frontend_tests, backend_tests]
     steps:
       - run: echo "Database commands here (if needed)"

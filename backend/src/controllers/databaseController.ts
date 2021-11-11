@@ -2,6 +2,8 @@ import neo4j, {Driver, QueryResult} from "neo4j-driver";
 import Entity from "../models/entity";
 import Attribute from "../models/attribute";
 import Relationship, { LHConstraint } from "../models/relationship";
+import { driver } from "neo4j-driver-core";
+
 
 class DatabaseController {
 
@@ -10,7 +12,7 @@ class DatabaseController {
 
     private constructor() {
         // TODO use config or env to store variables
-        this.databaseDriver = neo4j.driver("bolt://localhost:7687", neo4j.auth.basic("neo4j", "123456"));
+        this.databaseDriver = neo4j.driver((process.env.NEO_URL ?? ""), neo4j.auth.basic((process.env.NEO_USERNAME ?? ""), (process.env.NEO_PASSWORD ?? "")));
     }
 
     public static getInstance(): DatabaseController {
@@ -22,9 +24,27 @@ class DatabaseController {
 
     private static verifyDatabaseUpdate(result: QueryResult): boolean {
         if (result.records[0] == undefined) {
+            console.log(result);
             throw new Error('Database not updated')
         }
         return true
+    }
+
+    public async clearDB() {
+        const session = this.databaseDriver.session()
+        try {
+            await session.writeTransaction(tx =>
+                tx.run(
+                    'MATCH (n) DETACH DELETE n'
+                )
+            )
+        } finally {
+            await session.close()
+        }
+    }
+
+    public async closeDriver() {
+        await this.databaseDriver.close();
     }
 
     public async createEntity(entity: Entity) {
