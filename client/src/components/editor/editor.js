@@ -1,25 +1,17 @@
 import { useState, useRef, useEffect } from "react";
-import {
-  initialEntities,
-  initialRelationships,
-  initialEdges,
-  initialAttributes,
-  initialGeneralisations,
-} from "./initial";
+import { initialEntities, initialRelationships, initialEdges } from "./initial";
 import { actions, types } from "./types";
 import Edge from "./edges/edge";
 import { Xwrapper } from "react-xarrows";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import Toolbar from "./toolbar";
-import Attribute from "./edges/attribute";
 import "./stylesheets/editor.css";
-import { Generalisation, TestEntity, TestRelationship } from "./nodes/node";
+import { TestEntity, TestRelationship } from "./nodes/node";
 
 import SelectEntity from "./right_toolbar/selectEntity";
 import SelectRelationship from "./right_toolbar/selectRelationship";
 import Normal from "./right_toolbar/normal";
 import SelectEdge from "./right_toolbar/selectEdge";
-import { ContextMenu } from "./contextMenu";
 import EdgeToRelationship from "./right_toolbar/edgeRelationship";
 
 // TODO: update left,right toolbar to match new data structures
@@ -43,10 +35,6 @@ export default function Editor() {
   // List of components that will be rendered
   const [entities, setEntities] = useState(initialEntities);
   const [relationships, setRelationships] = useState(initialRelationships);
-  const [attributes, setAttributes] = useState(initialAttributes);
-  const [generalisations, setGeneralisations] = useState(
-    initialGeneralisations
-  );
   const [edges, setEdges] = useState(initialEdges);
   const [stack, setStack] = useState([]);
 
@@ -59,24 +47,86 @@ export default function Editor() {
     setRender(true);
   }, []);
 
-  const nodeStates = {
-    [types.ENTITY]: entities,
-    [types.RELATIONSHIP]: relationships,
-    [types.ATTRIBUTE]: attributes,
-    [types.GENERALISATION]: generalisations,
-    [types.EDGE.RELATIONSHIP]: edges,
-    [types.EDGE.HIERARCHY]: edges,
-		[types.EDGE.GENERALISATION]: edges,
+  const getEdge = (id) => ({ ...edges[id] });
+
+  // Returns a copy of the element
+  const elementGetters = {
+    [types.ENTITY]: (id) => ({ ...entities[id] }),
+    [types.RELATIONSHIP]: (id) => ({ ...relationships[id] }),
+    [types.ATTRIBUTE]: (id, parentType, parentId) => {
+      console.assert(parentType in [types.ENTITY, types.RELATIONSHIP]);
+      const parent = elementGetters[parentType](parentId);
+      return { ...parent.attributes[id] };
+    },
+    [types.GENERALISATION]: (id, parentType, parentId) => {
+      console.assert(parentType === types.ENTITY);
+      const parent = elementGetters[parentType](parentId);
+      return { ...parent.generalisations[id] };
+    },
+    [types.EDGE.RELATIONSHIP]: getEdge,
+    [types.EDGE.HIERARCHY]: getEdge,
+    [types.EDGE.GENERALISATION]: getEdge,
+  };
+  const getElement = (type, id, parentType, parentId) => {
+    return elementGetters[type](id, parentType, parentId);
   };
 
-  const nodeSetters = {
-    [types.ENTITY]: setEntities,
-    [types.RELATIONSHIP]: setRelationships,
-    [types.ATTRIBUTE]: setAttributes,
-    [types.GENERALISATION]: setGeneralisations,
-    [types.EDGE.RELATIONSHIP]: setEdges,
-    [types.EDGE.HIERARCHY]: setEdges,
-		[types.EDGE.GENERALISATION]: setEdges,
+  const edgeSetter = (edge) => {
+    setEdges((prev) => {
+      let edges = { ...prev };
+      edges[edge.id] = edge;
+      return edges;
+    });
+  };
+  // TODO:: refactor similar functions (ent, rel)
+  const elementSetters = {
+    [types.ENTITY]: (entity) =>
+      setEntities((prev) => {
+        let entities = { ...prev };
+        entities[entity.id] = entity;
+        return entities;
+      }),
+    [types.RELATIONSHIP]: (relationship) =>
+      setRelationships((prev) => {
+        let relationships = { ...prev };
+        relationships[relationship.id] = relationship;
+        return relationships;
+      }),
+    [types.ATTRIBUTE]: (attribute) => {
+      let parent = elementGetters[attribute.parentType](attribute.parentId);
+      parent.attributes[attribute.id] = attribute;
+      elementSetters[attribute.parentType](parent);
+    },
+    [types.GENERALISATION]: (generalisation) => {
+      // Parent type must be of ENTITY type
+      let parent = elementGetters[types.ENTITY](generalisation.parentId);
+      parent.generalisations[generalisation.id] = generalisation;
+      elementSetters[types.ENTITY](parent);
+    },
+    [types.EDGE.RELATIONSHIP]: edgeSetter,
+    [types.EDGE.HIERARCHY]: edgeSetter,
+    [types.EDGE.GENERALISATION]: edgeSetter,
+  };
+
+  const addElement = (type, element, isUndo) => {
+    setElement(type, element, true, isUndo);
+  };
+  const updateElement = (type, element, isUndo) => {
+    setElement(type, element, false, isUndo);
+  };
+  const setElement = (type, element, add, isUndo) => {
+    if (!isUndo) {
+      const inverse = add ? "deleteNode" : "updateNode";
+      const inverseObj = add
+        ? { ...element }
+        : elementGetters[type](
+            element.id,
+            element.parentType,
+            element.parentId
+          );
+      addToUndo(inverse, type, inverseObj);
+    }
+    elementSetters[type](element);
   };
 
   const getId = () => {
@@ -102,49 +152,14 @@ export default function Editor() {
     let stackClone = [...stack];
     let top = stackClone.pop();
     if (!top) return;
-    nodeFunctions[top["action"]](top["type"], top["element"], true);
+    elementFunctions[top["action"]](top["type"], top["element"], true);
     setStack(stackClone);
   };
 
-  // TODO: instead of _Node, should probably rename to _Element since it applies to edges as well
-  // Generic update, add and delete functions for elements
-  // Element should be the (whole) updated element
-  const updateNode = (type, element, isUndo) => {
-    if (!isUndo) {
-      addToUndo("updateNode", type, { ...nodeStates[type][element.id] });
-    }
-    let newNodeState = { ...nodeStates[type] };
-    newNodeState[element.id] = element;
-    nodeSetters[type](newNodeState);
-  };
-
-  const getNode = (type, id) => {
-    console.log(`getNode(type:${type}, id:${id})`);
-    return { ...nodeStates[type][id] };
-  };
-
-  const addNode = (type, element, isUndo) => {
-    if (!isUndo) addToUndo("deleteNode", type, { ...element });
-    // TODO: update other functions into callbacks
-    nodeSetters[type]((prevState) => ({
-      ...prevState,
-      [element.id]: element,
-    }));
-  };
-
-  const deleteNode = (type, element, isUndo) => {
-    let newNodeState = { ...nodeStates[type] };
-    delete newNodeState[element.id];
-    // TODO: recursively remove other nodes/edges connected + undo
-    nodeSetters[type](newNodeState);
-    setContext({ action: actions.NORMAL });
-  };
-
-  const nodeFunctions = {
-    updateNode: updateNode,
-    getNode: getNode,
-    addNode: addNode,
-    deleteNode: deleteNode,
+  const elementFunctions = {
+    getElement: getElement,
+    addElement: addElement,
+    updateElement: updateElement,
     getId: getId,
     undo: undo,
     setEditableId: setEditableId,
@@ -164,7 +179,6 @@ export default function Editor() {
         target: null,
       });
     },
-    addAttribute: () => {},
   };
 
   const rightToolBarActions = {
@@ -208,7 +222,7 @@ export default function Editor() {
             return (
               <SelectEntity
                 entity={entities[context.selected.id]}
-                {...nodeFunctions}
+                {...elementFunctions}
                 {...generalFunctions}
               />
             );
@@ -216,7 +230,7 @@ export default function Editor() {
             return (
               <SelectRelationship
                 relationship={relationships[context.selected.id]}
-                {...nodeFunctions}
+                {...elementFunctions}
                 {...generalFunctions}
               />
             );
@@ -230,7 +244,7 @@ export default function Editor() {
       case actions.RELATIONSHIP_ADD.SELECT_TARGET:
         return (
           <EdgeToRelationship
-            {...nodeFunctions}
+            {...elementFunctions}
             {...rightToolBarActions}
             {...generalFunctions}
           />
@@ -246,7 +260,7 @@ export default function Editor() {
       <div className="editor" ref={parentRef}>
         {render ? (
           <>
-            <Toolbar {...nodeFunctions} {...leftToolBarActions} />
+            <Toolbar {...elementFunctions} {...leftToolBarActions} />
             <TransformWrapper {...canvasConfig}>
               <TransformComponent>
                 <div
@@ -257,10 +271,12 @@ export default function Editor() {
                   {Object.values(entities).map((entity) => (
                     <TestEntity
                       key={entity.id}
-                      {...entity}
-                      {...nodeConfig}
-                      {...nodeFunctions}
-                      {...generalFunctions}
+                      entity={entity}
+                      general={{
+                        ...nodeConfig,
+                        ...elementFunctions,
+                        ...generalFunctions,
+                      }}
                     />
                   ))}
                   {Object.values(relationships).map((relationship) => (
@@ -268,23 +284,7 @@ export default function Editor() {
                       key={relationship.id}
                       {...relationship}
                       {...nodeConfig}
-                      {...nodeFunctions}
-                      {...generalFunctions}
-                    />
-                  ))}
-                  {Object.values(attributes).map((attribute) => (
-                    <Attribute
-                      key={attribute.id}
-                      {...attribute}
-                      {...nodeFunctions}
-                    />
-                  ))}
-                  {Object.values(generalisations).map((entity) => (
-                    <Generalisation
-                      key={entity.id}
-                      {...entity}
-                      {...nodeConfig}
-                      {...nodeFunctions}
+                      {...elementFunctions}
                       {...generalFunctions}
                     />
                   ))}

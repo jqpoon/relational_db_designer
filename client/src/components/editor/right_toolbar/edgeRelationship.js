@@ -11,15 +11,15 @@ export default function EdgeToRelationship({
   context,
   cancel,
   setContext,
-  addNode,
-  getNode,
-  updateNode,
+  getElement, 
+  addElement,
+  updateElement,
   getId,
 }) {
   const updateNodeWithEdge = (nodeID, nodeType, edge) => {
-    let node = getNode(nodeType, nodeID);
+    let node = getElement(nodeType, nodeID);
     node.edges[edge.id] = { type: edge.type };
-    updateNode(nodeType, node);
+    updateElement(nodeType, node);
   };
   const addEdge = () => {
     const newEdges = [];
@@ -40,7 +40,7 @@ export default function EdgeToRelationship({
     }
     for (const edge of newEdges) {
       // TODO: implement addNodes([List of nodes])
-      addNode(types.EDGE.RELATIONSHIP, edge);
+      addElement(types.EDGE.RELATIONSHIP, edge);
       updateNodeWithEdge(edge.start, edge.source_type, edge);
       updateNodeWithEdge(edge.end, edge.target_type, edge);
     }
@@ -129,7 +129,7 @@ export default function EdgeToRelationship({
                 <div>
                   <div className="selected-element">
                     <div>ID: {s}</div>
-                    <div>Label: {getNode(c.type, s).text}</div>
+                    <div>Label: {getElement(c.type, s).text}</div>
                     <div>
                       <CardinalityChoices
                         value={c.cardinality}

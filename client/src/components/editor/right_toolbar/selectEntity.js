@@ -15,9 +15,9 @@ import "./toolbar-right.css";
 
 export default function SelectEntity({
   entity,
-  addNode,
-  getNode,
-  updateNode,
+  getElement,
+  addElement,
+  updateElement,
   context,
   setContext,
 }) {
@@ -45,7 +45,7 @@ export default function SelectEntity({
       case types.EDGE.GENERALISATION: // TODO
       case types.EDGE.HIERARCHY:
         // TODO: add null check?
-        const isParent = getNode(type, id).end === context.selected.id;
+        const isParent = getElement(type, id).end === context.selected.id;
         const group = isParent ? children : parents;
         group.push(id);
         break;
@@ -65,23 +65,25 @@ export default function SelectEntity({
       {/* Attributes Section */}
       <div className="section">
         <div className="section-header">Attributes</div>
-        <DisplayAttributes attributes={entity.attributeList} getNode={getNode} />
+        <DisplayAttributes
+          attributes={Object.values(entity.attributes)}
+        />
       </div>
       {/* Relationships Section */}
       <div className="section">
         <div className="section-header">Relationships</div>
         <DisplayRelationships
           relationships={relationships}
-          getNode={getNode}
+          getElement={getElement}
           isSource={true}
         />
         {context.action === actions.SELECT.ADD_RELATIONSHIP ? (
           <AddingRelationship
             {...context}
             setContext={setContext}
-            getNode={getNode}
-            addNode={addNode}
-            updateNode={updateNode}
+            getElement={getElement}
+            addElement={addElement}
+            updateElement={updateElement}
           />
         ) : (
           <div className="section-tool" onClick={addRelationship}>
@@ -92,14 +94,14 @@ export default function SelectEntity({
       {/* Superset sections */}
       <div className="section">
         <div className="section-header">Superset(s)</div>
-        <DisplaySupersets parents={parents} getNode={getNode} />
+        <DisplaySupersets parents={parents} getElement={getElement} />
         {context.action === actions.SELECT.ADD_SUPERSET ? (
           <AddingSuperset
             {...context}
             setContext={setContext}
-            getNode={getNode}
-            addNode={addNode}
-            updateNode={updateNode}
+            getElement={getElement}
+            addElement={addElement}
+            updateElement={updateElement}
           />
         ) : (
           <div className="section-tool" onClick={addSuperset}>
@@ -110,14 +112,14 @@ export default function SelectEntity({
       {/* Subset sections */}
       <div className="section">
         <div className="section-header">Subset(s)</div>
-        <DisplaySubsets children={children} getNode={getNode} />
+        <DisplaySubsets children={children} getElement={getElement} />
         {context.action === actions.SELECT.ADD_SUBSET ? (
           <AddingSubset
             {...context}
             setContext={setContext}
-            getNode={getNode}
-            addNode={addNode}
-            updateNode={updateNode}
+            getElement={getElement}
+            addElement={addElement}
+            updateElement={updateElement}
           />
         ) : (
           <div className="section-tool" onClick={addSubset}>

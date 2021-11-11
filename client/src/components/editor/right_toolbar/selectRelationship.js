@@ -7,9 +7,9 @@ import { DisplayRelationships } from "./utilities/listDisplay";
 // React fragments vs divs ?
 export default function SelectRelationship({
   relationship,
-  addNode,
-  getNode,
-  updateNode,
+  getElement,
+  addElement,
+  updateElement,
   context,
   setContext,
 }) {
@@ -37,16 +37,16 @@ export default function SelectRelationship({
         <div className="section-header">Connections</div>
         <DisplayRelationships
           relationships={Object.keys(relationship.edges)}
-          getNode={getNode}
+          getElement={getElement}
           isSource={false}
         />
         {context.action === actions.SELECT.ADD_RELATIONSHIP ? (
           <RelationshipAdding
             {...context}
             setContext={setContext}
-            getNode={getNode}
-            addNode={addNode}
-            updateNode={updateNode}
+            getElement={getElement}
+            addElement={addElement}
+            updateElement={updateElement}
           />
         ) : (
           <div className="section-tool" onClick={addConnection}>

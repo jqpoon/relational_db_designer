@@ -29,12 +29,12 @@ function DisplayNodes({ ids, idToNode }) {
   );
 }
 
-export function DisplayRelationships({ relationships, getNode, isSource }) {
+export function DisplayRelationships({ relationships, getElement, isSource }) {
   const idToNode = (id) => {
-    const edge = getNode(types.EDGE.RELATIONSHIP, id);
+    const edge = getElement(types.EDGE.RELATIONSHIP, id);
     const connected = isSource
-      ? getNode(edge.target_type, edge.end)
-      : getNode(edge.source_type, edge.start);
+      ? getElement(edge.target_type, edge.end)
+      : getElement(edge.source_type, edge.start);
     return (
       <>
         <div>
@@ -47,12 +47,12 @@ export function DisplayRelationships({ relationships, getNode, isSource }) {
   return <DisplayNodes ids={relationships} idToNode={idToNode} />;
 }
 
-export function DisplaySupersets({ parents, getNode }) {
+export function DisplaySupersets({ parents, getElement }) {
   const idToNode = (id) => {
-    const edge = getNode(types.EDGE.HIERARCHY, id);
-    console.log('Getting Edge:')
+    const edge = getElement(types.EDGE.HIERARCHY, id);
+    console.log("Getting Edge:");
     console.log(edge);
-    const parent = getNode(edge.target_type, edge.end);
+    const parent = getElement(edge.target_type, edge.end);
     return (
       <div>
         {typeToString(edge.target_type)}: {parent.text}
@@ -62,10 +62,10 @@ export function DisplaySupersets({ parents, getNode }) {
   return <DisplayNodes ids={parents} idToNode={idToNode} />;
 }
 
-export function DisplaySubsets({ children, getNode }) {
+export function DisplaySubsets({ children, getElement }) {
   const idToNode = (id) => {
-    const edge = getNode(types.EDGE.HIERARCHY, id);
-    const child = getNode(edge.source_type, edge.start);
+    const edge = getElement(types.EDGE.HIERARCHY, id);
+    const child = getElement(edge.source_type, edge.start);
     return (
       <div>
         {typeToString(edge.source_type)}: {child.text}
@@ -75,10 +75,9 @@ export function DisplaySubsets({ children, getNode }) {
   return <DisplayNodes ids={children} idToNode={idToNode} />;
 }
 
-export function DisplayAttributes({attributes, getNode}) {
-  const idToNode = (id) => {
-    const attribute = getNode(types.ATTRIBUTE, id);
-    return <div>{attribute.text}</div>
-  }
+export function DisplayAttributes({ attributes }) {
+  const idToNode = (attribute) => {
+    return <div>{attribute.text}</div>;
+  };
   return <DisplayNodes ids={attributes} idToNode={idToNode} />;
 }

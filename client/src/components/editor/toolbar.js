@@ -4,10 +4,9 @@ import "./stylesheets/toolbar.css";
 import { types } from "./types";
 
 export default function Toolbar({
-  addAttribute,
   addEdgeToRelationship,
   getId,
-  addNode,
+  addElement,
   undo,
 }) {
   const entityToolRef = useRef(null);
@@ -24,7 +23,7 @@ export default function Toolbar({
       type: types.ENTITY,
       edges: {},
     };
-    addNode(types.ENTITY, newEntity);
+    addElement(types.ENTITY, newEntity);
   };
 
   const addRelationship = (x, y) => {
@@ -38,7 +37,7 @@ export default function Toolbar({
       type: types.RELATIONSHIP,
       edges: {},
     };
-    addNode(types.RELATIONSHIP, newRelationship);
+    addElement(types.RELATIONSHIP, newRelationship);
   };
 
   return (

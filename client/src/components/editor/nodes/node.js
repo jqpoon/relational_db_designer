@@ -2,6 +2,7 @@ import { useCallback, useState, useRef, useEffect } from "react";
 import Draggable from "react-draggable";
 import { useXarrow } from "react-xarrows";
 import { ContextMenu } from "../contextMenu";
+import Attribute from "../edges/attribute";
 import { actions, types } from "../types";
 import "./stylesheets/node.css";
 
@@ -9,8 +10,11 @@ export function TestRelationship(props) {
   return <Node {...props} />;
 }
 
-export function TestEntity(props) {
-  return <Node {...props} />;
+export function TestEntity({ entity, general }) {
+  const children = Object.values(entity.attributes).map((attribute) => {
+    return <Attribute {...attribute} {...general} />;
+  });
+  return <Node {...entity} {...general} children={children} />;
 }
 
 export function Generalisation(props) {
@@ -31,13 +35,15 @@ export default function Node({
   pos,
   parentRef,
   scale,
-  updateNode,
-  getNode,
-  addNode,
+  getElement,
+  addElement,
+  updateElement,
   setPanDisabled,
   context,
   setContext,
   children,
+  parentId,
+  parentType,
 }) {
   console.log(`Rendering node (id: ${id})`);
   // Reference to self allows info about self to be propagated
@@ -86,9 +92,9 @@ export default function Node({
   const onDrag = updateXarrow;
   const onStop = (e, data) => {
     // Save new position of node
-    let newNode = getNode(type, id);
+    let newNode = getElement(type, id, parentType, parentId);
     newNode.pos = { x: data.x, y: data.y };
-    updateNode(type, newNode);
+    updateElement(type, newNode);
     // Update arrow position
     updateXarrow(e); // TODO: check function signature of updateXarrow(E, DATA) ?
     // Re-enable panning of canvas
@@ -169,9 +175,9 @@ export default function Node({
           onKeyPress={(e) => {
             if (e.key === "Enter") {
               // Update node text
-              let newNode = getNode(type, id);
+              let newNode = getElement(type, id, parentType, parentId);
               newNode.text = name;
-              updateNode(type, newNode);
+              updateElement(type, newNode);
               setEditable(false);
             }
           }}
@@ -199,9 +205,9 @@ export default function Node({
             show={show}
             setEditable={setEditable}
             id={id}
-            updateNode={updateNode}
-            addNode={addNode}
-            getNode={getNode}
+            getElement={getElement}
+            addElement={addElement}
+            updateElement={updateElement}
           />
           {normalMode}
         </div>

@@ -8,9 +8,9 @@ function AddingEdge({
   selected,
   target,
   setContext,
-  getNode,
-  addNode,
-  updateNode,
+  getElement,
+  addElement,
+  updateElement,
   createEdge,
   validate,
 }) {
@@ -24,14 +24,14 @@ function AddingEdge({
   };
 
   const updateNodeWithEdge = (nodeID, nodeType, edge) => {
-    let node = getNode(nodeType, nodeID);
+    let node = getElement(nodeType, nodeID);
     node.edges[edge.id] = { type: edge.type };
-    updateNode(nodeType, node);
+    updateElement(nodeType, node);
   };
   const addEdge = () => {
     if (validate === null || validate(target)) {
       const edge = createEdge(selected, target);
-      addNode(edge.type, edge);
+      addElement(edge.type, edge);
       updateNodeWithEdge(edge.start, edge.source_type, edge);
       updateNodeWithEdge(edge.end, edge.target_type, edge);
       reset();
@@ -53,7 +53,7 @@ function AddingEdge({
     );
   }
 
-  const node = getNode(target.type, target.id);
+  const node = getElement(target.type, target.id);
   const nodeType = typeToString(target.type);
 
   let warning = null;
