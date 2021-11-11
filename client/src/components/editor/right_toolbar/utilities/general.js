@@ -5,6 +5,7 @@ export function typeToString(type) {
     [types.ENTITY]: "Entity",
     [types.RELATIONSHIP]: "Relationship",
     [types.ATTRIBUTE]: "Attribute",
+    [types.GENERALISATION]: "Generalisation",
     [types.EDGE.HIERARCHY]: "Edge",
     [types.EDGE.RELATIONSHIP]: "Edge",
   };

@@ -13,9 +13,14 @@ export function TestEntity(props) {
   return <Node {...props} />;
 }
 
+export function Generalisation(props) {
+  return <Node {...props} />;
+}
+
 const classFromNodeType = {
   [types.ENTITY]: "entity",
   [types.RELATIONSHIP]: "relationship",
+  [types.GENERALISATION]: "generalisation",
 };
 
 // General draggable, editable node
@@ -32,7 +37,9 @@ export default function Node({
   setPanDisabled,
   context,
   setContext,
+  children,
 }) {
+  console.log(`Rendering node (id: ${id})`);
   // Reference to self allows info about self to be propagated
   const nodeRef = useRef(null);
   // Name of node which will be displayed
@@ -147,21 +154,14 @@ export default function Node({
   const contentsConfig = {
     id: id,
     ref: nodeRef,
-    className: "node-wrapper", //classFromNodeType[type],
+    className: "node-wrapper",
     onClick: onClick,
   };
 
   // Contents displayed in node
   const editingMode = () => {
-    var className;
-    if (type === types.ENTITY) {
-      className = "entity-input";
-    } else if (type === types.RELATIONSHIP) {
-      className = "diamond-input";
-    }
-
-    return editable ? (
-      <div className={className}>
+    return (
+      <div className={classFromNodeType[type] + "-input"}>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -177,30 +177,36 @@ export default function Node({
           }}
         />
       </div>
-    ) : (
-      <div>{text}</div>
     );
   };
 
   const normalMode = (
-    <div className={classFromNodeType[type]}>{editingMode()}</div>
+    <div className={classFromNodeType[type]}>
+      {editable ? editingMode() : <div>{text}</div>}
+    </div>
   );
   // TODO:conditional rendering
 
   return (
-    <Draggable style={{ width: "150px", height: "75px" }} {...draggableConfig}>
-      <div {...contentsConfig}>
-        <ContextMenu
-          anchorPoint={anchorPoint}
-          show={show}
-          setEditable={setEditable}
-          id={id}
-          updateNode={updateNode}
-          addNode={addNode}
-          getNode={getNode}
-        />
-        {normalMode}
-      </div>
-    </Draggable>
+    <>
+      <Draggable
+        style={{ width: "150px", height: "75px" }}
+        {...draggableConfig}
+      >
+        <div {...contentsConfig}>
+          <ContextMenu
+            anchorPoint={anchorPoint}
+            show={show}
+            setEditable={setEditable}
+            id={id}
+            updateNode={updateNode}
+            addNode={addNode}
+            getNode={getNode}
+          />
+          {normalMode}
+        </div>
+      </Draggable>
+      {children}
+    </>
   );
 }

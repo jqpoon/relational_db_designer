@@ -50,6 +50,8 @@ export function DisplayRelationships({ relationships, getNode, isSource }) {
 export function DisplaySupersets({ parents, getNode }) {
   const idToNode = (id) => {
     const edge = getNode(types.EDGE.HIERARCHY, id);
+    console.log('Getting Edge:')
+    console.log(edge);
     const parent = getNode(edge.target_type, edge.end);
     return (
       <div>

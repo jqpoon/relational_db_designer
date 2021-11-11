@@ -1,5 +1,20 @@
 import { types } from "./types";
 
+// TODO: consider moving generalisations within entity nodes
+export const initialGeneralisations = {
+  G0: {
+    type: types.GENERALISATION,
+    id: "G0",
+    text: "Messages",
+    pos: { x: 300, y: 400 },
+    edges: {
+      G0E0: { type: types.EDGE.HIERARCHY },
+      E3E0G0: { type: types.EDGE.GENERALISATION },
+      E4E0G0: { type: types.EDGE.GENERALISATION },
+    },
+  },
+};
+
 export const initialEntities = {
   E0: {
     id: "E0",
@@ -9,6 +24,7 @@ export const initialEntities = {
     edges: {
       E0R0: { type: types.EDGE.RELATIONSHIP },
       E1E0: { type: types.EDGE.HIERARCHY },
+      G0E0: { type: types.EDGE.HIERARCHY },
     },
     attributeList: ["E0A0"],
   },
@@ -21,6 +37,7 @@ export const initialEntities = {
       E1E0: { type: types.EDGE.HIERARCHY },
     },
     attributeList: [],
+    generalisations: {},
   },
   E2: {
     id: "E2",
@@ -31,6 +48,29 @@ export const initialEntities = {
       E2R0: { type: types.EDGE.RELATIONSHIP },
     },
     attributeList: [],
+    generalisations: {},
+  },
+  E3: {
+    id: "E3",
+    text: "Email User",
+    pos: { x: 100, y: 600 },
+    type: types.ENTITY,
+    edges: {
+      E3E0G0: { type: types.EDGE.GENERALISATION },
+    },
+    attributeList: [],
+    generalisations: {},
+  },
+  E4: {
+    id: "E4",
+    text: "Non-email User",
+    pos: { x: 500, y: 600 },
+    type: types.ENTITY,
+    edges: {
+      E4E0G0: { type: types.EDGE.GENERALISATION },
+    },
+    attributeList: [],
+    generalisations: {},
   },
 };
 
@@ -73,6 +113,31 @@ export const initialEdges = {
     type: types.EDGE.HIERARCHY,
     source_type: types.ENTITY,
     target_type: types.ENTITY,
+  },
+  G0E0: {
+    // TODO: consider removing these edges, and automatically generate them with the entity node
+    start: "G0",
+    end: "E0",
+    id: "G0E0",
+    type: types.EDGE.HIERARCHY,
+    source_type: types.GENERALISATION,
+    target_type: types.ENTITY,
+  },
+  E3E0G0: {
+    start: "E3",
+    end: "G0",
+    id: "E3E0G0",
+    type: types.EDGE.GENERALISATION,
+    source_type: types.ENTITY,
+    target_type: types.GENERALISATION,
+  },
+  E4E0G0: {
+    start: "E4",
+    end: "G0",
+    id: "E4E0G0",
+    type: types.EDGE.GENERALISATION,
+    source_type: types.ENTITY,
+    target_type: types.GENERALISATION,
   },
 };
 
