@@ -18,7 +18,6 @@ import SelectEntity from "./right_toolbar/selectEntity";
 import SelectRelationship from "./right_toolbar/selectRelationship";
 import Normal from "./right_toolbar/normal";
 import SelectEdge from "./right_toolbar/selectEdge";
-import { ContextMenu } from "./contextMenu";
 import EdgeToRelationship from "./right_toolbar/edgeRelationship";
 
 // TODO: update left,right toolbar to match new data structures
