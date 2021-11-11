@@ -74,3 +74,11 @@ export function DisplaySubsets({ children, getNode }) {
   };
   return <DisplayNodes ids={children} idToNode={idToNode} />;
 }
+
+export function DisplayAttributes({attributes, getNode}) {
+  const idToNode = (id) => {
+    const attribute = getNode(types.ATTRIBUTE, id);
+    return <div>{attribute.text}</div>
+  }
+  return <DisplayNodes ids={attributes} idToNode={idToNode} />;
+}
