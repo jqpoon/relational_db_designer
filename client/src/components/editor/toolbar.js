@@ -23,6 +23,7 @@ export default function Toolbar({
       text: "Enter Text",
       type: types.ENTITY,
       edges: {},
+      attributes: {},
     };
     addElement(types.ENTITY, newEntity);
   };

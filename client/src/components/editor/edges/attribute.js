@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useCallback } from "react";
-import Xarrow from 'react-xarrows';
-import "./stylesheets/attribute.css"
+import Xarrow from "react-xarrows";
+import "./stylesheets/attribute.css";
 import { types } from "../types";
 import { AttributeContextMenu } from "../contextMenus/attributeContextMenu";
 
@@ -21,42 +21,36 @@ export default function Attribute({
   const [name, setName] = useState(text);
   const [editable, setEditable] = useState(true);
   const [isKeyAttribute, setIsKeyAttribute] = useState(false);
-	const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 }); // Context menu stuff
-	const [show, setShow] = useState(false); // State to show context menu
+  const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 }); // Context menu stuff
+  const [show, setShow] = useState(false); // State to show context menu
 
   // Ref of lollipop end
   const attributeEndRef = useRef(null);
   const attributeEndRefCenter = useRef(null);
 
   // Hides the context menu if we left click again
-	const handleClick = useCallback(
-		() => {
-      setShow(false);
-    },
-		[show]
-	);
+  const handleClick = useCallback(() => {
+    setShow(false);
+  }, [show]);
 
-	// Show context menu
-	const handleContextMenu = useCallback(
-		(event) => {
-			event.preventDefault();
-			setAnchorPoint({ x: 0, y: 0 }); // TODO: figure out how to fix anchor point
-			setShow(true);
-		},
-		[]
-	);
+  // Show context menu
+  const handleContextMenu = useCallback((event) => {
+    event.preventDefault();
+    setAnchorPoint({ x: 0, y: 0 }); // TODO: figure out how to fix anchor point
+    setShow(true);
+  }, []);
 
-	// Handle context menus callbacks on mount
-	useEffect(() => {
-		const curAttr = attributeEndRef.current;
-		// Right click
-		document?.addEventListener("click", handleClick);
-		curAttr?.addEventListener("contextmenu", handleContextMenu);
-		return () => {
-		  document?.removeEventListener("click", handleClick);
-		  curAttr?.removeEventListener("contextmenu", handleContextMenu);
-		};
-	  }, []);
+  // Handle context menus callbacks on mount
+  useEffect(() => {
+    const curAttr = attributeEndRef.current;
+    // Right click
+    document?.addEventListener("click", handleClick);
+    curAttr?.addEventListener("contextmenu", handleContextMenu);
+    return () => {
+      document?.removeEventListener("click", handleClick);
+      curAttr?.removeEventListener("contextmenu", handleContextMenu);
+    };
+  }, []);
 
   // Calculate position of entity end
   const calculateEntityEndPos = () => {
@@ -97,88 +91,90 @@ export default function Attribute({
   }
 
   // Toggles key attribute feature
-	const toggleKeyAttribute = () => {
-		let attrNode = getElement(types.ATTRIBUTE, id, parentType, parentId);
-		if (isKeyAttribute) {
-			setIsKeyAttribute(false);
-			attrNode['isPrimaryKey'] = false;
-		} else {
-			setIsKeyAttribute(true);
-			attrNode['isPrimaryKey'] = true;
-		}
+  const toggleKeyAttribute = () => {
+    let attrNode = getElement(types.ATTRIBUTE, id, parentType, parentId);
+    if (isKeyAttribute) {
+      setIsKeyAttribute(false);
+      attrNode["isPrimaryKey"] = false;
+    } else {
+      setIsKeyAttribute(true);
+      attrNode["isPrimaryKey"] = true;
+    }
 
-		updateElement(types.ATTRIBUTE, attrNode);
-	}
+    updateElement(types.ATTRIBUTE, attrNode);
+  };
 
   // Used for editing name of attribute
   const editingMode = () => {
     if (editable) {
-      return <div>
-        <input
-          value={name}
-          placeholder="Attribute"
-          onChange={(e) => setName(e.target.value)}
-          onClick={(e) => e.stopPropagation()}
-          onKeyPress={(e) => {
-            if (e.key === "Enter") {
-              // Update node text
-              let newNode = getElement(
-                types.ATTRIBUTE,
-                id,
-                parentType,
-                parentId
-              );
-              newNode.text = name;
-              updateElement(types.ATTRIBUTE, newNode);
-              setEditable(false);
-            }
-          }}
-        />
-      </div>
-     } 
-     if (isKeyAttribute) {
-			return <u>{text}</u>
-		} else {
-			return <div>{text}</div>
-		}
+      return (
+        <div>
+          <input
+            value={name}
+            placeholder="Attribute"
+            onChange={(e) => setName(e.target.value)}
+            onClick={(e) => e.stopPropagation()}
+            onKeyPress={(e) => {
+              if (e.key === "Enter") {
+                // Update node text
+                let newNode = getElement(
+                  types.ATTRIBUTE,
+                  id,
+                  parentType,
+                  parentId
+                );
+                newNode.text = name;
+                updateElement(types.ATTRIBUTE, newNode);
+                setEditable(false);
+              }
+            }}
+          />
+        </div>
+      );
+    }
+
+    if (isKeyAttribute) {
+      return <u>{text}</u>;
+    } else {
+      return <div>{text}</div>;
+    }
+  };
 
   // Define component to be rendered
-	let attributeEnd = (
-		<div ref={attributeEndRef}
-			 className="attribute-end" 
-			 style={chosenStyle}
-			 onDoubleClick={ () => {setEditable(true)}}>
+  let attributeEnd = (
+    <div
+      ref={attributeEndRef}
+      className="attribute-end"
+      style={chosenStyle}
+      onDoubleClick={() => {
+        setEditable(true);
+      }}
+    >
+      <AttributeContextMenu
+        anchorPoint={anchorPoint}
+        show={show}
+        setEditable={setEditable}
+        toggleKeyAttribute={toggleKeyAttribute}
+      />
+      <div className="attribute-end-center" ref={attributeEndRefCenter}></div>
+      <div style={textStyle}>{editingMode()}</div>
+    </div>
+  );
 
-			<AttributeContextMenu
-				anchorPoint={anchorPoint}
-				show={show}
-				setEditable={setEditable}
-				toggleKeyAttribute={toggleKeyAttribute}
-			/>
-			<div className="attribute-end-center"
-				 ref={attributeEndRefCenter}> 
-			</div>
-			<div style={textStyle}>
-				{editingMode()}
-			</div>
-		</div>
-	);
-
-	let attribute = (
-			<div>
-				{attributeEnd}
-				<Xarrow 
-					start={start}
-					end={attributeEndRefCenter}
-					path="straight"
-					headSize="0"
-					zIndex={-10}
-            	/>
-			</div>
-		);
+  let attribute = (
+    <div>
+      {attributeEnd}
+      <Xarrow
+        start={parentId}
+        end={attributeEndRefCenter}
+        path="straight"
+        headSize="0"
+        zIndex={-10}
+      />
+    </div>
+  );
 
   return attribute;
-}
 }
 
 // Class to store global count of attributes, so that we can generate

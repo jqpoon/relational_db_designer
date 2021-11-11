@@ -10,7 +10,6 @@ export const initialEntities = {
       E0R0: { type: types.EDGE.RELATIONSHIP },
       E1E0: { type: types.EDGE.HIERARCHY },
     },
-    // TODO: initialise empty dict when adding new attribute
     attributes: {
       E0A0: {
         parentId: "E0",

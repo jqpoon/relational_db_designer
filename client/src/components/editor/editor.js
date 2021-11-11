@@ -37,7 +37,7 @@ export default function Editor() {
   const [relationships, setRelationships] = useState(initialRelationships);
   const [edges, setEdges] = useState(initialEdges);
   const [undoStack, setUndoStack] = useState([]);
-	const [redoStack, setRedoStack] = useState([]);
+  const [redoStack, setRedoStack] = useState([]);
 
   const [context, setContext] = useState({ action: actions.NORMAL });
 
@@ -55,7 +55,7 @@ export default function Editor() {
     [types.ENTITY]: (id) => ({ ...entities[id] }),
     [types.RELATIONSHIP]: (id) => ({ ...relationships[id] }),
     [types.ATTRIBUTE]: (id, parentType, parentId) => {
-      console.assert(parentType in [types.ENTITY, types.RELATIONSHIP]);
+      console.assert([types.ENTITY, types.RELATIONSHIP].includes(parentType));
       const parent = elementGetters[parentType](parentId);
       return { ...parent.attributes[id] };
     },
@@ -72,36 +72,67 @@ export default function Editor() {
     return elementGetters[type](id, parentType, parentId);
   };
 
-  const edgeSetter = (edge) => {
+  const edgeSetter = (edge, editType) => {
     setEdges((prev) => {
       let edges = { ...prev };
-      edges[edge.id] = edge;
+      switch (editType) {
+        case "deleteElement":
+          delete edges[edge.id];
+          break;
+        default:
+          edges[edge.id] = edge;
+      }
       return edges;
     });
   };
   // TODO:: refactor similar functions (ent, rel)
   const elementSetters = {
-    [types.ENTITY]: (entity) =>
+    [types.ENTITY]: (entity, editType) =>
       setEntities((prev) => {
         let entities = { ...prev };
-        entities[entity.id] = entity;
+        switch (editType) {
+          case "deleteElement":
+            delete entities[entity.id];
+            break;
+          default:
+            entities[entity.id] = entity;
+        }
         return entities;
       }),
-    [types.RELATIONSHIP]: (relationship) =>
+    [types.RELATIONSHIP]: (relationship, editType) =>
       setRelationships((prev) => {
         let relationships = { ...prev };
-        relationships[relationship.id] = relationship;
+        switch (editType) {
+          case "deleteElement":
+            delete relationships[relationship.id];
+            break;
+          default:
+            relationships[relationship.id] = relationship;
+        }
+
         return relationships;
       }),
-    [types.ATTRIBUTE]: (attribute) => {
+    [types.ATTRIBUTE]: (attribute, editType) => {
       let parent = elementGetters[attribute.parentType](attribute.parentId);
-      parent.attributes[attribute.id] = attribute;
+      switch (editType) {
+        case "deleteElement":
+          delete parent.attributes[attribute.id];
+          break;
+        default:
+          parent.attributes[attribute.id] = attribute;
+      }
       elementSetters[attribute.parentType](parent);
     },
-    [types.GENERALISATION]: (generalisation) => {
+    [types.GENERALISATION]: (generalisation, editType) => {
       // Parent type must be of ENTITY type
       let parent = elementGetters[types.ENTITY](generalisation.parentId);
-      parent.generalisations[generalisation.id] = generalisation;
+      switch (editType) {
+        case "deleteElement":
+          delete parent.generalisations[generalisation.id];
+          break;
+        default:
+          parent.generalisations[generalisation.id] = generalisation;
+      }
       elementSetters[types.ENTITY](parent);
     },
     [types.EDGE.RELATIONSHIP]: edgeSetter,
@@ -110,24 +141,28 @@ export default function Editor() {
   };
 
   const nodeFunctionsOpposite = {
-		updateNode: "updateNode",
-		addNode: "deleteNode",
-		deleteNode: "addNode",
-	};
-
+    updateElement: "updateElement",
+    addElement: "deleteElement",
+    deleteElement: "addElement",
+  };
+  const deleteElement = (type, element, isHistory) => {
+    setElement(type, element, "deleteElement", isHistory);
+  };
   const addElement = (type, element, isHistory) => {
-    setElement(type, element, true, isHistory);
+    setElement(type, element, "addElement", isHistory);
   };
   const updateElement = (type, element, isHistory) => {
-    setElement(type, element, false, isHistory);
+    setElement(type, element, "updateElement", isHistory);
   };
-  const setElement = (type, element, add, isHistory) => {
+  const setElement = (type, element, editType, isHistory) => {
+    console.log(`${editType}`)
+    console.log(element)
     if (!isHistory) {
-      const inverse = nodeFunctionsOpposite[add ? "addNode" : "updateNode"];
-      addToUndo(inverse, type, element.id);
-      setRedoStack([])
+      const inverse = nodeFunctionsOpposite[editType];
+      addToUndo(inverse, type, element);
+      setRedoStack([]);
     }
-    elementSetters[type](element);
+    elementSetters[type](element, editType);
   };
 
   const getId = () => {
@@ -136,73 +171,76 @@ export default function Editor() {
     return id;
   };
 
-  const addToUndo = (action, type, id) =>
-		addToHistory(action, type, id, true);
-	const addToRedo = (action, type, id) =>
-		addToHistory(action, type, id, false);
+  const addToUndo = (action, type, elem) =>
+    addToHistory(action, type, elem, true);
+  const addToRedo = (action, type, elem) =>
+    addToHistory(action, type, elem, false);
   // Utility for adding to undo and redo
-	const addToHistory = (action, type, id, isUndo) => {
-		// Toggle between undo and redo
-		let state = isUndo ? undoStack : redoStack;
-		let setter = isUndo ? setUndoStack : setRedoStack;
+  const addToHistory = (action, type, elem, isUndo) => {
+    // Toggle between undo and redo
+    let state = isUndo ? undoStack : redoStack;
+    let setter = isUndo ? setUndoStack : setRedoStack;
 
-		// Build func object (Note that element should be passed in as a copy)
-		let func = {
-			action,
-			type,
-			id,
-			element: { ...nodeStates[type][id] },
-		};
+    let elemOld = elementGetters[type](elem.id, elem.parentType, elem.parentId);
 
-		// Update state within limit
-		let stateClone = [...state, func];
-		if (stateClone.length > STACK_LIMIT) {
-			stateClone.shift();
-		}
-		setter(stateClone);
-	};
+    // Build func object (Note that element should be passed in as a copy)
+    let func = {
+      action,
+      type,
+      id: elem.id,
+      // Gets a copy of the old element state if existing
+      // otherwise it is newly created and we pass in ...elem
+      // (note that elem passed in is of new state, so we can't use ...elem directly)
+      element:
+        elemOld === null || Object.keys(elemOld).length === 0
+          ? { ...elem }
+          : { ...elemOld },
+    };
+
+    // Update state within limit
+    let stateClone = [...state, func];
+    if (stateClone.length > STACK_LIMIT) {
+      stateClone.shift();
+    }
+    setter(stateClone);
+  };
 
   const undo = () => execHistory(true);
-	const redo = () => execHistory(false);
+  const redo = () => execHistory(false);
   // Utility for executing undo and redo
-	const execHistory = (isUndo) => {
-		// Toggle between undo and redo
-		let state = isUndo ? undoStack : redoStack;
-		let setter = isUndo ? setUndoStack : setRedoStack;
-		let addFunc = isUndo ? addToRedo : addToUndo;
+  const execHistory = (isUndo) => {
+    // Toggle between undo and redo
+    let state = isUndo ? undoStack : redoStack;
+    let setter = isUndo ? setUndoStack : setRedoStack;
+    let addFunc = isUndo ? addToRedo : addToUndo;
 
-		// Nothing to do
-		if (state.length === 0) return;
+    // Nothing to do
+    if (state.length === 0) return;
 
-		// Grab top of stack
-		let stateClone = [...state];
-		let top = stateClone.pop();
+    // Grab top of stack
+    let stateClone = [...state];
+    let top = stateClone.pop();
+    console.log("TopELEM");
+    console.log(top["element"]);
+    // Add to undo/redo stack current state
+    addFunc(nodeFunctionsOpposite[top["action"]], top["type"], top["element"]);
 
-		// Add to undo/redo stack current state
-		addFunc(nodeFunctionsOpposite[top["action"]], top["type"], top["id"]);
-
-		// Run and update state
-		let element =
-			top["element"] && Object.keys(top["element"]).length > 0
-				? top["element"]
-				: { ...nodeStates[top["type"]][top["id"]] };
-		nodeFunctions[top["action"]](top["type"], element, true);
-		setter(stateClone);
-	};
-
-
-  const undo = () => {
-    let stackClone = [...stack];
-    let top = stackClone.pop();
-    if (!top) return;
-    elementFunctions[top["action"]](top["type"], top["element"], true);
-    setStack(stackClone);
+    // Run and update state
+    // TODO: confirm that element should never be null or empty
+    let element = top["element"];
+    // let element =
+    //   top["element"] && Object.keys(top["element"]).length > 0
+    //     ? top["element"]
+    //     : { ...nodeStates[top["type"]][top["id"]] };
+    elementFunctions[top["action"]](top["type"], element, true);
+    setter(stateClone);
   };
 
   const elementFunctions = {
     getElement: getElement,
     addElement: addElement,
     updateElement: updateElement,
+    deleteElement: deleteElement,
     getId: getId,
     undo: undo,
     setEditableId: setEditableId,
