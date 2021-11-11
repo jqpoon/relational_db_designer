@@ -1,0 +1,57 @@
+name: Development workflow - Testing and deployment
+on: 
+  push:
+    branches:
+      - dev
+      - get_retrieving_schema
+
+jobs:
+  frontend_tests:
+    runs-on: ubuntu-latest
+    container: 
+      image: node:16
+    steps:
+      - name: Frontend tests
+        run: |
+          echo "Frontend test commands here"
+          node --help
+ 
+  backend_tests:
+    runs-on: ubuntu-latest
+    container: 
+      image: node:16
+    steps:
+      - name: Backend tests
+        env:
+          NEO4J_URL : ${{ secrets.NEO4J_URL }}
+          NEO4J_USERNAME : ${{ secrets.NEO4J_USERNAME }}
+          NEO4J_PASSWORD : ${{ secrets.NEO4J_PASSWORD }}
+        run: |
+          npm ci --only=production
+          npx jest
+
+  # Frontend is minified into a build folder and served from the backend
+  backend_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Login to Heroku
+        env: 
+          HEROKU_API_KEY : ${{ secrets.HEROKU_API_KEY }}
+        run: heroku container:login
+
+      - name: Build and push
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: heroku container:push -a relational-db-designer web 
+
+      - name: Release
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: heroku container:release -a relational-db-designer web 
+
+  database_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Database commands here (if needed)"
