@@ -4,7 +4,6 @@ import Attribute from "../models/attribute";
 import Relationship, { LHConstraint } from "../models/relationship";
 import { driver } from "neo4j-driver-core";
 
-
 class DatabaseController {
 
     private static instance: DatabaseController;

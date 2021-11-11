@@ -1,5 +1,6 @@
-import Entity from "src/models/entity";
-import TranslatedSchema from "./models/translatedSchema";
+import Attribute from "../models/attribute";
+import Entity from "../models/entity";
+import TranslatedSchema, { AttributesSchema } from "./models/translatedSchema";
 import Translator from "./translator";
 
 class EntityTranslator implements Translator {
@@ -11,7 +12,20 @@ class EntityTranslator implements Translator {
     }
 
     translateFromDiagramToSchema(translatedSchema: TranslatedSchema): TranslatedSchema {
-        throw new Error("Method not implemented.");
+        var relationshipAttributeSchema: Array<AttributesSchema> = new Array();
+        if (this.entity.attributes !== undefined) {
+            relationshipAttributeSchema =
+                this.entity.attributes!.map((a: Attribute) => {
+                return {
+                    name: a.name,
+                    isPrimaryKey: a.isPrimaryKey,
+                    isOptional: a.isOptional
+                    }
+                })
+        }
+        translatedSchema.entities.set(this.entity.name, relationshipAttributeSchema)
+        return translatedSchema
     }
-
 }
+
+export default EntityTranslator
