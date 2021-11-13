@@ -42,10 +42,9 @@ export default function SelectEntity({
       case types.EDGE.RELATIONSHIP:
         relationships.push(id);
         break;
-      case types.EDGE.GENERALISATION: // TODO
       case types.EDGE.HIERARCHY:
         // TODO: add null check?
-        const isParent = getElement(type, id).end === context.selected.id;
+        const isParent = getElement(type, id).parent === context.selected.id;
         const group = isParent ? children : parents;
         group.push(id);
         break;

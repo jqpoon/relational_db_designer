@@ -5,15 +5,32 @@ import Attribute from "../edges/attribute";
 import { actions, types } from "../types";
 import { EntityContextMenu } from "../contextMenus/entityContextMenu";
 import "./stylesheets/node.css";
+import { HierarchyEdge } from "../edges/edge";
 
 export function TestRelationship(props) {
   return <Node {...props} />;
 }
 
 export function TestEntity({ entity, general }) {
-  const children = Object.values(entity.attributes).map((attribute) => {
+  const attributes = Object.values(entity.attributes).map((attribute) => {
     return <Attribute {...attribute} {...general} />;
   });
+  const generalisations = Object.values(entity.generalisations).map(
+    (generalisation) => {
+      return (
+        <>
+          <Generalisation {...generalisation} {...general} />
+          <HierarchyEdge parent={entity.id} child={generalisation.id} />
+        </>
+      );
+    }
+  );
+  const children = (
+    <>
+      {attributes}
+      {generalisations}
+    </>
+  );
   return <Node {...entity} {...general} children={children} />;
 }
 

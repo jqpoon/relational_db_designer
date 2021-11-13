@@ -50,12 +50,14 @@ export function DisplayRelationships({ relationships, getElement, isSource }) {
 export function DisplaySupersets({ parents, getElement }) {
   const idToNode = (id) => {
     const edge = getElement(types.EDGE.HIERARCHY, id);
-    console.log("Getting Edge:");
-    console.log(edge);
-    const parent = getElement(edge.target_type, edge.end);
+    const parent = getElement(types.ENTITY, edge.parent);
+    const generalisation = edge.generalisation ? (
+      <>Generalisation: {parent.generalisations[edge.generalisation].text}</>
+    ) : null;
     return (
       <div>
-        {typeToString(edge.target_type)}: {parent.text}
+        <div>{typeToString(types.ENTITY)}: {parent.text}</div>
+        <div>{generalisation}</div>
       </div>
     );
   };
@@ -65,10 +67,10 @@ export function DisplaySupersets({ parents, getElement }) {
 export function DisplaySubsets({ children, getElement }) {
   const idToNode = (id) => {
     const edge = getElement(types.EDGE.HIERARCHY, id);
-    const child = getElement(edge.source_type, edge.start);
+    const child = getElement(types.ENTITY, edge.child);
     return (
       <div>
-        {typeToString(edge.source_type)}: {child.text}
+        {typeToString(types.ENTITY)}: {child.text}
       </div>
     );
   };

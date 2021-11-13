@@ -22,33 +22,14 @@ function RelationshipEdge({ start, end, cardinality }) {
   );
 }
 
-function HierarchyEdge({ start, end }) {
+export function HierarchyEdge({ parent, child, generalisation }) {
   return (
     <Xarrow
-      start={start.toString()}
-      end={end.toString()}
-      showHead
+      start={child.toString()}
+      end={(generalisation ? generalisation : parent).toString()}
+      showHead={!generalisation}
       curveness={0}
       endAnchor="auto"
-      startAnchor="middle"
-      passProps={{
-        onClick: () => {
-          /*TODO */
-        },
-      }}
-      zIndex={-1}
-    />
-  );
-}
-
-function GeneralisationEdge({ start, end }) {
-  return (
-    <Xarrow
-      start={start.toString()}
-      end={end.toString()}
-      showHead={false}
-      curveness={0}
-      endAnchor="middle"
       startAnchor="middle"
       passProps={{
         onClick: () => {
@@ -66,8 +47,6 @@ export default function Edge({ edge }) {
       return <RelationshipEdge {...edge} />;
     case types.EDGE.HIERARCHY:
       return <HierarchyEdge {...edge} />;
-    case types.EDGE.GENERALISATION:
-      return <GeneralisationEdge {...edge} />;
     default:
       console.log("Invalid edge type encountered: " + edge.type);
       return null;

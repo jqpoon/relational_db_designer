@@ -22,6 +22,19 @@ export const initialEntities = {
         isPrimaryKey: false,
       },
     },
+    generalisations: {
+      E0G0: {
+        id: "E0G0",
+        type: types.GENERALISATION,
+        parentId: "E0",
+        text: "Messages",
+        pos: { x: 300, y: 400 },
+        edges: {
+          E3E0G0: {},
+          E4E0G0: {},
+        },
+      },
+    },
   },
   E1: {
     id: "E1",
@@ -32,6 +45,7 @@ export const initialEntities = {
       E1E0: { type: types.EDGE.HIERARCHY },
     },
     attributes: {},
+    generalisations: {},
   },
   E2: {
     id: "E2",
@@ -42,6 +56,29 @@ export const initialEntities = {
       E2R0: { type: types.EDGE.RELATIONSHIP },
     },
     attributes: {},
+    generalisations: {},
+  },
+  E3: {
+    id: "E3",
+    text: "Email Users",
+    pos: { x: 100, y: 500 },
+    type: types.ENTITY,
+    edges: {
+      E3E0G0: { type: types.EDGE.HIERARCHY },
+    },
+    attributes: {},
+    generalisations: {},
+  },
+  E4: {
+    id: "E4",
+    text: "Non-email Users",
+    pos: { x: 550, y: 500 },
+    type: types.ENTITY,
+    edges: {
+      E4E0G0: { type: types.EDGE.HIERARCHY },
+    },
+    attributes: {},
+    generalisations: {},
   },
 };
 
@@ -78,11 +115,23 @@ export const initialEdges = {
     target_type: types.RELATIONSHIP,
   },
   E1E0: {
-    start: "E1",
-    end: "E0",
     id: "E1E0",
+    parent: "E0",
+    child: "E1",
     type: types.EDGE.HIERARCHY,
-    source_type: types.ENTITY,
-    target_type: types.ENTITY,
+  },
+  E3E0G0: {
+    id: "E3E0G0",
+    parent: "E0",
+    child: "E3",
+    generalisation: "E0G0",
+    type: types.EDGE.HIERARCHY,
+  },
+  E4E0G0: {
+    id: "E4E0G0",
+    parent: "E0",
+    child: "E4",
+    generalisation: "E0G0",
+    type: types.EDGE.HIERARCHY,
   },
 };

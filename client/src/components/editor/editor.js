@@ -66,9 +66,11 @@ export default function Editor() {
     },
     [types.EDGE.RELATIONSHIP]: getEdge,
     [types.EDGE.HIERARCHY]: getEdge,
-    [types.EDGE.GENERALISATION]: getEdge,
   };
   const getElement = (type, id, parentType, parentId) => {
+    console.log(
+      `getElement(type:${type}, id: ${id}, parentType:${parentType}, parentId:${parentId})`
+    );
     return elementGetters[type](id, parentType, parentId);
   };
 
@@ -137,7 +139,6 @@ export default function Editor() {
     },
     [types.EDGE.RELATIONSHIP]: edgeSetter,
     [types.EDGE.HIERARCHY]: edgeSetter,
-    [types.EDGE.GENERALISATION]: edgeSetter,
   };
 
   const nodeFunctionsOpposite = {
@@ -155,8 +156,8 @@ export default function Editor() {
     setElement(type, element, "updateElement", isHistory);
   };
   const setElement = (type, element, editType, isHistory) => {
-    console.log(`${editType}`)
-    console.log(element)
+    console.log(`${editType}`);
+    console.log(element);
     if (!isHistory) {
       const inverse = nodeFunctionsOpposite[editType];
       addToUndo(inverse, type, element);
