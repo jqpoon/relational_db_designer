@@ -24,7 +24,6 @@ class DatabaseController {
 
     private static verifyDatabaseUpdate(result: QueryResult): boolean {
         if (result.records[0] == undefined) {
-            console.log(result);
             throw new Error('Database not updated')
         }
         return true
@@ -51,7 +50,6 @@ class DatabaseController {
                                   pos,
                                   ...entity
                               }: Entity) {
-        console.log(entity)
         const session = this.databaseDriver.session()
 
         var entityKeys = ['id', 'posX', 'posY', 'text', 'name']
@@ -139,9 +137,6 @@ class DatabaseController {
         // assume entity node exists already
 
         const session = this.databaseDriver.session()
-
-        console.log(entity.id)
-        console.log(attribute.id)
 
         try {
             await this.createAttribute(attribute);
