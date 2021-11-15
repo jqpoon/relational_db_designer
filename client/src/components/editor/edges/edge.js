@@ -49,8 +49,9 @@ export function AttributeEdge({ parent, child }) {
       end={parent.toString()}
       // showTail
       // tailShape="circle"
+      headSize="0"
       curveness={0}
-      endAnchor="auto"
+      endAnchor="middle"
       startAnchor="middle"
       passProps={{
         onClick: () => {

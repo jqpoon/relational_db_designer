@@ -8,8 +8,6 @@
     border-color: red;
     margin: 0 auto;
     position: absolute;
-    display: flex;
-    justify-content: center;
 }
 
 .attribute-end-center {
