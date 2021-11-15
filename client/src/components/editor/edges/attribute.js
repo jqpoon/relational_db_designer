@@ -156,22 +156,11 @@ export default function Attribute({
     </div>
   );
 
-  console.log(`Attribute id: ${id}`);
-
-  let attribute = (
+  return (
     <div>
       {attributeEnd}
-      {/* <Xarrow
-        start={parent.id}
-        end={attributeEndRefCenter}
-        path="straight"
-        headSize="0"
-        zIndex={-10}
-      /> */}
     </div>
-  );
-
-  return attribute;
+  );;
 }
 
 // Class to store global count of attributes, so that we can generate
@@ -212,8 +201,7 @@ export function addAttributeToNode(
   const attributeId = parentId + "A" + idCounter.getCount();
 
   const attributeEntry = {
-    parentId: parentId,
-    parentType: types.ENTITY,
+    parent: { id: parentId, type: types.ENTITY },
     id: attributeId,
     text: text,
     relativePos: relativePos,
