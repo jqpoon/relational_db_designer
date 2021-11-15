@@ -1,5 +1,4 @@
 import { useRef, useState, useEffect, useCallback } from "react";
-import Xarrow from "react-xarrows";
 import "./stylesheets/attribute.css";
 import { types } from "../types";
 import { AttributeContextMenu } from "../contextMenus/attributeContextMenu";
@@ -10,22 +9,21 @@ export default function Attribute({
   text, // Attribute name
   relativePos, // Relative x, y position of attribute to parent node
   parentPos, // Position of parent node. If this field is null, then the parent's position will be obtained by going through list of entities/relationships
-  start, // Id of the node this attribute should be joined to
   updateElement, // Generic update function for dict in editor.js
   getElement, // Generic getter for dict in editor.js
 }) {
-  // TODO: maybe include scale in function arguments?
 
   // Name of attribute to be displayed
   const [name, setName] = useState(text);
   const [editable, setEditable] = useState(true);
   const [isKeyAttribute, setIsKeyAttribute] = useState(false);
+  const [isOptional, setIsOptional] = useState(false);
+  const [isMultiValued, setIsMultiValued] = useState(false);
   const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 }); // Context menu stuff
   const [show, setShow] = useState(false); // State to show context menu
 
   // Ref of lollipop end
   const attributeEndRef = useRef(null);
-  const attributeEndRefCenter = useRef(null);
 
   // Hides the context menu if we left click again
   const handleClick = useCallback(() => {
@@ -33,7 +31,7 @@ export default function Attribute({
   }, [show]);
 
   // Show context menu
-  const handleContextMenu = useCallback((event) => {
+  const handleContextMenu = useCallback((event) => {    
     event.preventDefault();
     setAnchorPoint({ x: 0, y: 0 }); // TODO: figure out how to fix anchor point
     setShow(true);
@@ -68,11 +66,12 @@ export default function Attribute({
 
   // Automatically adjusts text location based on where the arrow is.
   let leftStyle = {
-    transform: "translate(-110%, -6.5px)",
+    top: "50%",
+    transform: "translate(-120%, -1px)",
     display: "inline-block",
   };
   let rightStyle = {
-    transform: "translate(20px, -6.5px)",
+    transform: "translate(30px, -1px)",
     display: "inline-block",
   };
   let bottomStyle = {
@@ -92,14 +91,24 @@ export default function Attribute({
   // Toggles key attribute feature
   const toggleKeyAttribute = () => {
     let attrNode = getElement(types.ATTRIBUTE, id, parent);
-    if (isKeyAttribute) {
-      setIsKeyAttribute(false);
-      attrNode["isPrimaryKey"] = false;
-    } else {
-      setIsKeyAttribute(true);
-      attrNode["isPrimaryKey"] = true;
-    }
+    attrNode['isPrimaryKey'] = !isKeyAttribute
+    setIsKeyAttribute(!isKeyAttribute);
+    updateElement(types.ATTRIBUTE, attrNode);
+  };
 
+  // Toggles optional attribute feature
+  const toggleOptionalAttribute = () => {
+    let attrNode = getElement(types.ATTRIBUTE, id, parent);
+    attrNode['isOptional'] = !isOptional
+    setIsOptional(!isOptional);
+    updateElement(types.ATTRIBUTE, attrNode);
+  };
+
+  // Toggles multi-valued attribute feature
+  const toggleMultiValuedAttribute = () => {
+    let attrNode = getElement(types.ATTRIBUTE, id, parent);
+    attrNode['isMultiValued'] = !isMultiValued
+    setIsMultiValued(!isMultiValued);
     updateElement(types.ATTRIBUTE, attrNode);
   };
 
@@ -127,11 +136,41 @@ export default function Attribute({
       );
     }
 
+    // Cases:
+    // key attribute only (cannot be optional or multi-valued)
+    // not key, not optional, not multi (default) (mandatory)
+    // only optional (?), 0 or 1
+    // only multi-valued (+), 1 or more
+    // both optional and multi-valued (*) 0 or more
+
     if (isKeyAttribute) {
       return <u>{text}</u>;
-    } else {
-      return <div>{text}</div>;
+    } 
+
+    if (isOptional && isMultiValued) {
+      if (!name.endsWith("\u2217")) {
+        return <div>{text + "\u2217"}</div>;
+      }
     }
+
+    if (isOptional) {
+      // Manually add a question mark (for optional attr) if it doesn't exist
+      // Maybe change such that users cannot input special chars
+      if (!name.endsWith('?')) {
+        return <div>{text + '?'}</div>;
+      }
+    }
+
+    if (isMultiValued) {
+      // Manually add a question mark (for optional attr) if it doesn't exist
+      // Maybe change such that users cannot input special chars
+      if (!name.endsWith('+')) {
+        return <div>{text + '+'}</div>;
+      }
+    }
+
+    return <div>{text}</div>;
+
   };
 
   // Define component to be rendered
@@ -150,8 +189,9 @@ export default function Attribute({
         show={show}
         setEditable={setEditable}
         toggleKeyAttribute={toggleKeyAttribute}
+        toggleOptionalAttribute={toggleOptionalAttribute}
+        toggleMultiValuedAttribute={toggleMultiValuedAttribute}
       />
-      <div className="attribute-end-center" ref={attributeEndRefCenter}></div>
       <div style={textStyle}>{editingMode()}</div>
     </div>
   );
