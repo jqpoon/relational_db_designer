@@ -5,7 +5,13 @@ import Position from "./position";
 enum LHConstraint {
     ONE_TO_ONE,
     ONE_TO_MANY,
+    ONE_TO_ZERO, 
     MANY_TO_ONE,
+    MANY_TO_MANY, 
+    MANY_TO_ZERO, 
+    ZERO_TO_ONE, 
+    ZERO_TO_MANY, 
+    ZERO_TO_ZERO
 }
 
 // This is the relatioship object between two associated entities.
@@ -20,7 +26,7 @@ interface Relationship {
     // General-use variables.
     attributes?: Attribute[];
     // A map between the entity's identifier number and the constraint used for that link.
-    lHConstraints: Map<number, LHConstraint>;
+    lHConstraints: Map<string, LHConstraint>;
 }
 
 export { LHConstraint, Relationship as default };
