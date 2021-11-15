@@ -382,7 +382,7 @@ export default function Editor() {
         pos: { x: entity.positionX, y: entity.positionY },
         type: types.ENTITY,
       };
-      addNode(types.ENTITY, entityComponent);
+      addElement(types.ENTITY, entityComponent);
     }
 
     for (let relationship in state.relationships) {
@@ -392,7 +392,7 @@ export default function Editor() {
         pos: { x: relationship.positionX, y: relationship.positionY },
         type: types.RELATIONSHIP,
       };
-      addNode(types.RELATIONSHIP, relationshipComponent);
+      addElement(types.RELATIONSHIP, relationshipComponent);
 
       Object.entries(relationship.lHConstraints).map((entityID, constraint) => {
         let edgeComponent = {
@@ -401,7 +401,7 @@ export default function Editor() {
           id: entityID + relationship.identifier,
           labels: constraint,
         };
-        addNode(types.EDGE, edgeComponent);
+        addElement(types.EDGE, edgeComponent);
       });
     }
 
@@ -416,9 +416,9 @@ export default function Editor() {
       disjoints: [],
     };
 
-    let entities = nodeStates[types.ENTITY];
-    let relationships = nodeStates[types.RELATIONSHIP];
-    let edges = nodeStates[types.EDGE];
+    let entities = elementGetters[types.ENTITY];
+    let relationships = elementGetters[types.RELATIONSHIP];
+    let edges = elementGetters[types.EDGE];
 
     // Entities.
     Object.values(entities).forEach((entity) => {
