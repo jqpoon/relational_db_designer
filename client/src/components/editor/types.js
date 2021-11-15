@@ -1,6 +1,7 @@
 export const types = {
   ENTITY: "entity",
   RELATIONSHIP: "relationship",
+  GENERALISATION: "generalisation",
   EDGE: {
     RELATIONSHIP: "relationship_edge",
     HIERARCHY: "hierarchy_edge",

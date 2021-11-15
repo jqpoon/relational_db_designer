@@ -44,16 +44,37 @@
   transform: rotate(-45deg);
 }
 
-.diamond-input {
-  transform: rotate(-45deg);
+.relationship-input {
   display: flex;
   justify-content: center;
   margin-top: 10px;
   width: 100%;
 }
 
-.diamond-input input {
+.relationship-input input {
   width: 90%;
+}
+
+/* TODO: change generalisation formatting (hexagon) */
+.generalisation {
+  width: 150px;
+  height: 75px;
+  border: 1px solid black;
+  background-color: lightcoral;
+  z-index: 15;
+}
+
+.generalisation-input {
+	display: flex;
+	justify-content: center;
+	margin-top: 20px;
+	width: 100%;
+	align-items: center;
+}
+
+.generalisation-input input {
+	width: 80%;
+	margin-top: 5px;
 }
 
 

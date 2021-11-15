@@ -1,14 +1,13 @@
 import "./stylesheets/contextMenu.css"
-import { addAttributeToNode } from "./edges/attribute";
 
-export function ContextMenu({
+export function AttributeContextMenu({
   id, 
   setEditable, 
   anchorPoint, 
   show,
-  updateNode,
-  getNode,
-  addNode
+  toggleKeyAttribute,
+  toggleOptionalAttribute,
+  toggleMultiValuedAttribute,
 }){
     // For context menu: anchorPoint contains position of contextMenu and show controls when contextMenu will be shown
   //const { anchorPoint, show } = useContextMenu();
@@ -20,13 +19,15 @@ export function ContextMenu({
           style={{
 						position: "absolute",
             transform: `translate(${anchorPoint.x}px, ${anchorPoint.y}px)`,
-            // top: anchorPoint.y,
-            // left: anchorPoint.x,
           }}
         >
-          <li onClick={() => setEditable(true)} >Edit Label </li>
+          <li onClick={() => setEditable(true)} >Edit Label</li>
           <hr />
-          <li onClick={() => addAttributeToNode(updateNode, addNode, getNode, "Attribute", id)}>Add Attribute</li>
+          <li onClick={() => toggleKeyAttribute()}>Toggle Key Attribute</li>
+          <hr />
+          <li onClick={() => toggleOptionalAttribute()}>Toggle Optional Attribute</li>
+          <hr />
+          <li onClick={() => toggleMultiValuedAttribute()}>Toggle Multi-valued Attribute</li>
         </ul>
       </div>
     );

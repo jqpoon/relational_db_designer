@@ -4,11 +4,11 @@ import "./stylesheets/toolbar.css";
 import { types } from "./types";
 
 export default function Toolbar({
-  addAttribute,
   addEdgeToRelationship,
   getId,
-  addNode,
+  addElement,
   undo,
+  redo,
 }) {
   const entityToolRef = useRef(null);
   const relationshipToolRef = useRef(null);
@@ -22,11 +22,11 @@ export default function Toolbar({
       },
       text: "Enter Text",
       type: types.ENTITY,
-      edges: [],
-      parents: [],
-      children: [],
+      edges: {},
+      attributes: {},
+      generalisations: {},
     };
-    addNode(types.ENTITY, newEntity);
+    addElement(types.ENTITY, newEntity);
   };
 
   const addRelationship = (x, y) => {
@@ -38,9 +38,10 @@ export default function Toolbar({
       },
       text: "",
       type: types.RELATIONSHIP,
-      edges: [],
+      attributes: {},
+      edges: {},
     };
-    addNode(types.RELATIONSHIP, newRelationship);
+    addElement(types.RELATIONSHIP, newRelationship);
   };
 
   return (
@@ -71,6 +72,9 @@ export default function Toolbar({
       <div className="footer">
         <div className="tool" onClick={undo}>
           Undo
+        </div>
+        <div className="tool" onClick={redo}>
+          Redo
         </div>
         <div className="tool">Load</div>
         <div className="tool">Save</div>
