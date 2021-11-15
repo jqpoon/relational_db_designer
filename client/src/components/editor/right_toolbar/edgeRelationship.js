@@ -11,10 +11,9 @@ export default function EdgeToRelationship({
   context,
   cancel,
   setContext,
-  getElement, 
+  getElement,
   addElement,
   updateElement,
-  getId,
 }) {
   const updateNodeWithEdge = (nodeID, nodeType, edge) => {
     let node = getElement(nodeType, nodeID);

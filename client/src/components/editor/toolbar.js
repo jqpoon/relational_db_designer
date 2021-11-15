@@ -2,10 +2,10 @@ import Draggable from "react-draggable";
 import { useRef } from "react";
 import "./stylesheets/toolbar.css";
 import { types } from "./types";
+import { getId } from "./idGenerator";
 
 export default function Toolbar({
   addEdgeToRelationship,
-  getId,
   addElement,
   undo,
   redo,
@@ -15,7 +15,7 @@ export default function Toolbar({
 
   const addEntity = (x, y) => {
     const newEntity = {
-      id: getId(),
+      id: getId(types.ENTITY),
       pos: {
         x: x,
         y: y,
@@ -26,12 +26,13 @@ export default function Toolbar({
       attributes: {},
       generalisations: {},
     };
+    console.log("id in addEntity" + newEntity.id);
     addElement(types.ENTITY, newEntity);
   };
 
   const addRelationship = (x, y) => {
     const newRelationship = {
-      id: getId(),
+      id: getId(types.RELATIONSHIP),
       pos: {
         x: x,
         y: y,
