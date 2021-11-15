@@ -41,16 +41,23 @@ class SchemaController {
         }
     }
 
-    public async getAllEntities(): Promise<Map<Number, Entity>> {
+    public async getAllEntities(): Promise<Map<string, Entity>> {
 
         var entityResult: QueryResult = await DatabaseController.getInstance().getAllEntities()
 
         // Use hashmap to update entity O(1)
-        const entitiesHashMap: Map<Number, Entity> = new Map()
+        const entitiesHashMap: Map<string, Entity> = new Map()
 
         for (var elem of entityResult.records) {
             const entity = elem.toObject()['entity']
             if (!entitiesHashMap.has(entity.properties.id)) {
+                entity.properties['pos'] = {
+                    x: entity.properties.posX,
+                    y: entity.properties.posX,
+                }
+                delete entity.properties.posX
+                delete entity.properties.posY
+                delete entity.properties.name
                 entitiesHashMap.set(entity.properties.id, entity.properties)
             }
         }
@@ -63,7 +70,16 @@ class SchemaController {
                 var attributes = e.toObject()[key]['attributes']
 
                 const entityAttributesList: Array<Attribute> = attributes.map(
-                    (e: { properties: any; }) => e.properties
+                    (e: { properties: any; }) => {
+                        e.properties['pos'] = {
+                            x: e.properties.posX,
+                            y: e.properties.posX,
+                        }
+                        delete e.properties.posX
+                        delete e.properties.posY
+                        delete e.properties.name
+                        return e.properties
+                    }
                 )
 
                 if (entitiesHashMap.get(nodeID) !== undefined) {
@@ -80,7 +96,16 @@ class SchemaController {
                 var subsets = e.toObject()[key]['subsets']
 
                 const subsetsList: Array<Entity> = subsets.map(
-                    (e: { properties: any; }) => e.properties
+                    (e: { properties: any; }) => {
+                        e.properties['pos'] = {
+                            x: e.properties.posX,
+                            y: e.properties.posX,
+                        }
+                        delete e.properties.posX
+                        delete e.properties.posY
+                        delete e.properties.name
+                        return e.properties
+                    }
                 )
 
                 if (entitiesHashMap.get(nodeID) !== undefined) {
@@ -92,33 +117,43 @@ class SchemaController {
         return entitiesHashMap
     }
 
-    public async getAllRelationships(): Promise<Map<Number, Relationship>> {
+    public async getAllRelationships(): Promise<Map<string, Relationship>> {
 
         var relationshipResult: QueryResult = await DatabaseController.getInstance().getAllRelationships()
 
         // Use hashmap to update relationship O(1)
-        const relationshipHashmap: Map<Number, Relationship> = new Map()
+        const relationshipHashmap: Map<string, Relationship> = new Map()
 
         for (var e of relationshipResult.records) {
-            var relationship = e.toObject()['{ relationship: r, entities: collect(relations) }'].relationship
-            var entities = e.toObject()['{ relationship: r, entities: collect(relations) }'].entities
+            for (let key in e.toObject()) {
+                var relationship = e.toObject()[key]['relationship']
+                var entities = e.toObject()[key]['entities']
 
-            const lhConstraint = new Map()
+                const lhConstraint = new Map()
 
-            entities.map((e: {
-                entityID: number,
-                lhConstraint: {
-                    type: number
-                }
-            }) => {
-                lhConstraint.set(e.entityID, LHConstraint[e.lhConstraint.type])
-            })
-
-            if (!relationshipHashmap.has(relationship.properties.id)) {
-                relationshipHashmap.set(relationship.properties.id, {
-                    lHConstraints: lhConstraint,
-                    ...relationship.properties
+                entities.map((e: {
+                    entityID: string,
+                    lhConstraint: {
+                        type: number
+                    }
+                }) => {
+                    lhConstraint.set(e.entityID, LHConstraint[e.lhConstraint.type])
                 })
+
+                if (!relationshipHashmap.has(relationship.properties.id)) {
+                    relationship.properties['pos'] = {
+                        x: relationship.properties.posX,
+                        y: relationship.properties.posX,
+                    }
+                    delete relationship.properties.posX
+                    delete relationship.properties.posY
+                    delete relationship.properties.name
+
+                    relationshipHashmap.set(relationship.properties.id, {
+                        lHConstraints: lhConstraint,
+                        ...relationship.properties
+                    })
+                }
             }
         }
 
@@ -130,7 +165,16 @@ class SchemaController {
                 var attributes = e.toObject()[key]['attributes']
 
                 const relationshipAttributeList: Array<Attribute> = attributes.map(
-                    (e: { properties: any; }) => e.properties
+                    (e: { properties: any; }) => {
+                        e.properties['pos'] = {
+                            x: e.properties.posX,
+                            y: e.properties.posX,
+                        }
+                        delete e.properties.posX
+                        delete e.properties.posY
+                        delete e.properties.name
+                        return e.properties
+                    }
                 )
 
                 if (relationshipHashmap.get(relationshipID) !== undefined) {

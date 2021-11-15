@@ -111,12 +111,12 @@ router.get('/all', async function (req, res, next) {
 
     const entities = SchemaController.getInstance().getAllEntities()
 
-    entities.then(function (entityMap: Map<Number, Entity>) {
+    entities.then(function (entityMap: Map<string, Entity>) {
         const entities = Array.from(entityMap.values())
 
         const relationships = SchemaController.getInstance().getAllRelationships()
 
-        relationships.then(function (relationshipMap: Map<Number, Relationship>) {
+        relationships.then(function (relationshipMap: Map<string, Relationship>) {
             const relationships = Array.from(relationshipMap.values())
             const relationshipResponse: any[] = []
             relationships.map((relationship) => {
@@ -143,7 +143,7 @@ router.get('/entities', async function (req, res, next) {
 
     const entities = SchemaController.getInstance().getAllEntities()
 
-    entities.then(function (entityMap: Map<Number, Entity>) {
+    entities.then(function (entityMap: Map<string, Entity>) {
         const entities = Array.from(entityMap.values())
         return res.status(OK).json({
             entities: entities
@@ -154,7 +154,7 @@ router.get('/entities', async function (req, res, next) {
 router.get('/relationship', async function (req, res, next) {
     const relationships = SchemaController.getInstance().getAllRelationships()
 
-    relationships.then(function (relationshipMap: Map<Number, Relationship>) {
+    relationships.then(function (relationshipMap: Map<string, Relationship>) {
         const relationships = Array.from(relationshipMap.values())
         const relationshipResponse: any[] = []
         relationships.map((relationship) => {
