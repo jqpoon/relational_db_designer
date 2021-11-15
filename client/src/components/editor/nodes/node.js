@@ -1,23 +1,46 @@
 import { useCallback, useState, useRef, useEffect } from "react";
 import Draggable from "react-draggable";
 import { useXarrow } from "react-xarrows";
-import { types } from "..";
-import { ContextMenu } from "../contextMenu";
-import { actions } from "../types";
+import Attribute from "../edges/attribute";
+import { actions, types } from "../types";
+import { EntityContextMenu } from "../contextMenus/entityContextMenu";
 import "./stylesheets/node.css";
-
+import { HierarchyEdge } from "../edges/edge";
 
 export function TestRelationship(props) {
   return <Node {...props} />;
 }
 
-export function TestEntity(props) {
+export function TestEntity({ entity, general }) {
+  const attributes = Object.values(entity.attributes).map((attribute) => {
+    return <Attribute {...attribute} {...general} />;
+  });
+  const generalisations = Object.values(entity.generalisations).map(
+    (generalisation) => {
+      return (
+        <>
+          <Generalisation {...generalisation} {...general} />
+        </>
+      );
+    }
+  );
+  const children = (
+    <>
+      {attributes}
+      {generalisations}
+    </>
+  );
+  return <Node {...entity} {...general} children={children} />;
+}
+
+export function Generalisation(props) {
   return <Node {...props} />;
 }
 
 const classFromNodeType = {
   [types.ENTITY]: "entity",
   [types.RELATIONSHIP]: "relationship",
+  [types.GENERALISATION]: "generalisation",
 };
 
 // General draggable, editable node
@@ -28,13 +51,16 @@ export default function Node({
   pos,
   parentRef,
   scale,
-  updateNode,
-  getNode,
-  addNode,
+  getElement,
+  addElement,
+  updateElement,
   setPanDisabled,
   context,
   setContext,
+  children,
+  parent,
 }) {
+  console.log(`Rendering node (id: ${id})`);
   // Reference to self allows info about self to be propagated
   const nodeRef = useRef(null);
   // Name of node which will be displayed
@@ -44,25 +70,19 @@ export default function Node({
   const [dimensions, setDimensions] = useState({});
 
   const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
-	const [show, setShow] = useState(false);
+  const [show, setShow] = useState(false);
   const [editable, setEditable] = useState(false);
 
-	const handleContextMenu = useCallback(
-		(event) => {
-			event.preventDefault();
-			setAnchorPoint({ x: 0, y: 0 }); // TODO: figure out how to fix anchor point
-			setShow(true);
-		},
-		[]
-	);
+  const handleContextMenu = useCallback((event) => {
+    event.preventDefault();
+    setAnchorPoint({ x: 0, y: 0 }); // TODO: figure out how to fix anchor point
+    setShow(true);
+  }, []);
 
   // Hides the context menu if we left click again
-	const handleClick = useCallback(
-		() => {
-      setShow(false);
-    },
-		[show]
-	);
+  const handleClick = useCallback(() => {
+    setShow(false);
+  }, [show]);
 
   // Set dimensions on mount
   useEffect(() => {
@@ -87,9 +107,9 @@ export default function Node({
   const onDrag = updateXarrow;
   const onStop = (e, data) => {
     // Save new position of node
-    let newNode = getNode(type, id);
+    let newNode = getElement(type, id, parent);
     newNode.pos = { x: data.x, y: data.y };
-    updateNode(type, newNode);
+    updateElement(type, newNode);
     // Update arrow position
     updateXarrow(e); // TODO: check function signature of updateXarrow(E, DATA) ?
     // Re-enable panning of canvas
@@ -101,7 +121,7 @@ export default function Node({
       case actions.SELECT.NORMAL:
         setContext({
           action: actions.SELECT.NORMAL,
-          selected: { type: type, id: id },
+          selected: { type: type, id: id, parent: parent },
         });
         break;
       case actions.SELECT.ADD_RELATIONSHIP:
@@ -112,6 +132,7 @@ export default function Node({
         });
         break;
       case actions.SELECT.ADD_SUPERSET:
+      case actions.SELECT.ADD_SUBSET:
         setContext((prev) => {
           let newCtx = { ...prev };
           newCtx.target = { type: type, id: id };
@@ -154,21 +175,14 @@ export default function Node({
   const contentsConfig = {
     id: id,
     ref: nodeRef,
-    className: "node-wrapper", //classFromNodeType[type],
+    className: "node-wrapper",
     onClick: onClick,
   };
 
   // Contents displayed in node
   const editingMode = () => {
-    var className;
-    if(type === types.ENTITY){
-      className = "entity-input";
-    }else if(type === types.RELATIONSHIP){
-      className ="diamond-input";
-    }
-
-    return ( editable ? (
-      <div className={className}>
+    return (
+      <div className={classFromNodeType[type] + "-input"}>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -176,39 +190,44 @@ export default function Node({
           onKeyPress={(e) => {
             if (e.key === "Enter") {
               // Update node text
-              let newNode = getNode(type, id);
+              let newNode = getElement(type, id, parent);
               newNode.text = name;
-              updateNode(type, newNode);
+              updateElement(type, newNode);
               setEditable(false);
             }
           }}
         />
       </div>
-    ) : <div>{text}</div>
     );
   };
 
   const normalMode = (
     <div className={classFromNodeType[type]}>
-      {editingMode()}
+      {editable ? editingMode() : <div>{text}</div>}
     </div>
   );
   // TODO:conditional rendering
 
   return (
-    <Draggable style={{width: "150px", height: "75px"}} {...draggableConfig} >
-      <div {...contentsConfig}>
-        <ContextMenu 
-          anchorPoint={anchorPoint} 
-          show={show} 
-          setEditable={setEditable} 
-          id={id}
-          updateNode={updateNode}
-          addNode={addNode}
-          getNode={getNode}
-        />
-        {normalMode}
-      </div>
-    </Draggable>
+    <>
+      <Draggable
+        style={{ width: "150px", height: "75px" }}
+        {...draggableConfig}
+      >
+        <div {...contentsConfig}>
+          <EntityContextMenu
+            anchorPoint={anchorPoint}
+            show={show}
+            setEditable={setEditable}
+            id={id}
+            getElement={getElement}
+            addElement={addElement}
+            updateElement={updateElement}
+          />
+          {normalMode}
+        </div>
+      </Draggable>
+      {children}
+    </>
   );
 }
