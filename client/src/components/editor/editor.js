@@ -37,6 +37,7 @@ export default function Editor() {
 	const [entities, setEntities] = useState(initialEntities);
 	const [relationships, setRelationships] = useState(initialRelationships);
 	const [edges, setEdges] = useState(initialEdges);
+
 	const [undoStack, setUndoStack] = useState([]);
 	const [redoStack, setRedoStack] = useState([]);
 
@@ -249,6 +250,7 @@ export default function Editor() {
 		//     : { ...nodeStates[top["type"]][top["id"]] };
 		elementFunctions[top["action"]](top["type"], element, true);
 		setter(stateClone);
+		setContext({ action: actions.NORMAL });
 	};
 
 	// Translates entire model state from backend JSON into client components.
@@ -294,37 +296,49 @@ export default function Editor() {
 			disjoints: [],
 		};
 
+		let entitiesClone = { ...entities };
+		let relationshipsClone = { ...relationships };
+		let edgesClone = { ...edges };
+
 		// Entities.
-		Object.values(entities).forEach((entity) => {
+		Object.values(entitiesClone).forEach((entity) => {
 			let entityState = {
-				identifier: entity.id,
-				positionX: entity.pos.x,
-				positionY: entity.pos.y,
-				shapeWidth: 0, // TODO
-				shapeHeight: 0, // TODO
-				name: entity.text,
-				isWeak: false, // TODO
-				attributes: [], // TODO
+				id: entity.id,
+				text: entity.text,
+				pos: entity.pos,
+				isWeak: false,
+				attributes: [],
 				subsets: [], // TODO
 			};
+
+			Object.values(entity.attributes).forEach((attr) => {
+				delete attr.parent;
+				delete attr.type;
+
+				entityState.attributes.push(attr);
+			});
 
 			state.entities.push(entityState);
 		});
 
 		// Relationships and linking with entities.
-		Object.values(relationships).forEach((relationship) => {
+		Object.values(relationshipsClone).forEach((relationship) => {
 			let relationshipState = {
-				identifier: relationship.id,
-				positionX: relationship.pos.x,
-				positionY: relationship.pos.x,
-				shapeWidth: 0, // TODO
-				shapeHeight: 0, // TODO
-				name: relationship.text,
-				attributes: [], // TODO
+				id: relationship.id,
+				text: relationship.text,
+				pos: relationship.pos,
+				attributes: [],
 				lHConstraints: {},
 			};
 
-			let links = edges.filter(
+			Object.values(relationship.attributes).forEach((attr) => {
+				delete attr.parent;
+				delete attr.type;
+
+				relationshipState.attributes.push(attr);
+			});
+
+			let links = Object.values(edgesClone).filter(
 				(edge) =>
 					edge.start === relationship.id ||
 					edge.end === relationship.id
@@ -332,7 +346,7 @@ export default function Editor() {
 			for (let link in links) {
 				let entityID =
 					link.start === relationship.id ? link.end : link.start;
-				relationshipState.lHConstraints[entityID] = link.labels; // TODO: Translate labels into a constraint enum type.
+				relationshipState.lHConstraints[entityID] = link.cardinality;
 			}
 
 			state.relationships.push(relationshipState);
