@@ -347,8 +347,6 @@ export default function Editor() {
 		updateElement: updateElement,
 		deleteElement: deleteElement,
 		getId: getId,
-		undo: undo,
-		redo: redo,
 		setEditableId: setEditableId,
 	};
 
@@ -367,6 +365,8 @@ export default function Editor() {
 			});
 		},
 		exportStateToObject,
+		undo: undo,
+		redo: redo,
 	};
 
 	const rightToolBarActions = {
