@@ -12,8 +12,7 @@ export const initialEntities = {
     },
     attributes: {
       E0A0: {
-        parentId: "E0",
-        parentType: types.ENTITY,
+        parent: { id: "E0", type: types.ENTITY },
         id: "E0A0",
         type: types.ATTRIBUTE,
         text: "Name",
@@ -26,7 +25,7 @@ export const initialEntities = {
       E0G0: {
         id: "E0G0",
         type: types.GENERALISATION,
-        parentId: "E0",
+        parent: { id: "E0" },
         text: "Messages",
         pos: { x: 300, y: 400 },
         edges: {
@@ -88,6 +87,7 @@ export const initialRelationships = {
     text: "Works In",
     pos: { x: 550, y: 250 },
     type: types.RELATIONSHIP,
+    attributes: {},
     edges: {
       E0R0: { type: types.EDGE.RELATIONSHIP },
       E2R0: { type: types.EDGE.RELATIONSHIP },

@@ -20,7 +20,6 @@ export function TestEntity({ entity, general }) {
       return (
         <>
           <Generalisation {...generalisation} {...general} />
-          <HierarchyEdge parent={entity.id} child={generalisation.id} />
         </>
       );
     }
@@ -59,8 +58,7 @@ export default function Node({
   context,
   setContext,
   children,
-  parentId,
-  parentType,
+  parent,
 }) {
   console.log(`Rendering node (id: ${id})`);
   // Reference to self allows info about self to be propagated
@@ -109,7 +107,7 @@ export default function Node({
   const onDrag = updateXarrow;
   const onStop = (e, data) => {
     // Save new position of node
-    let newNode = getElement(type, id, parentType, parentId);
+    let newNode = getElement(type, id, parent);
     newNode.pos = { x: data.x, y: data.y };
     updateElement(type, newNode);
     // Update arrow position
@@ -123,7 +121,7 @@ export default function Node({
       case actions.SELECT.NORMAL:
         setContext({
           action: actions.SELECT.NORMAL,
-          selected: { type: type, id: id },
+          selected: { type: type, id: id, parent: parent },
         });
         break;
       case actions.SELECT.ADD_RELATIONSHIP:
@@ -192,7 +190,7 @@ export default function Node({
           onKeyPress={(e) => {
             if (e.key === "Enter") {
               // Update node text
-              let newNode = getElement(type, id, parentType, parentId);
+              let newNode = getElement(type, id, parent);
               newNode.text = name;
               updateElement(type, newNode);
               setEditable(false);

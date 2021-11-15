@@ -22,7 +22,6 @@ function DisplayNodes({ ids, idToNode }) {
       {ids.map((id) => (
         <>
           <div className="selected-element">{idToNode(id)}</div>
-          <Divider />
         </>
       ))}
     </>
@@ -41,6 +40,7 @@ export function DisplayRelationships({ relationships, getElement, isSource }) {
           {typeToString(connected.type)}: {connected.text}
         </div>
         <div>Cardinality: {cardinality[edge.cardinality]}</div>
+        <Divider />
       </>
     );
   };
@@ -56,7 +56,9 @@ export function DisplaySupersets({ parents, getElement }) {
     ) : null;
     return (
       <div>
-        <div>{typeToString(types.ENTITY)}: {parent.text}</div>
+        <div>
+          {typeToString(types.ENTITY)}: {parent.text}
+        </div>
         <div>{generalisation}</div>
       </div>
     );
@@ -68,11 +70,7 @@ export function DisplaySubsets({ children, getElement }) {
   const idToNode = (id) => {
     const edge = getElement(types.EDGE.HIERARCHY, id);
     const child = getElement(types.ENTITY, edge.child);
-    return (
-      <div>
-        {typeToString(types.ENTITY)}: {child.text}
-      </div>
-    );
+    return <li>{child.text}</li>;
   };
   return <DisplayNodes ids={children} idToNode={idToNode} />;
 }

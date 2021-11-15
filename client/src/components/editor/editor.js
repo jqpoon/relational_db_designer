@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { initialEntities, initialRelationships, initialEdges } from "./initial";
 import { actions, types } from "./types";
-import Edge from "./edges/edge";
-import { Xwrapper } from "react-xarrows";
+import Edge, { AttributeEdge, HierarchyEdge } from "./edges/edge";
+import { Xarrow, Xwrapper } from "react-xarrows";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import Toolbar from "./toolbar";
 import "./stylesheets/editor.css";
@@ -13,6 +13,7 @@ import SelectRelationship from "./right_toolbar/selectRelationship";
 import Normal from "./right_toolbar/normal";
 import SelectEdge from "./right_toolbar/selectEdge";
 import EdgeToRelationship from "./right_toolbar/edgeRelationship";
+import SelectGeneralisation from "./right_toolbar/selectGeneralisation";
 
 // TODO: update left,right toolbar to match new data structures
 // TODO: add initial attributes to initial.js + implement position update based on parent node of the attribute
@@ -54,24 +55,21 @@ export default function Editor() {
   const elementGetters = {
     [types.ENTITY]: (id) => ({ ...entities[id] }),
     [types.RELATIONSHIP]: (id) => ({ ...relationships[id] }),
-    [types.ATTRIBUTE]: (id, parentType, parentId) => {
-      console.assert([types.ENTITY, types.RELATIONSHIP].includes(parentType));
-      const parent = elementGetters[parentType](parentId);
-      return { ...parent.attributes[id] };
+    [types.ATTRIBUTE]: (id, parent) => {
+      console.assert([types.ENTITY, types.RELATIONSHIP].includes(parent.type));
+      const parentNode = elementGetters[parent.type](parent.id);
+      return { ...parentNode.attributes[id] };
     },
-    [types.GENERALISATION]: (id, parentType, parentId) => {
-      console.assert(parentType === types.ENTITY);
-      const parent = elementGetters[parentType](parentId);
-      return { ...parent.generalisations[id] };
+    [types.GENERALISATION]: (id, parent) => {
+      // Parent must be of ENTITY type
+      const parentNode = elementGetters[types.ENTITY](parent.id);
+      return { ...parentNode.generalisations[id] };
     },
     [types.EDGE.RELATIONSHIP]: getEdge,
     [types.EDGE.HIERARCHY]: getEdge,
   };
-  const getElement = (type, id, parentType, parentId) => {
-    console.log(
-      `getElement(type:${type}, id: ${id}, parentType:${parentType}, parentId:${parentId})`
-    );
-    return elementGetters[type](id, parentType, parentId);
+  const getElement = (type, id, parent) => {
+    return elementGetters[type](id, parent);
   };
 
   const edgeSetter = (edge, editType) => {
@@ -115,7 +113,7 @@ export default function Editor() {
         return relationships;
       }),
     [types.ATTRIBUTE]: (attribute, editType) => {
-      let parent = elementGetters[attribute.parentType](attribute.parentId);
+      let parent = elementGetters[attribute.parent.type](attribute.parent.id);
       switch (editType) {
         case "deleteElement":
           delete parent.attributes[attribute.id];
@@ -123,11 +121,11 @@ export default function Editor() {
         default:
           parent.attributes[attribute.id] = attribute;
       }
-      elementSetters[attribute.parentType](parent);
+      elementSetters[attribute.parent.type](parent);
     },
     [types.GENERALISATION]: (generalisation, editType) => {
       // Parent type must be of ENTITY type
-      let parent = elementGetters[types.ENTITY](generalisation.parentId);
+      let parent = elementGetters[types.ENTITY](generalisation.parent.id);
       switch (editType) {
         case "deleteElement":
           delete parent.generalisations[generalisation.id];
@@ -156,8 +154,6 @@ export default function Editor() {
     setElement(type, element, "updateElement", isHistory);
   };
   const setElement = (type, element, editType, isHistory) => {
-    console.log(`${editType}`);
-    console.log(element);
     if (!isHistory) {
       const inverse = nodeFunctionsOpposite[editType];
       addToUndo(inverse, type, element);
@@ -182,7 +178,7 @@ export default function Editor() {
     let state = isUndo ? undoStack : redoStack;
     let setter = isUndo ? setUndoStack : setRedoStack;
 
-    let elemOld = elementGetters[type](elem.id, elem.parentType, elem.parentId);
+    let elemOld = elementGetters[type](elem.id, elem.parent);
 
     // Build func object (Note that element should be passed in as a copy)
     let func = {
@@ -316,6 +312,17 @@ export default function Editor() {
                 {...generalFunctions}
               />
             );
+          case types.GENERALISATION:
+            return (
+              <SelectGeneralisation
+                generalisation={elementGetters[types.GENERALISATION](
+                  context.selected.id,
+                  context.selected.parent
+                )}
+                {...elementFunctions}
+                {...generalFunctions}
+              />
+            );
           case types.EDGE.RELATIONSHIP:
           case types.EDGE.HIERARCHY:
             return <SelectEdge edge={edges[context.selected.id]} />;
@@ -335,6 +342,38 @@ export default function Editor() {
         // TODO
         return <Normal />;
     }
+  };
+
+  const showAttributeEdges = (nodes) => {
+    return Object.values(nodes).map((node) => {
+      return Object.values(node.attributes).map((attribute) => {
+        return (
+          <AttributeEdge
+                parent={attribute.parent.id}
+                child={attribute.id}
+              />
+        );
+      });
+    });
+  };
+  const showEdges = () => {
+    return (
+      <>
+        {/* Normal relationship and hierarchy edges */}
+        {Object.values(edges).map((edge) => (
+          <Edge edge={edge} />
+        ))}
+        {/* Generalisation edges */}
+        {Object.values(entities).map((entity) => {
+          return Object.values(entity.generalisations).map((generalisation) => (
+            <HierarchyEdge parent={entity.id} child={generalisation.id} />
+          ));
+        })}
+        {/* Attribute edges */}
+        {showAttributeEdges(entities)}
+        {showAttributeEdges(relationships)}
+      </>
+    );
   };
 
   return (
@@ -373,9 +412,7 @@ export default function Editor() {
                 </div>
               </TransformComponent>
             </TransformWrapper>
-            {Object.values(edges).map((edge) => (
-              <Edge edge={edge} />
-            ))}
+            {showEdges()}
             {showPendingChanges()}
             {showRightToolbar()}
           </>

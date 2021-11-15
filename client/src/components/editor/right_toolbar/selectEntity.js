@@ -64,9 +64,7 @@ export default function SelectEntity({
       {/* Attributes Section */}
       <div className="section">
         <div className="section-header">Attributes</div>
-        <DisplayAttributes
-          attributes={Object.values(entity.attributes)}
-        />
+        <DisplayAttributes attributes={Object.values(entity.attributes)} />
       </div>
       {/* Relationships Section */}
       <div className="section">
@@ -111,7 +109,26 @@ export default function SelectEntity({
       {/* Subset sections */}
       <div className="section">
         <div className="section-header">Subset(s)</div>
-        <DisplaySubsets children={children} getElement={getElement} />
+        {entity.generalisations
+          ? Object.values(entity.generalisations).map((generalisation) => {
+              return (
+                <>
+                  <div>Generalisation: {generalisation.text}</div>
+                  <DisplaySubsets
+                    children={Object.keys(generalisation.edges)}
+                    getElement={getElement}
+                  />
+                </>
+              );
+            })
+          : null}
+        {children.length === 0 ? null : (
+          <>
+            <div>Without Generalisations</div>
+            <DisplaySubsets children={children} getElement={getElement} />
+          </>
+        )}
+
         {context.action === actions.SELECT.ADD_SUBSET ? (
           <AddingSubset
             {...context}

@@ -1,5 +1,6 @@
 import Xarrow from "react-xarrows";
 import { cardinality as cardinality_all, types } from "../types";
+import "./stylesheets/attribute.css";
 
 function RelationshipEdge({ start, end, cardinality }) {
   console.log("Start:" + start + ", End: " + end);
@@ -28,6 +29,26 @@ export function HierarchyEdge({ parent, child, generalisation }) {
       start={child.toString()}
       end={(generalisation ? generalisation : parent).toString()}
       showHead={!generalisation}
+      curveness={0}
+      endAnchor="auto"
+      startAnchor="middle"
+      passProps={{
+        onClick: () => {
+          /*TODO */
+        },
+      }}
+      zIndex={-1}
+    />
+  );
+}
+
+export function AttributeEdge({ parent, child }) {
+  return (
+    <Xarrow
+      start={child.toString()}
+      end={parent.toString()}
+      // showTail
+      // tailShape="circle"
       curveness={0}
       endAnchor="auto"
       startAnchor="middle"
