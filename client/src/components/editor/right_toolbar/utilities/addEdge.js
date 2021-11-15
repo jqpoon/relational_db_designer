@@ -23,17 +23,37 @@ function AddingEdge({
     });
   };
 
-  const updateNodeWithEdge = (nodeID, nodeType, edge) => {
-    let node = getElement(nodeType, nodeID);
+  const updateNodeWithEdge = (nodeID, nodeType, edge, parent) => {
+    let node = getElement(nodeType, nodeID, parent);
     node.edges[edge.id] = { type: edge.type };
     updateElement(nodeType, node);
   };
   const addEdge = () => {
-    if (validate === null || validate(target)) {
+    if (!validate || validate(target)) {
       const edge = createEdge(selected, target);
       addElement(edge.type, edge);
-      updateNodeWithEdge(edge.start, edge.source_type, edge);
-      updateNodeWithEdge(edge.end, edge.target_type, edge);
+      switch (edge.type) {
+        case types.EDGE.RELATIONSHIP:
+          updateNodeWithEdge(edge.start, edge.source_type, edge);
+          updateNodeWithEdge(edge.end, edge.target_type, edge);
+          break;
+        case types.EDGE.HIERARCHY:
+          updateNodeWithEdge(edge.child, types.ENTITY, edge);
+          if (edge.generalisation) {
+            updateNodeWithEdge(
+              edge.generalisation,
+              types.GENERALISATION,
+              edge,
+              { id: edge.parent }
+            );
+          } else {
+            updateNodeWithEdge(edge.parent, types.ENTITY, edge);
+          }
+          break;
+        default:
+          console.log(`Invalid edge type: ${edge.type}`);
+      }
+
       reset();
     }
   };
@@ -176,5 +196,19 @@ export function AddingSubset(props) {
     return newEdge;
   };
 
+  return <AddingEdge {...props} createEdge={createEdge} />;
+}
+
+export function AddingSubsetViaGeneralisation(props) {
+  const createEdge = (selected, target) => {
+    const newEdge = {
+      id: generateID(target.id, selected.id),
+      parent: selected.parent.id,
+      child: target.id,
+      generalisation: selected.id,
+      type: types.EDGE.HIERARCHY,
+    };
+    return newEdge;
+  };
   return <AddingEdge {...props} createEdge={createEdge} />;
 }

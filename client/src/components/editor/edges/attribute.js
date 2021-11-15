@@ -5,8 +5,7 @@ import { types } from "../types";
 import { AttributeContextMenu } from "../contextMenus/attributeContextMenu";
 
 export default function Attribute({
-  parentType,
-  parentId,
+  parent,
   id,
   text, // Attribute name
   relativePos, // Relative x, y position of attribute to parent node
@@ -55,7 +54,7 @@ export default function Attribute({
   // Calculate position of entity end
   const calculateEntityEndPos = () => {
     if (parentPos == null || parentPos.x == null || parentPos.y == null) {
-      let parentNode = getElement(types.ENTITY, parentId); // assume only entities have attributes for now TODO: change to include other node types
+      let parentNode = getElement(types.ENTITY, parent.id); // assume only entities have attributes for now TODO: change to include other node types
       parentPos = { x: parentNode.pos.x, y: parentNode.pos.y };
     }
     return { x: parentPos.x + relativePos.x, y: parentPos.y + relativePos.y };
@@ -92,7 +91,7 @@ export default function Attribute({
 
   // Toggles key attribute feature
   const toggleKeyAttribute = () => {
-    let attrNode = getElement(types.ATTRIBUTE, id, parentType, parentId);
+    let attrNode = getElement(types.ATTRIBUTE, id, parent);
     if (isKeyAttribute) {
       setIsKeyAttribute(false);
       attrNode["isPrimaryKey"] = false;
@@ -117,12 +116,7 @@ export default function Attribute({
             onKeyPress={(e) => {
               if (e.key === "Enter") {
                 // Update node text
-                let newNode = getElement(
-                  types.ATTRIBUTE,
-                  id,
-                  parentType,
-                  parentId
-                );
+                let newNode = getElement(types.ATTRIBUTE, id, parent);
                 newNode.text = name;
                 updateElement(types.ATTRIBUTE, newNode);
                 setEditable(false);
@@ -143,6 +137,7 @@ export default function Attribute({
   // Define component to be rendered
   let attributeEnd = (
     <div
+      id={id}
       ref={attributeEndRef}
       className="attribute-end"
       style={chosenStyle}
@@ -161,16 +156,18 @@ export default function Attribute({
     </div>
   );
 
+  console.log(`Attribute id: ${id}`);
+
   let attribute = (
     <div>
       {attributeEnd}
-      <Xarrow
-        start={parentId}
+      {/* <Xarrow
+        start={parent.id}
         end={attributeEndRefCenter}
         path="straight"
         headSize="0"
         zIndex={-10}
-      />
+      /> */}
     </div>
   );
 

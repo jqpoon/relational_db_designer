@@ -1,5 +1,6 @@
 import Xarrow from "react-xarrows";
 import { cardinality as cardinality_all, types } from "../types";
+import "./stylesheets/attribute.css";
 
 function RelationshipEdge({ start, end, cardinality }) {
   console.log("Start:" + start + ", End: " + end);
@@ -22,12 +23,12 @@ function RelationshipEdge({ start, end, cardinality }) {
   );
 }
 
-function HierarchyEdge({ start, end }) {
+export function HierarchyEdge({ parent, child, generalisation }) {
   return (
     <Xarrow
-      start={start.toString()}
-      end={end.toString()}
-      showHead
+      start={child.toString()}
+      end={(generalisation ? generalisation : parent).toString()}
+      showHead={!generalisation}
       curveness={0}
       endAnchor="auto"
       startAnchor="middle"
@@ -41,14 +42,15 @@ function HierarchyEdge({ start, end }) {
   );
 }
 
-function GeneralisationEdge({ start, end }) {
+export function AttributeEdge({ parent, child }) {
   return (
     <Xarrow
-      start={start.toString()}
-      end={end.toString()}
-      showHead={false}
+      start={child.toString()}
+      end={parent.toString()}
+      // showTail
+      // tailShape="circle"
       curveness={0}
-      endAnchor="middle"
+      endAnchor="auto"
       startAnchor="middle"
       passProps={{
         onClick: () => {
@@ -66,8 +68,6 @@ export default function Edge({ edge }) {
       return <RelationshipEdge {...edge} />;
     case types.EDGE.HIERARCHY:
       return <HierarchyEdge {...edge} />;
-    case types.EDGE.GENERALISATION:
-      return <GeneralisationEdge {...edge} />;
     default:
       console.log("Invalid edge type encountered: " + edge.type);
       return null;
