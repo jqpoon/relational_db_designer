@@ -116,7 +116,7 @@
         "subsets": {
           "type": "array",
           "items": {
-            "type": "number"
+            "type": "object"
           }
         }
       }
@@ -263,6 +263,16 @@
                           "name": "Mock Attribute 1",
                           "isPrimaryKey": false,
                           "isOptional": false
+                        }
+                      ],
+                      "subsets": [
+                        {
+                          "identifier": 3,
+                          "positionX": 1,
+                          "positionY": 2,
+                          "shapeWidth": 4,
+                          "shapeHeight": 4,
+                          "name": "Subset Entity 1"
                         }
                       ]
                     },
