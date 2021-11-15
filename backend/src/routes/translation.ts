@@ -101,7 +101,11 @@ router.get("/example", async function (req, res, next) {
     const translatedSchema: TranslatedSchema = translator.translateFromDiagramToSchema();
     console.log(translatedSchema)
     // Return translation
-    return res.status(OK).json({SUCCESS: true, translation: translatedSchema});
+    return res.status(OK).json({SUCCESS: true, translation: {
+        entities: Object.fromEntries(translatedSchema.entities),
+        relationships: Object.fromEntries(translatedSchema.relationships),
+        foreignKeys: Object.fromEntries(translatedSchema.foreignKey)
+    }});
 });
 
 router.post('/translate', async function (req, res, next) {
@@ -121,7 +125,11 @@ router.post('/translate', async function (req, res, next) {
     const translatedSchema: TranslatedSchema = translator.translateFromDiagramToSchema();
 
     // Return translation
-    return res.status(OK).json({SUCCESS: true, translation: translatedSchema});
+    return res.status(OK).json({SUCCESS: true, translation: {
+        entities: Object.fromEntries(translatedSchema.entities),
+        relationships: Object.fromEntries(translatedSchema.relationships),
+        foreignKeys: Object.fromEntries(translatedSchema.foreignKey)
+    }});
 })
 
 export default router;

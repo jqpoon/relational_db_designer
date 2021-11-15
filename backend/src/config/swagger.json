@@ -203,6 +203,90 @@
           "type": "string"
         }
       }
+    },
+    "TranslatedSchema": {
+      "type": "object",
+      "properties": {
+        "entities": {
+          "type": "object",
+          "properties": {
+              "entity name": {
+                "type": "string"
+              },
+              "attributes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "isPrimaryKey": {
+                      "type": "boolean"
+                    },
+                    "isOptional": {
+                      "type": "boolean"
+                    }
+                  }
+                } 
+              }
+          }
+        },
+        "relationships": {
+          "type": "object",
+          "properties": {
+              "relationship name": {
+                "type": "string"
+              },
+              "attributes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "isPrimaryKey": {
+                      "type": "boolean"
+                    },
+                    "isOptional": {
+                      "type": "boolean"
+                    }
+                  }
+                } 
+              }
+          }
+        },
+        "foreignKey": {
+          "type": "object",
+          "properties": {
+            "attribute name": {
+              "type": "string"
+            },
+            "objects": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              } 
+            }
+          },
+          "description": "Map from attribute name (key) to an array of 2 object names: object 1 being mapped to object 2 in the foreign key mapping"
+        }
+      }
+    },
+    "AttributesSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "isPrimaryKey": {
+          "type": "boolean"
+        },
+        "isOptional": {
+          "type": "boolean"
+        }
+      }
     }
   },
   "tags": [
@@ -217,6 +301,10 @@
     {
       "name": "General",
       "description": "ER Schema General Functions"
+    },
+    {
+      "name": "Translation",
+      "description": "Translating from diagram to relational model"
     }
   ],
   "consumes": [
@@ -375,6 +463,118 @@
               "type": "array",
               "items": {
                 "$ref": "#/definitions/Relationship"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/translation/translate": {
+      "post": {
+        "tags": [
+          "Translation"
+        ],
+        "description": "Returns translation of diagram to relational model",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "entities": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Entity"
+                  },
+                  "example": [
+                    {
+                      "identifier": 1,
+                      "positionX": 1,
+                      "positionY": 2,
+                      "shapeWidth": 4,
+                      "shapeHeight": 4,
+                      "name": "Mock Entity 1",
+                      "isWeak": true,
+                      "attributes": [
+                        {
+                          "identifier": 1,
+                          "positionX": 2,
+                          "positionY": 4,
+                          "shapeWidth": 4,
+                          "shapeHeight": 4,
+                          "name": "Mock Attribute 1",
+                          "isPrimaryKey": true,
+                          "isOptional": false
+                        }
+                      ]
+                    },
+                    {
+                      "identifier": 2,
+                      "positionX": 1,
+                      "positionY": 2,
+                      "shapeWidth": 4,
+                      "shapeHeight": 4,
+                      "name": "Mock Entity 2",
+                      "isWeak": true,
+                      "attributes": [
+                        {
+                          "identifier": 2,
+                          "positionX": 2,
+                          "positionY": 4,
+                          "shapeWidth": 4,
+                          "shapeHeight": 4,
+                          "name": "Mock Attribute 2",
+                          "isPrimaryKey": true,
+                          "isOptional": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "relationships": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Relationship"
+                  },
+                  "example": [
+                    {
+                      "identifier": 1,
+                      "positionX": 1,
+                      "positionY": 2,
+                      "shapeWidth": 4,
+                      "shapeHeight": 4,
+                      "name": "Mock Relationship",
+                      "attributes": [
+                        {
+                          "identifier": 3,
+                          "positionX": 2,
+                          "positionY": 4,
+                          "shapeWidth": 4,
+                          "shapeHeight": 4,
+                          "name": "Mock Attribute Relationship",
+                          "isPrimaryKey": true,
+                          "isOptional": false
+                        }
+                      ],
+                      "lHConstraints": {
+                        "1": "ONE_TO_MANY",
+                        "2": "ONE_TO_MANY"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/TranslatedSchema"
               }
             }
           }

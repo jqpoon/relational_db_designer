@@ -26,6 +26,7 @@ class ForeignKeyTranslator implements Translator {
         this.relationships.forEach((relationship: Relationship) => {
             var oneMany:boolean = false;
             var oneManySource:Number = -1;
+            console.log("helo")
             relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: Number) => {
                 if (lhConstraint == LHConstraint.ONE_TO_ONE) {
                     oneMany = true;
