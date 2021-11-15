@@ -54,7 +54,7 @@ export default function Toolbar({
           entityToolRef.current.state.y = 0;
         }}
       >
-        <p className="tool">Entity</p>
+      <div className="create-tool"><span class="grippy"></span> Entity </div>
       </Draggable>
       <Draggable
         ref={relationshipToolRef}
@@ -64,7 +64,7 @@ export default function Toolbar({
           relationshipToolRef.current.state.y = 0;
         }}
       >
-        <p className="tool">Relationship</p>
+         <div className="create-tool"><span class="grippy"></span>Relationship</div>
       </Draggable>
       <div className="tool" onClick={addEdgeToRelationship}>
         Connect to Relationship

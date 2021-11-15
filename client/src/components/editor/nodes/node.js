@@ -229,7 +229,7 @@ export default function Node({
 
   const normalMode = (
     <div style={highlightStyle()} className={classFromNodeType[type]}>
-      {editable ? editingMode() : <div>{text}</div>}
+      {editable ? editingMode() : <div className='label'>{text}</div>}
     </div>
   );
   // TODO:conditional rendering

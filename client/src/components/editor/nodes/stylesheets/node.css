@@ -14,6 +14,7 @@
   z-index: 15;
   justify-content: center;
   align-items: center;
+  display: table;
 }
 
 .entity-input {
@@ -28,6 +29,11 @@
 	width: 80%;
 	margin-top: 5px;
 }
+.label{
+  height: 100%;
+  display: table-cell;
+  vertical-align: middle;
+}
 
 .relationship {
   width: 100px;
@@ -38,6 +44,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  display: table;
 }
 
 .relationship div {
@@ -62,6 +69,7 @@
   border: 1px solid black;
   background-color: lightcoral;
   z-index: 15;
+  display: table;
 }
 
 .generalisation-input {
