@@ -1,26 +1,27 @@
 import {OK} from "http-status-codes";
 import {Router} from "express";
-import Disjoint from "src/models/disjoint";
 import Entity from "src/models/entity";
 import Relationship, {LHConstraint} from "src/models/relationship";
-import SchemaController from "../controllers/schemaController";
+import FullTranslator from "src/translators/fullTranslator";
+import TranslatedSchema from "src/translators/models/translatedSchema";
+import { saveAll } from "./schema";
 
 const router = Router();
 
-export const saveAll = (entities: Entity[], relationships: Relationship[]) => {
+const parseEntities = (entities: Entity[]): Map<number, Entity> => {
+    var entityMap = new Map<number, Entity>();
+    for (var entity of entities) {
+        entityMap.set(entity.identifier, entity);
+    }
+    return entityMap;
+};
 
-    relationships.map((relationship: Relationship) => {
-        const lHConstraintsConvertion: Map<number, LHConstraint> = new Map()
-        Object.entries(relationship.lHConstraints).map((values) => {
-            lHConstraintsConvertion.set(+values[0], values[1])
-        })
-
-        relationship.lHConstraints = lHConstraintsConvertion
-    })
-
-    SchemaController.getInstance().addAllEntities(entities);
-    SchemaController.getInstance().addAllRelationships(relationships);
-    // var disjoints: Disjoint[] = JSON.parse(modelAsJson.disjoints);
+const parseRelationships = (relationships: Relationship[]): Map<number, Relationship> => {
+    var rsMap = new Map<number, Relationship>();
+    for (var rs of relationships) {
+        rsMap.set(rs.identifier, rs);
+    }
+    return rsMap;
 };
 
 router.get("/example", async function (req, res, next) {
@@ -41,7 +42,7 @@ router.get("/example", async function (req, res, next) {
                     shapeWidth: 4,
                     shapeHeight: 4,
                     name: 'Mock Attribute 1',
-                    isPrimaryKey: false,
+                    isPrimaryKey: true,
                     isOptional: false,
                 }
             ]
@@ -62,7 +63,7 @@ router.get("/example", async function (req, res, next) {
                     shapeWidth: 4,
                     shapeHeight: 4,
                     name: 'Mock Attribute 2',
-                    isPrimaryKey: false,
+                    isPrimaryKey: true,
                     isOptional: false,
                 }
             ]
@@ -94,44 +95,33 @@ router.get("/example", async function (req, res, next) {
             ],
         ),
     }]
-
-    SchemaController.getInstance().addAllEntities(mockEntity);
-
-    return res.status(OK).json({SUCCESS: true});
+    // Translate
+    const translator: FullTranslator = new FullTranslator(
+        parseEntities(mockEntity), parseRelationships(mockRelationship));
+    const translatedSchema: TranslatedSchema = translator.translateFromDiagramToSchema();
+    console.log(translatedSchema)
+    // Return translation
+    return res.status(OK).json({SUCCESS: true, translation: translatedSchema});
 });
 
-router.post('/all', async function (req, res, next) {
+router.post('/translate', async function (req, res, next) {
     // TODO add error catching
-    var modelAsJson = req.body;
 
+    // Parse req body for entities and relationships
+    var modelAsJson = req.body;
     var entities: Entity[] = modelAsJson.entities;
     var relationships: Relationship[] = modelAsJson.relationships;
 
-    saveAll(entities, relationships);
-    return res.status(OK).json({SUCCESS: true});
+    // // Save to database
+    // saveAll(entities, relationships);
+
+    // Translate
+    const translator: FullTranslator = new FullTranslator(
+        parseEntities(entities), parseRelationships(relationships));
+    const translatedSchema: TranslatedSchema = translator.translateFromDiagramToSchema();
+
+    // Return translation
+    return res.status(OK).json({SUCCESS: true, translation: translatedSchema});
 })
-
-router.get('/entities', async function (req, res, next) {
-
-    const entities = SchemaController.getInstance().getAllEntities()
-
-    entities.then(function (entityMap: Map<Number, Entity>) {
-        const entities = Array.from(entityMap.values())
-        return res.status(OK).json({
-            entities: entities
-        });
-    })
-});
-
-router.get('/relationship', async function (req, res, next) {
-    const relationships = SchemaController.getInstance().getAllRelationships()
-
-    relationships.then(function (relationshipMap: Map<Number, Relationship>) {
-        const relationships = Array.from(relationshipMap.values())
-        return res.status(OK).json({
-            relationships: relationships
-        });
-    })
-});
 
 export default router;

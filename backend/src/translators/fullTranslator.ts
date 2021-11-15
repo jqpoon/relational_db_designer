@@ -23,6 +23,7 @@ class FullTranslator {
         }
 
         this.entities.forEach((entity: Entity) => { 
+            console.log(entity.identifier)
             const eTranslator:EntityTranslator = new EntityTranslator(entity);
             eTranslator.translateFromDiagramToSchema(translatedSchema);
         });
