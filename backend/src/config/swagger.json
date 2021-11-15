@@ -13,69 +13,65 @@
     "Attribute": {
       "type": "object",
       "required": [
-        "identifier",
-        "positionX",
-        "positionY",
-        "shapeWidth",
-        "shapeHeight",
-        "name",
+        "id",
+        "pos",
+        "text",
+        "isMultiValued",
         "isPrimaryKey",
         "isOptional"
       ],
       "properties": {
-        "identifier": {
+        "id": {
           "type": "number"
         },
-        "positionX": {
-          "type": "number"
+        "pos": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            }
+          }
         },
-        "positionY": {
-          "type": "number"
-        },
-        "shapeWidth": {
-          "type": "number"
-        },
-        "shapeHeight": {
-          "type": "number"
-        },
-        "name": {
+        "text": {
           "type": "string"
+        },
+        "isMultiValued": {
+          "type": "boolean"
         },
         "isPrimaryKey": {
-          "type": "string"
+          "type": "boolean"
         },
         "isOptional": {
-          "type": "string"
+          "type": "boolean"
         }
       }
     },
     "Entity": {
       "type": "object",
       "required": [
-        "identifier",
-        "positionX",
-        "positionY",
-        "shapeWidth",
-        "shapeHeight",
-        "name"
+        "id",
+        "pos",
+        "text"
       ],
       "properties": {
-        "identifier": {
+        "id": {
           "type": "number"
         },
-        "positionX": {
-          "type": "number"
+        "pos": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            }
+          }
         },
-        "positionY": {
-          "type": "number"
-        },
-        "shapeWidth": {
-          "type": "number"
-        },
-        "shapeHeight": {
-          "type": "number"
-        },
-        "name": {
+        "text": {
           "type": "string"
         },
         "isWeak": {
@@ -86,29 +82,31 @@
           "items": {
             "type": "object",
             "properties": {
-              "identifier": {
+              "id": {
                 "type": "number"
               },
-              "positionX": {
-                "type": "number"
+              "relativePos": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  }
+                }
               },
-              "positionY": {
-                "type": "number"
-              },
-              "shapeWidth": {
-                "type": "number"
-              },
-              "shapeHeight": {
-                "type": "number"
-              },
-              "name": {
+              "text": {
                 "type": "string"
               },
               "isPrimaryKey": {
-                "type": "string"
+                "type": "boolean"
               },
               "isOptional": {
-                "type": "string"
+                "type": "boolean"
+              },
+              "isMultiValued": {
+                "type": "boolean"
               }
             }
           }
@@ -124,30 +122,26 @@
     "Relationship": {
       "type": "object",
       "required": [
-        "identifier",
-        "positionX",
-        "positionY",
-        "shapeWidth",
-        "shapeHeight",
-        "name"
+        "id",
+        "pos",
+        "text"
       ],
       "properties": {
-        "identifier": {
+        "id": {
           "type": "number"
         },
-        "positionX": {
-          "type": "number"
+        "pos": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            }
+          }
         },
-        "positionY": {
-          "type": "number"
-        },
-        "shapeWidth": {
-          "type": "number"
-        },
-        "shapeHeight": {
-          "type": "number"
-        },
-        "name": {
+        "text": {
           "type": "string",
           "example": "Mock Relationship"
         },
@@ -156,22 +150,21 @@
           "items": {
             "type": "object",
             "properties": {
-              "identifier": {
+              "id": {
                 "type": "number"
               },
-              "positionX": {
-                "type": "number"
+              "relativePos": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  }
+                }
               },
-              "positionY": {
-                "type": "number"
-              },
-              "shapeWidth": {
-                "type": "number"
-              },
-              "shapeHeight": {
-                "type": "number"
-              },
-              "name": {
+              "text": {
                 "type": "string",
                 "example": "Mock Attribute Relationship"
               },
@@ -179,6 +172,9 @@
                 "type": "boolean"
               },
               "isOptional": {
+                "type": "boolean"
+              },
+              "isMultiValued": {
                 "type": "boolean"
               }
             }
@@ -246,54 +242,56 @@
                   },
                   "example": [
                     {
-                      "identifier": 1,
-                      "positionX": 1,
-                      "positionY": 2,
-                      "shapeWidth": 4,
-                      "shapeHeight": 4,
-                      "name": "Mock Entity 1",
+                      "id": "1",
+                      "pos": {
+                        "x": 1,
+                        "y": 2
+                      },
+                      "text": "Mock Entity 1",
                       "isWeak": true,
                       "attributes": [
                         {
-                          "identifier": 1,
-                          "positionX": 2,
-                          "positionY": 4,
-                          "shapeWidth": 4,
-                          "shapeHeight": 4,
-                          "name": "Mock Attribute 1",
+                          "id": "1",
+                          "relativePos": {
+                            "x": 1,
+                            "y": 2
+                          },
+                          "text": "Mock Attribute 1",
                           "isPrimaryKey": false,
-                          "isOptional": false
+                          "isOptional": false,
+                          "isMultiValued": false
                         }
                       ],
                       "subsets": [
                         {
-                          "identifier": 3,
-                          "positionX": 1,
-                          "positionY": 2,
-                          "shapeWidth": 4,
-                          "shapeHeight": 4,
-                          "name": "Subset Entity 1"
+                          "id": "3",
+                          "pos": {
+                            "x": 1,
+                            "y": 2
+                          },
+                          "text": "Subset Entity 1"
                         }
                       ]
                     },
                     {
-                      "identifier": 2,
-                      "positionX": 1,
-                      "positionY": 2,
-                      "shapeWidth": 4,
-                      "shapeHeight": 4,
-                      "name": "Mock Entity 2",
+                      "id": "2",
+                      "pos": {
+                        "x": 1,
+                        "y": 2
+                      },
+                      "text": "Mock Entity 2",
                       "isWeak": true,
                       "attributes": [
                         {
-                          "identifier": 2,
-                          "positionX": 2,
-                          "positionY": 4,
-                          "shapeWidth": 4,
-                          "shapeHeight": 4,
-                          "name": "Mock Attribute 2",
+                          "id": "2",
+                          "relativePos": {
+                            "x": 1,
+                            "y": 2
+                          },
+                          "text": "Mock Attribute 2",
                           "isPrimaryKey": false,
-                          "isOptional": false
+                          "isOptional": false,
+                          "isMultiValued": false
                         }
                       ]
                     }
@@ -306,22 +304,23 @@
                   },
                   "example": [
                     {
-                      "identifier": 1,
-                      "positionX": 1,
-                      "positionY": 2,
-                      "shapeWidth": 4,
-                      "shapeHeight": 4,
-                      "name": "Mock Relationship",
+                      "id": "1",
+                      "pos": {
+                        "x": 1,
+                        "y": 2
+                      },
+                      "text": "Mock Relationship",
                       "attributes": [
                         {
-                          "identifier": 3,
-                          "positionX": 2,
-                          "positionY": 4,
-                          "shapeWidth": 4,
-                          "shapeHeight": 4,
-                          "name": "Mock Attribute Relationship",
+                          "id": "3",
+                          "relativePos": {
+                            "x": 1,
+                            "y": 2
+                          },
+                          "text": "Mock Attribute Relationship",
                           "isPrimaryKey": false,
-                          "isOptional": false
+                          "isOptional": false,
+                          "isMultiValued": false
                         }
                       ],
                       "lHConstraints": {

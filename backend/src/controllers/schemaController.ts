@@ -49,45 +49,46 @@ class SchemaController {
         const entitiesHashMap: Map<Number, Entity> = new Map()
 
         for (var elem of entityResult.records) {
-            // TODO see if can directly iterate through the key entity without implicitly saying entity
             const entity = elem.toObject()['entity']
-            if (!entitiesHashMap.has(entity.properties.identifier)) {
-                entitiesHashMap.set(entity.properties.identifier, entity.properties)
+            if (!entitiesHashMap.has(entity.properties.id)) {
+                entitiesHashMap.set(entity.properties.id, entity.properties)
             }
         }
 
         const entityWithAttributesResult: QueryResult = await DatabaseController.getInstance().getAllEntitiesWithAttributes()
 
         for (var e of entityWithAttributesResult.records) {
-            // TODO see if can directly iterate through the key entity without implicitly saying '{ nodeID: n.id, attributes: collect(attributes) }'
-            var nodeID = e.toObject()['{ nodeID: n.identifier, attributes: collect(attributes) }'].nodeID
-            var attributes = e.toObject()['{ nodeID: n.identifier, attributes: collect(attributes) }'].attributes
+            for (let key in e.toObject()) {
+                var nodeID = e.toObject()[key]['nodeID']
+                var attributes = e.toObject()[key]['attributes']
 
-            const entityAttributesList: Array<Attribute> = attributes.map(
-                (e: { properties: any; }) => e.properties
-            )
+                const entityAttributesList: Array<Attribute> = attributes.map(
+                    (e: { properties: any; }) => e.properties
+                )
 
-            if (entitiesHashMap.get(nodeID) !== undefined) {
-                entitiesHashMap.get(nodeID)!.attributes = entityAttributesList
+                if (entitiesHashMap.get(nodeID) !== undefined) {
+                    entitiesHashMap.get(nodeID)!.attributes = entityAttributesList
+                }
             }
         }
 
         const entityWithSubsetsResult: QueryResult = await DatabaseController.getInstance().getAllSubsets()
 
         for (var e of entityWithSubsetsResult.records) {
-            var nodeID = e.toObject()['{ nodeID: n.identifier, subsets: collect(subsets) }'].nodeID
-            var subsets = e.toObject()['{ nodeID: n.identifier, subsets: collect(subsets) }'].subsets
+            for (let key in e.toObject()) {
+                var nodeID = e.toObject()[key]['nodeID']
+                var subsets = e.toObject()[key]['subsets']
 
-            const subsetsList: Array<Entity> = subsets.map(
-                (e: { properties: any; }) => e.properties
-            )
+                const subsetsList: Array<Entity> = subsets.map(
+                    (e: { properties: any; }) => e.properties
+                )
 
-            if (entitiesHashMap.get(nodeID) !== undefined) {
-                entitiesHashMap.get(nodeID)!.subsets = subsetsList
+                if (entitiesHashMap.get(nodeID) !== undefined) {
+                    entitiesHashMap.get(nodeID)!.subsets = subsetsList
+                }
             }
         }
 
-        // TODO figure out why hashmap not updated when sent as request
         return entitiesHashMap
     }
 
@@ -113,8 +114,8 @@ class SchemaController {
                 lhConstraint.set(e.entityID, LHConstraint[e.lhConstraint.type])
             })
 
-            if (!relationshipHashmap.has(relationship.properties.identifier)) {
-                relationshipHashmap.set(relationship.properties.identifier, {
+            if (!relationshipHashmap.has(relationship.properties.id)) {
+                relationshipHashmap.set(relationship.properties.id, {
                     lHConstraints: lhConstraint,
                     ...relationship.properties
                 })
@@ -124,20 +125,21 @@ class SchemaController {
         const relationshipAttributeResult: QueryResult = await DatabaseController.getInstance().getAllRelationshipsWithAttributes()
 
         for (var e of relationshipAttributeResult.records) {
-            // TODO see if can directly iterate through the key entity without implicitly saying '{ nodeID: n.id, attributes: collect(attributes) }'
-            var relationshipID = e.toObject()['{ relationshipID: n.identifier, attributes: collect(attributes) }'].relationshipID
-            var attributes = e.toObject()['{ relationshipID: n.identifier, attributes: collect(attributes) }'].attributes
+            for (let key in e.toObject()) {
+                var relationshipID = e.toObject()[key]['relationshipID']
+                var attributes = e.toObject()[key]['attributes']
 
-            const relationshipAttributeList: Array<Attribute> = attributes.map(
-                (e: { properties: any; }) => e.properties
-            )
+                const relationshipAttributeList: Array<Attribute> = attributes.map(
+                    (e: { properties: any; }) => e.properties
+                )
 
-            if (relationshipHashmap.get(relationshipID) !== undefined) {
-                relationshipHashmap.get(relationshipID)!.attributes = relationshipAttributeList
+                if (relationshipHashmap.get(relationshipID) !== undefined) {
+                    relationshipHashmap.get(relationshipID)!.attributes = relationshipAttributeList
+                }
             }
+
         }
 
-        // TODO figure out why hashmap not updated when sent as request
         return relationshipHashmap
     }
 
