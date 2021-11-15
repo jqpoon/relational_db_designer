@@ -1,25 +1,21 @@
 .attribute-end {
-    width: 7px;
-    height: 7px;
+    width: 15px;
+    height: 15px;
     background-color:white;
     border-radius: 50%;
     border-style: solid;
     border-width: 2px;
     border-color: red;
     margin: 0 auto;
+    position: absolute;
+}
+
+.attribute-end-center {
+    position: absolute;
+    top: 50%;
 }
 
 .attribute-text { 
     display: inline-block;
-}
-
-.attribute-start {
-    width: 7px;
-    height: 7px;
-    background-color:white;
-    border-radius: 50%;
-    border-style: solid;
-    border-width: 2px;
-    border-color: red;
-    margin: 0 auto;
+    position: absolute;
 }
