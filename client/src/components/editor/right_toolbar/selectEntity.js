@@ -10,8 +10,11 @@ import {
   AddingSuperset,
 } from "./utilities/addEdge";
 import { actions, types } from "../types";
+import { useState } from "react";
 
 import "./toolbar-right.css";
+import { generateID } from "./utilities/general";
+import Divider from "./utilities/divider";
 
 export default function SelectEntity({
   entity,
@@ -21,6 +24,11 @@ export default function SelectEntity({
   context,
   setContext,
 }) {
+  // For use with adding subsets under generalisations
+  const [selectedGeneralisation, setGeneralisation] = useState(null);
+  // For use with adding a child node under this node
+  const [addingChild, setAddingChild] = useState(null);
+
   const updateAction = (action) => {
     setContext((ctx) => {
       let newCtx = { ...ctx };
@@ -31,7 +39,10 @@ export default function SelectEntity({
   };
   const addRelationship = () => updateAction(actions.SELECT.ADD_RELATIONSHIP);
   const addSuperset = () => updateAction(actions.SELECT.ADD_SUPERSET);
-  const addSubset = () => updateAction(actions.SELECT.ADD_SUBSET);
+  const addSubset = (generalisation) => {
+    setGeneralisation(generalisation);
+    updateAction(actions.SELECT.ADD_SUBSET);
+  };
 
   // Split edges into relevant groups
   let relationships = [];
@@ -52,6 +63,14 @@ export default function SelectEntity({
         console.log(`Error: Invalid edge type "${type}"`);
     }
   });
+
+  const utilities = {
+    ...context,
+    setContext: setContext,
+    getElement: getElement,
+    addElement: addElement,
+    updateElement: updateElement,
+  };
 
   return (
     <div className="toolbar-right">
@@ -93,13 +112,7 @@ export default function SelectEntity({
         <div className="section-header">Superset(s)</div>
         <DisplaySupersets parents={parents} getElement={getElement} />
         {context.action === actions.SELECT.ADD_SUPERSET ? (
-          <AddingSuperset
-            {...context}
-            setContext={setContext}
-            getElement={getElement}
-            addElement={addElement}
-            updateElement={updateElement}
-          />
+          <AddingSuperset {...utilities} />
         ) : (
           <div className="section-tool" onClick={addSuperset}>
             + Add Superset
@@ -109,36 +122,97 @@ export default function SelectEntity({
       {/* Subset sections */}
       <div className="section">
         <div className="section-header">Subset(s)</div>
-        {entity.generalisations
-          ? Object.values(entity.generalisations).map((generalisation) => {
-              return (
-                <>
-                  <div>Generalisation: {generalisation.text}</div>
-                  <DisplaySubsets
-                    children={Object.keys(generalisation.edges)}
-                    getElement={getElement}
-                  />
-                </>
-              );
-            })
-          : null}
-        {children.length === 0 ? null : (
-          <>
-            <div>Without Generalisations</div>
-            <DisplaySubsets children={children} getElement={getElement} />
-          </>
-        )}
-
-        {context.action === actions.SELECT.ADD_SUBSET ? (
-          <AddingSubset
-            {...context}
-            setContext={setContext}
-            getElement={getElement}
-            addElement={addElement}
-            updateElement={updateElement}
-          />
+        {addingChild?.type === types.GENERALISATION ? (
+          <form>
+            <label>
+              Adding Generalisation:
+              <input
+                type="text"
+                placeholder="Enter Name"
+                value={addingChild.name}
+                onChange={(e) =>
+                  setAddingChild((prev) => {
+                    let child = { ...prev };
+                    child.name = e.target.value;
+                    return child;
+                  })
+                }
+              />
+            </label>
+            <input
+              type="button"
+              value="Submit"
+              onClick={() => {
+                if (!addingChild.name) {
+                  alert("Name must not be empty.");
+                  return;
+                }
+                const generalisation = {
+                  id: generateID(entity.id, addingChild.name), // TODO: change id generation
+                  type: types.GENERALISATION,
+                  parent: { id: entity.id },
+                  text: addingChild.name,
+                  pos: { x: entity.pos.x, y: entity.pos.y + 200 }, // TODO: discuss how to set generalisation node position
+                  edges: {},
+                };
+                addElement(types.GENERALISATION, generalisation);
+                setAddingChild(null);
+              }}
+            />
+            <input
+              type="button"
+              value="Cancel"
+              onClick={() => {
+                setAddingChild(null);
+              }}
+            />
+          </form>
         ) : (
-          <div className="section-tool" onClick={addSubset}>
+          <div
+            className="section-tool"
+            onClick={() =>
+              setAddingChild({ type: types.GENERALISATION, name: "" })
+            }
+          >
+            + Add Generalisation
+          </div>
+        )}
+        {Object.values(entity.generalisations).map((generalisation) => {
+          return (
+            <>
+              <div>{generalisation.text}</div>
+              <Divider />
+              <DisplaySubsets
+                generalisation={generalisation.text}
+                children={Object.keys(generalisation.edges)}
+                getElement={getElement}
+              />
+              {context.action === actions.SELECT.ADD_SUBSET &&
+              selectedGeneralisation === generalisation.id ? (
+                <AddingSubset {...utilities} generalisation={generalisation.id} />
+              ) : (
+                <div
+                  className="section-tool"
+                  onClick={() => addSubset(generalisation.id)}
+                >
+                  + Add Subset
+                </div>
+              )}
+            </>
+          );
+        })}
+        <div>No generalisation</div>
+        <Divider />
+        <DisplaySubsets
+          generalisation={null}
+          children={children}
+          getElement={getElement}
+        />
+        {context.action === actions.SELECT.ADD_SUBSET &&
+        selectedGeneralisation === null ? (
+          <AddingSubset {...utilities} generalisation={null} />
+        ) : (
+          <div className="section-tool" onClick={() => addSubset(null)}>
             + Add Subset
           </div>
         )}

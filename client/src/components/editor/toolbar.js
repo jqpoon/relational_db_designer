@@ -39,6 +39,7 @@ export default function Toolbar({
       text: "",
       type: types.RELATIONSHIP,
       edges: {},
+      attributes: {},
     };
     addElement(types.RELATIONSHIP, newRelationship);
   };

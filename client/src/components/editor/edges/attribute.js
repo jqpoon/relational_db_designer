@@ -212,8 +212,7 @@ export function addAttributeToNode(
   const attributeId = parentId + "A" + idCounter.getCount();
 
   const attributeEntry = {
-    parentId: parentId,
-    parentType: types.ENTITY,
+    parent: { id: parentId, type: types.ENTITY },
     id: attributeId,
     text: text,
     relativePos: relativePos,

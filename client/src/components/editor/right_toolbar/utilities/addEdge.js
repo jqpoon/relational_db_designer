@@ -188,10 +188,9 @@ export function AddingSubset(props) {
     const newEdge = {
       id: generateID(target.id, selected.id),
       type: types.EDGE.HIERARCHY,
-      source_type: target.type,
-      target_type: selected.type,
-      start: target.id,
-      end: selected.id,
+      child: target.id,
+      parent: selected.id,
+      generalisation: props.generalisation,
     };
     return newEdge;
   };

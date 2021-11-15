@@ -30,7 +30,7 @@ export function HierarchyEdge({ parent, child, generalisation }) {
       end={(generalisation ? generalisation : parent).toString()}
       showHead={!generalisation}
       curveness={0}
-      endAnchor="auto"
+      endAnchor={generalisation ? "middle" : "auto"}
       startAnchor="middle"
       passProps={{
         onClick: () => {

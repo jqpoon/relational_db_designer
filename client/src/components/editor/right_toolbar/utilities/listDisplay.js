@@ -18,7 +18,6 @@ import "../toolbar-right.css";
 function DisplayNodes({ ids, idToNode }) {
   return (
     <>
-      {ids.length === 0 ? null : <Divider />}
       {ids.map((id) => (
         <>
           <div className="selected-element">{idToNode(id)}</div>
@@ -36,11 +35,9 @@ export function DisplayRelationships({ relationships, getElement, isSource }) {
       : getElement(edge.source_type, edge.start);
     return (
       <>
-        <div>
-          {typeToString(connected.type)}: {connected.text}
-        </div>
-        <div>Cardinality: {cardinality[edge.cardinality]}</div>
-        <Divider />
+        <li>
+          {connected.text} | {cardinality[edge.cardinality]}
+        </li>
       </>
     );
   };
@@ -77,7 +74,7 @@ export function DisplaySubsets({ children, getElement }) {
 
 export function DisplayAttributes({ attributes }) {
   const idToNode = (attribute) => {
-    return <div>{attribute.text}</div>;
+    return <li>{attribute.text}</li>;
   };
   return <DisplayNodes ids={attributes} idToNode={idToNode} />;
 }
