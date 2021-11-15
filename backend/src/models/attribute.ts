@@ -1,16 +1,16 @@
+import Position from "./position";
+
 // Attributes can be part of entities or relationships.
 interface Attribute {
     // An identifier given to every single object that exists in the ER model.
-    identifier: number;
+    id: string;
+    text: string;
 
     // Variables used for generating the shape of the object on the client.
-    positionX: number;
-    positionY: number;
-    shapeWidth: number;
-    shapeHeight: number;
+    relativePos: Position; 
 
     // General-use variables.
-    name: string;
+    isMultiValued: boolean;
     isPrimaryKey: boolean;
     isOptional: boolean;
 }
