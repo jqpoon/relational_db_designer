@@ -60,7 +60,7 @@ export default function Node({
   children,
   parent,
 }) {
-  console.log(`Rendering node (id: ${id})`);
+   console.log(`Rendering node (id: ${id})`);
   // Reference to self allows info about self to be propagated
   const nodeRef = useRef(null);
   // Name of node which will be displayed
@@ -80,7 +80,7 @@ export default function Node({
   }, []);
 
   // Hides the context menu if we left click again
-  const handleClick = useCallback(() => {
+  const handleClick = useCallback((e) => {
     setShow(false);
   }, [show]);
 
@@ -201,9 +201,34 @@ export default function Node({
     );
   };
 
+  const highlightStyle = () => {
+    if (context.action === actions.SELECT.NORMAL && id === context.selected.id ){
+      return { border: "2px solid orange" }
+     } else if(context.action === actions.SELECT.ADD_RELATIONSHIP && id === context.selected.id){
+      return { border: "2px solid orange" }
+     }  else if(context.action === actions.SELECT.ADD_RELATIONSHIP && context.target !== null && id === context.target.id){
+      return { border: "2px solid orange" }
+     } else if((context.action === actions.RELATIONSHIP_ADD.SELECT_SOURCES || context.action === actions.RELATIONSHIP_ADD.SELECT_TARGET) && context.sources != null && idIsInSelectedRelationship(Object.keys(context.sources))) {
+      return { border: "2px solid orange" }
+     } else if((context.action === actions.RELATIONSHIP_ADD.SELECT_SOURCES || context.action === actions.RELATIONSHIP_ADD.SELECT_TARGET) && context.target!= null && id === context.target.id) {
+      return { border: "2px solid orange" }
+     } else{
+       return null
+     }
+  }
+
+  const idIsInSelectedRelationship = (sources) => {
+    for (const x of sources) {
+      if(parseInt(x,10) === id){
+        return true;
+      }
+    }
+    return false;
+  }
+
   const normalMode = (
-    <div className={classFromNodeType[type]}>
-      {editable ? editingMode() : <div>{text}</div>}
+    <div style={highlightStyle()} className={classFromNodeType[type]}>
+      {editable ? editingMode() : <div className={classFromNodeType[type]+'-label'}>{text}</div>}
     </div>
   );
   // TODO:conditional rendering
