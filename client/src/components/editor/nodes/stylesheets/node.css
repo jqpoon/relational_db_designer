@@ -29,7 +29,7 @@
 	width: 80%;
 	margin-top: 5px;
 }
-.label{
+.entity-label, .generalisation-label{
   height: 100%;
   display: table-cell;
   vertical-align: middle;
@@ -44,7 +44,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  display: table;
 }
 
 .relationship div {
