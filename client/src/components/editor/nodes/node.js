@@ -60,7 +60,7 @@ export default function Node({
   children,
   parent,
 }) {
-  console.log(`Rendering node (id: ${id})`);
+   console.log(`Rendering node (id: ${id})`);
   // Reference to self allows info about self to be propagated
   const nodeRef = useRef(null);
   // Name of node which will be displayed
@@ -80,7 +80,7 @@ export default function Node({
   }, []);
 
   // Hides the context menu if we left click again
-  const handleClick = useCallback(() => {
+  const handleClick = useCallback((e) => {
     setShow(false);
   }, [show]);
 
@@ -116,7 +116,6 @@ export default function Node({
     setPanDisabled(false);
   };
   const onClick = () => {
-    console.log(context.action);
     switch (context.action) {
       case actions.NORMAL:
       case actions.SELECT.NORMAL:
