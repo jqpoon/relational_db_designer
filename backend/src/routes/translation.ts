@@ -104,7 +104,7 @@ router.get("/example", async function (req, res, next) {
     return res.status(OK).json({SUCCESS: true, translation: {
         entities: Object.fromEntries(translatedSchema.entities),
         relationships: Object.fromEntries(translatedSchema.relationships),
-        foreignKeys: Object.fromEntries(translatedSchema.foreignKey)
+        foreignKeys: translatedSchema.foreignKey
     }});
 });
 

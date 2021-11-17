@@ -258,19 +258,14 @@
           }
         },
         "foreignKey": {
-          "type": "object",
-          "properties": {
-            "attribute name": {
+          "type": "array",
+          "description": "Array of [object 1, foreign key, object 2] with object 1 mapping to object 2 in the key",
+          "items": {
+            "type": "array", 
+            "items": {
               "type": "string"
-            },
-            "objects": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              } 
             }
-          },
-          "description": "Map from attribute name (key) to an array of 2 object names: object 1 being mapped to object 2 in the foreign key mapping"
+          }
         }
       }
     },

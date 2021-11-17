@@ -26,7 +26,7 @@ class ForeignKeyTranslator implements Translator {
         this.relationships.forEach((relationship: Relationship) => {
             var oneMany:boolean = false;
             var oneManySource:Number = -1;
-            console.log("helo")
+            console.log(relationship.lHConstraints)
             relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: Number) => {
                 if (lhConstraint == LHConstraint.ONE_TO_ONE) {
                     oneMany = true;
@@ -35,19 +35,20 @@ class ForeignKeyTranslator implements Translator {
             });
 
             if (oneMany) {
-                const foreignKeySchema: Array<string> = [this.entities.get(oneManySource)!.name]
+                const foreignKey: string = this.getPrimaryKey(this.entities.get(oneManySource)!)
+                const foreignKeySchema: Array<string> = [this.entities.get(oneManySource)!.name, foreignKey]
                 relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: Number) => {
                     if (lhConstraint != LHConstraint.ONE_TO_ONE) {
                         foreignKeySchema.push(this.entities.get(entityID)!.name);
                     }
                 });
-                const foreignKey: string = this.getPrimaryKey(this.entities.get(oneManySource)!)
-                translatedSchema.foreignKey.set(foreignKey, foreignKeySchema);
+                translatedSchema.foreignKey.push(foreignKeySchema);
             } else {
-                relationship.lHConstraints.forEach((entityID: Number) => {
-                    const foreignKeySchema: Array<string> = [relationship.name, this.entities.get(entityID)!.name]
+                relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: Number) => {
+                    console.log(entityID)
                     const foreignKey: string = this.getPrimaryKey(this.entities.get(entityID)!);
-                    translatedSchema.foreignKey.set(foreignKey, foreignKeySchema);
+                    const foreignKeySchema: Array<string> = [relationship.name, foreignKey, this.entities.get(entityID)!.name]
+                    translatedSchema.foreignKey.push(foreignKeySchema);
                 });
             }
         });

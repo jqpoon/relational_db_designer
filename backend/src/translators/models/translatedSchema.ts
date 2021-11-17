@@ -4,7 +4,7 @@ interface TranslatedSchema {
     relationships: Map<string, Array<AttributesSchema>>
 
     // key: foreign key name, value is list of entities name
-    foreignKey: Map<string, Array<string>>
+    foreignKey: Array<Array<string>>
 
 }
 
