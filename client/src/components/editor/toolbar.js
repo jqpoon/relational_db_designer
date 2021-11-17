@@ -2,6 +2,7 @@ import Draggable from "react-draggable";
 import { useRef } from "react";
 import "./stylesheets/toolbar.css";
 import { types } from "./types";
+import axios from "axios";
 
 export default function Toolbar({
 	addEdgeToRelationship,
@@ -85,7 +86,14 @@ export default function Toolbar({
 				<div
 					className="tool"
 					onClick={() => {
-						console.log(exportStateToObject());
+						console.log(exportStateToObject())
+						axios.post('/schema/all', exportStateToObject())
+							.then(function (response) {
+                                console.log(response);
+                            })
+							.catch(function (error) {
+								console.log(error);
+							});
 					}}
 				>
 					Save

@@ -349,7 +349,8 @@ export default function Editor() {
 					edge.start === relationship.id ||
 					edge.end === relationship.id
 			);
-			for (let link in links) {
+			for (let i in links) {
+				let link = links[i]
 				let entityID =
 					link.start === relationship.id ? link.end : link.start;
 				relationshipState.lHConstraints[entityID] = link.cardinality;
