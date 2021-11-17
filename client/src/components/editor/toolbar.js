@@ -1,10 +1,11 @@
 import Draggable from "react-draggable";
 import { useRef } from "react";
 import "./stylesheets/toolbar.css";
-import { types } from "./types";
+import { actions, types } from "./types";
 
 export default function Toolbar({
   addEdgeToRelationship,
+  translate,
   getId,
   addElement,
   undo,
@@ -78,7 +79,7 @@ export default function Toolbar({
         </div>
         <div className="tool">Load</div>
         <div className="tool">Save</div>
-        <div className="tool">Translate</div>
+        <div className="tool" onClick={translate}>Translate</div>
         <div className="tool">Validate</div>
       </div>
     </div>

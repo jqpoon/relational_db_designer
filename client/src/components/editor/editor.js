@@ -14,6 +14,8 @@ import Normal from "./right_toolbar/normal";
 import SelectEdge from "./right_toolbar/selectEdge";
 import EdgeToRelationship from "./right_toolbar/edgeRelationship";
 import SelectGeneralisation from "./right_toolbar/selectGeneralisation";
+import DisplayTranslation from "./right_toolbar/translationDisplay";
+import { relationalSchema } from "./right_toolbar/relationalSchemaExample";
 
 // TODO: update left,right toolbar to match new data structures
 // TODO: add initial attributes to initial.js + implement position update based on parent node of the attribute
@@ -264,6 +266,11 @@ export default function Editor() {
         target: null,
       });
     },
+    translate: () => {
+      setContext({
+        action: actions.TRANSLATE
+      })
+    }
   };
 
   const rightToolBarActions = {
@@ -296,6 +303,8 @@ export default function Editor() {
   const showPendingChanges = () => {};
   const showRightToolbar = () => {
     switch (context.action) {
+      case actions.TRANSLATE:
+        return <DisplayTranslation relationalSchema={relationalSchema} />
       case actions.NORMAL:
         return <Normal />;
       case actions.SELECT.NORMAL:
