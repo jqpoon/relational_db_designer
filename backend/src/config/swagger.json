@@ -223,6 +223,34 @@
   ],
   "paths": {
     "/schema/all": {
+      "get": {
+        "tags": [
+          "General"
+        ],
+        "description": "Retrieves **FULL** schema",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "entities": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Entity"
+                  }
+                },
+                "relationships": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Relationship"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
           "General"
