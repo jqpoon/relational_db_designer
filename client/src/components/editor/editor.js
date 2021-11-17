@@ -25,406 +25,541 @@ import SelectGeneralisation from "./right_toolbar/selectGeneralisation";
 const STACK_LIMIT = 25;
 
 export default function Editor() {
-  // Canvas states: passed to children for metadata (eg width and height of main container)
-  const parentRef = useRef(null);
-  const [counter, setCounter] = useState(1);
-  const [render, setRender] = useState(false);
-  const [scale, setScale] = useState(1);
-  const [panDisabled, setPanDisabled] = useState(false);
-  const [editableId, setEditableId] = useState(0);
+	// Canvas states: passed to children for metadata (eg width and height of main container)
+	const parentRef = useRef(null);
+	const [counter, setCounter] = useState(1);
+	const [render, setRender] = useState(false);
+	const [scale, setScale] = useState(1);
+	const [panDisabled, setPanDisabled] = useState(false);
+	const [editableId, setEditableId] = useState(0);
 
-  // List of components that will be rendered
-  const [entities, setEntities] = useState(initialEntities);
-  const [relationships, setRelationships] = useState(initialRelationships);
-  const [edges, setEdges] = useState(initialEdges);
-  const [undoStack, setUndoStack] = useState([]);
-  const [redoStack, setRedoStack] = useState([]);
+	// List of components that will be rendered
+	const [entities, setEntities] = useState(initialEntities);
+	const [relationships, setRelationships] = useState(initialRelationships);
+	const [edges, setEdges] = useState(initialEdges);
+	const [undoStack, setUndoStack] = useState([]);
+	const [redoStack, setRedoStack] = useState([]);
 
-  const [context, setContext] = useState({ action: actions.NORMAL });
+	const [context, setContext] = useState({ action: actions.NORMAL });
 
-  const [, setRerender] = useState(false);
-  const forceRerender = () => setRerender((rerender) => !rerender);
+	const [, setRerender] = useState(false);
+	const forceRerender = () => setRerender((rerender) => !rerender);
 
-  const resetClick = (e) => {
-    if(e.target.classList.contains('canvas')){
-      setContext({ action: actions.NORMAL })
-    }
-  }
+	const resetClick = (e) => {
+		if (e.target.classList.contains("canvas")) {
+			setContext({ action: actions.NORMAL });
+		}
+	};
 
-  useEffect(() => {
-    setRender(true);
-    document?.addEventListener("click", resetClick);
-  }, []);
+	useEffect(() => {
+		const requestOptions = {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: null,
+		};
+		// Initialise the state of Editor from the backend JSON.
+		fetch("TODO", requestOptions)
+			.then((response) => response.json())
+			.then((data) => importStateFromObject(data));
 
-  const getEdge = (id) => ({ ...edges[id] });
+		setRender(true);
+		document?.addEventListener("click", resetClick);
+	}, []);
 
-  // Returns a copy of the element
-  const elementGetters = {
-    [types.ENTITY]: (id) => ({ ...entities[id] }),
-    [types.RELATIONSHIP]: (id) => ({ ...relationships[id] }),
-    [types.ATTRIBUTE]: (id, parent) => {
-      console.assert([types.ENTITY, types.RELATIONSHIP].includes(parent.type));
-      const parentNode = elementGetters[parent.type](parent.id);
-      return { ...parentNode.attributes[id] };
-    },
-    [types.GENERALISATION]: (id, parent) => {
-      // Parent must be of ENTITY type
-      const parentNode = elementGetters[types.ENTITY](parent.id);
-      return { ...parentNode.generalisations[id] };
-    },
-    [types.EDGE.RELATIONSHIP]: getEdge,
-    [types.EDGE.HIERARCHY]: getEdge,
-  };
-  const getElement = (type, id, parent) => {
-    return elementGetters[type](id, parent);
-  };
+	const getEdge = (id) => ({ ...edges[id] });
 
-  const edgeSetter = (edge, editType) => {
-    setEdges((prev) => {
-      let edges = { ...prev };
-      switch (editType) {
-        case "deleteElement":
-          delete edges[edge.id];
-          break;
-        default:
-          edges[edge.id] = edge;
-      }
-      return edges;
-    });
-  };
-  // TODO:: refactor similar functions (ent, rel)
-  const elementSetters = {
-    [types.ENTITY]: (entity, editType) =>
-      setEntities((prev) => {
-        let entities = { ...prev };
-        switch (editType) {
-          case "deleteElement":
-            delete entities[entity.id];
-            break;
-          default:
-            entities[entity.id] = entity;
-        }
-        return entities;
-      }),
-    [types.RELATIONSHIP]: (relationship, editType) =>
-      setRelationships((prev) => {
-        let relationships = { ...prev };
-        switch (editType) {
-          case "deleteElement":
-            delete relationships[relationship.id];
-            break;
-          default:
-            relationships[relationship.id] = relationship;
-        }
+	// Returns a copy of the element
+	const elementGetters = {
+		[types.ENTITY]: (id) => ({ ...entities[id] }),
+		[types.RELATIONSHIP]: (id) => ({ ...relationships[id] }),
+		[types.ATTRIBUTE]: (id, parent) => {
+			console.assert(
+				[types.ENTITY, types.RELATIONSHIP].includes(parent.type)
+			);
+			const parentNode = elementGetters[parent.type](parent.id);
+			return { ...parentNode.attributes[id] };
+		},
+		[types.GENERALISATION]: (id, parent) => {
+			// Parent must be of ENTITY type
+			const parentNode = elementGetters[types.ENTITY](parent.id);
+			return { ...parentNode.generalisations[id] };
+		},
+		[types.EDGE.RELATIONSHIP]: getEdge,
+		[types.EDGE.HIERARCHY]: getEdge,
+	};
+	const getElement = (type, id, parent) => {
+		return elementGetters[type](id, parent);
+	};
 
-        return relationships;
-      }),
-    [types.ATTRIBUTE]: (attribute, editType) => {
-      let parent = elementGetters[attribute.parent.type](attribute.parent.id);
-      switch (editType) {
-        case "deleteElement":
-          delete parent.attributes[attribute.id];
-          break;
-        default:
-          parent.attributes[attribute.id] = attribute;
-      }
-      elementSetters[attribute.parent.type](parent);
-    },
-    [types.GENERALISATION]: (generalisation, editType) => {
-      // Parent type must be of ENTITY type
-      let parent = elementGetters[types.ENTITY](generalisation.parent.id);
-      switch (editType) {
-        case "deleteElement":
-          delete parent.generalisations[generalisation.id];
-          break;
-        default:
-          parent.generalisations[generalisation.id] = generalisation;
-      }
-      elementSetters[types.ENTITY](parent);
-    },
-    [types.EDGE.RELATIONSHIP]: edgeSetter,
-    [types.EDGE.HIERARCHY]: edgeSetter,
-  };
+	const edgeSetter = (edge, editType) => {
+		setEdges((prev) => {
+			let edges = { ...prev };
+			switch (editType) {
+				case "deleteElement":
+					delete edges[edge.id];
+					break;
+				default:
+					edges[edge.id] = edge;
+			}
+			return edges;
+		});
+	};
+	// TODO:: refactor similar functions (ent, rel)
+	const elementSetters = {
+		[types.ENTITY]: (entity, editType) =>
+			setEntities((prev) => {
+				let entities = { ...prev };
+				switch (editType) {
+					case "deleteElement":
+						delete entities[entity.id];
+						break;
+					default:
+						entities[entity.id] = entity;
+				}
+				return entities;
+			}),
+		[types.RELATIONSHIP]: (relationship, editType) =>
+			setRelationships((prev) => {
+				let relationships = { ...prev };
+				switch (editType) {
+					case "deleteElement":
+						delete relationships[relationship.id];
+						break;
+					default:
+						relationships[relationship.id] = relationship;
+				}
 
-  const nodeFunctionsOpposite = {
-    updateElement: "updateElement",
-    addElement: "deleteElement",
-    deleteElement: "addElement",
-  };
-  const deleteElement = (type, element, isHistory) => {
-    setElement(type, element, "deleteElement", isHistory);
-  };
-  const addElement = (type, element, isHistory) => {
-    setElement(type, element, "addElement", isHistory);
-  };
-  const updateElement = (type, element, isHistory) => {
-    setElement(type, element, "updateElement", isHistory);
-  };
-  const setElement = (type, element, editType, isHistory) => {
-    if (!isHistory) {
-      const inverse = nodeFunctionsOpposite[editType];
-      addToUndo(inverse, type, element);
-      setRedoStack([]);
-    }
-    elementSetters[type](element, editType);
-  };
+				return relationships;
+			}),
+		[types.ATTRIBUTE]: (attribute, editType) => {
+			let parent = elementGetters[attribute.parent.type](
+				attribute.parent.id
+			);
+			switch (editType) {
+				case "deleteElement":
+					delete parent.attributes[attribute.id];
+					break;
+				default:
+					parent.attributes[attribute.id] = attribute;
+			}
+			elementSetters[attribute.parent.type](parent);
+		},
+		[types.GENERALISATION]: (generalisation, editType) => {
+			// Parent type must be of ENTITY type
+			let parent = elementGetters[types.ENTITY](generalisation.parent.id);
+			switch (editType) {
+				case "deleteElement":
+					delete parent.generalisations[generalisation.id];
+					break;
+				default:
+					parent.generalisations[generalisation.id] = generalisation;
+			}
+			elementSetters[types.ENTITY](parent);
+		},
+		[types.EDGE.RELATIONSHIP]: edgeSetter,
+		[types.EDGE.HIERARCHY]: edgeSetter,
+	};
 
-  const getId = () => {
-    const id = counter;
-    setCounter(counter + 1);
-    return id;
-  };
+	const nodeFunctionsOpposite = {
+		updateElement: "updateElement",
+		addElement: "deleteElement",
+		deleteElement: "addElement",
+	};
+	const deleteElement = (type, element, isHistory) => {
+		setElement(type, element, "deleteElement", isHistory);
+	};
+	const addElement = (type, element, isHistory) => {
+		setElement(type, element, "addElement", isHistory);
+	};
+	const updateElement = (type, element, isHistory) => {
+		setElement(type, element, "updateElement", isHistory);
+	};
+	const setElement = (type, element, editType, isHistory) => {
+		if (!isHistory) {
+			const inverse = nodeFunctionsOpposite[editType];
+			addToUndo(inverse, type, element);
+			setRedoStack([]);
+		}
+		elementSetters[type](element, editType);
+	};
 
-  const addToUndo = (action, type, elem) =>
-    addToHistory(action, type, elem, true);
-  const addToRedo = (action, type, elem) =>
-    addToHistory(action, type, elem, false);
-  // Utility for adding to undo and redo
-  const addToHistory = (action, type, elem, isUndo) => {
-    // Toggle between undo and redo
-    let state = isUndo ? undoStack : redoStack;
-    let setter = isUndo ? setUndoStack : setRedoStack;
+	const getId = () => {
+		const id = counter;
+		setCounter(counter + 1);
+		return id;
+	};
 
-    let elemOld = elementGetters[type](elem.id, elem.parent);
+	const addToUndo = (action, type, elem) =>
+		addToHistory(action, type, elem, true);
+	const addToRedo = (action, type, elem) =>
+		addToHistory(action, type, elem, false);
+	// Utility for adding to undo and redo
+	const addToHistory = (action, type, elem, isUndo) => {
+		// Toggle between undo and redo
+		let state = isUndo ? undoStack : redoStack;
+		let setter = isUndo ? setUndoStack : setRedoStack;
 
-    // Build func object (Note that element should be passed in as a copy)
-    let func = {
-      action,
-      type,
-      id: elem.id,
-      // Gets a copy of the old element state if existing
-      // otherwise it is newly created and we pass in ...elem
-      // (note that elem passed in is of new state, so we can't use ...elem directly)
-      element:
-        elemOld === null || Object.keys(elemOld).length === 0
-          ? { ...elem }
-          : { ...elemOld },
-    };
+		let elemOld = elementGetters[type](elem.id, elem.parent);
 
-    // Update state within limit
-    let stateClone = [...state, func];
-    if (stateClone.length > STACK_LIMIT) {
-      stateClone.shift();
-    }
-    setter(stateClone);
-  };
+		// Build func object (Note that element should be passed in as a copy)
+		let func = {
+			action,
+			type,
+			id: elem.id,
+			// Gets a copy of the old element state if existing
+			// otherwise it is newly created and we pass in ...elem
+			// (note that elem passed in is of new state, so we can't use ...elem directly)
+			element:
+				elemOld === null || Object.keys(elemOld).length === 0
+					? { ...elem }
+					: { ...elemOld },
+		};
 
-  const undo = () => execHistory(true);
-  const redo = () => execHistory(false);
-  // Utility for executing undo and redo
-  const execHistory = (isUndo) => {
-    // Toggle between undo and redo
-    let state = isUndo ? undoStack : redoStack;
-    let setter = isUndo ? setUndoStack : setRedoStack;
-    let addFunc = isUndo ? addToRedo : addToUndo;
+		// Update state within limit
+		let stateClone = [...state, func];
+		if (stateClone.length > STACK_LIMIT) {
+			stateClone.shift();
+		}
+		setter(stateClone);
+	};
 
-    // Nothing to do
-    if (state.length === 0) return;
+	const undo = () => execHistory(true);
+	const redo = () => execHistory(false);
+	// Utility for executing undo and redo
+	const execHistory = (isUndo) => {
+		// Toggle between undo and redo
+		let state = isUndo ? undoStack : redoStack;
+		let setter = isUndo ? setUndoStack : setRedoStack;
+		let addFunc = isUndo ? addToRedo : addToUndo;
 
-    // Grab top of stack
-    let stateClone = [...state];
-    let top = stateClone.pop();
-    console.log("TopELEM");
-    console.log(top["element"]);
-    // Add to undo/redo stack current state
-    addFunc(nodeFunctionsOpposite[top["action"]], top["type"], top["element"]);
+		// Nothing to do
+		if (state.length === 0) return;
 
-    // Run and update state
-    // TODO: confirm that element should never be null or empty
-    let element = top["element"];
-    // let element =
-    //   top["element"] && Object.keys(top["element"]).length > 0
-    //     ? top["element"]
-    //     : { ...nodeStates[top["type"]][top["id"]] };
-    elementFunctions[top["action"]](top["type"], element, true);
-    setter(stateClone);
-  };
+		// Grab top of stack
+		let stateClone = [...state];
+		let top = stateClone.pop();
+		console.log("TopELEM");
+		console.log(top["element"]);
+		// Add to undo/redo stack current state
+		addFunc(
+			nodeFunctionsOpposite[top["action"]],
+			top["type"],
+			top["element"]
+		);
 
-  const elementFunctions = {
-    getElement: getElement,
-    addElement: addElement,
-    updateElement: updateElement,
-    deleteElement: deleteElement,
-    getId: getId,
-    undo: undo,
-    setEditableId: setEditableId,
-  };
+		// Run and update state
+		// TODO: confirm that element should never be null or empty
+		let element = top["element"];
+		// let element =
+		//   top["element"] && Object.keys(top["element"]).length > 0
+		//     ? top["element"]
+		//     : { ...nodeStates[top["type"]][top["id"]] };
+		elementFunctions[top["action"]](top["type"], element, true);
+		setter(stateClone);
+		setContext({ action: actions.NORMAL });
+	};
 
-  const generalFunctions = {
-    setPanDisabled: setPanDisabled,
-    setContext: setContext,
-    context: context,
-  };
+	// Translates entire model state from backend JSON into client components.
+	const importStateFromObject = (state) => {
+		for (let entity in state.entities) {
+			let entityComponent = {
+				id: entity.indentifier,
+				text: entity.name,
+				pos: { x: entity.positionX, y: entity.positionY },
+				type: types.ENTITY,
+			};
+			addElement(types.ENTITY, entityComponent);
+		}
 
-  const leftToolBarActions = {
-    addEdgeToRelationship: () => {
-      setContext({
-        action: actions.RELATIONSHIP_ADD.SELECT_TARGET,
-        sources: {},
-        target: null,
-      });
-    },
-  };
+		for (let relationship in state.relationships) {
+			let relationshipComponent = {
+				id: relationship.indentifier,
+				text: relationship.name,
+				pos: { x: relationship.positionX, y: relationship.positionY },
+				type: types.RELATIONSHIP,
+			};
+			addElement(types.RELATIONSHIP, relationshipComponent);
 
-  const rightToolBarActions = {
-    cancel: () => {
-      setContext({ action: actions.NORMAL });
-    },
-  };
+			Object.entries(relationship.lHConstraints).forEach(
+				(entityID, constraint) => {
+					let edgeComponent = {
+						start: entityID,
+						end: relationship.identifier,
+						id: entityID + relationship.identifier,
+						labels: constraint,
+					};
+					addElement(types.EDGE, edgeComponent);
+				}
+			);
+		}
+	};
 
-  const canvasConfig = {
-    panning: {
-      disabled: panDisabled,
-      excluded: ["input", "button"],
-      velocityDisabled: true,
-    },
-    // TODO: check if we need scale here
-    onZoomStop: (ref) => setScale(ref.state.scale),
-    onZoom: forceRerender,
-    onPanning: forceRerender,
-    alignmentAnimation: { animationTime: 0 },
-    onAlignBound: forceRerender,
-    doubleClick: { disabled: true },
-  };
+	// Translates entire model state into a JSON object for backend.
+	const exportStateToObject = () => {
+		let state = {
+			entities: [],
+			relationships: [],
+			disjoints: [],
+		};
 
-  const nodeConfig = {
-    parentRef: parentRef,
-    scale: scale, // TODO
-  };
+		let entitiesClone = { ...entities };
+		let relationshipsClone = { ...relationships };
+		let edgesClone = { ...edges };
 
-  // TODO
-  const showPendingChanges = () => {};
-  const showRightToolbar = () => {
-    switch (context.action) {
-      case actions.NORMAL:
-        return <Normal />;
-      case actions.SELECT.NORMAL:
-      case actions.SELECT.ADD_RELATIONSHIP:
-      case actions.SELECT.ADD_SUPERSET:
-      case actions.SELECT.ADD_SUBSET:
-        switch (context.selected.type) {
-          case types.ENTITY:
-            return (
-              <SelectEntity
-                entity={entities[context.selected.id]}
-                {...elementFunctions}
-                {...generalFunctions}
-              />
-            );
-          case types.RELATIONSHIP:
-            return (
-              <SelectRelationship
-                relationship={relationships[context.selected.id]}
-                {...elementFunctions}
-                {...generalFunctions}
-              />
-            );
-          case types.GENERALISATION:
-            return (
-              <SelectGeneralisation
-                generalisation={elementGetters[types.GENERALISATION](
-                  context.selected.id,
-                  context.selected.parent
-                )}
-                {...elementFunctions}
-                {...generalFunctions}
-              />
-            );
-          case types.EDGE.RELATIONSHIP:
-          case types.EDGE.HIERARCHY:
-            return <SelectEdge edge={edges[context.selected.id]} />;
-          default:
-            return <Normal />; // TODO: type not found page
-        }
-      case actions.RELATIONSHIP_ADD.SELECT_SOURCES:
-      case actions.RELATIONSHIP_ADD.SELECT_TARGET:
-        return (
-          <EdgeToRelationship
-            {...elementFunctions}
-            {...rightToolBarActions}
-            {...generalFunctions}
-          />
-        );
-      default:
-        // TODO
-        return <Normal />;
-    }
-  };
+		// Entities.
+		Object.values(entitiesClone).forEach((entity) => {
+			let entityState = {
+				id: entity.id,
+				text: entity.text,
+				pos: entity.pos,
+				isWeak: false,
+				attributes: [],
+				subsets: [], // TODO
+			};
 
-  const showAttributeEdges = (nodes) => {
-    return Object.values(nodes).map((node) => {
-      return Object.values(node.attributes).map((attribute) => {
-        return (
-          <AttributeEdge
-                parent={attribute.parent.id}
-                child={attribute.id}
-              />
-        );
-      });
-    });
-  };
-  const showEdges = () => {
-    return (
-      <>
-        {/* Normal relationship and hierarchy edges */}
-        {Object.values(edges).map((edge) => (
-          <Edge edge={edge} />
-        ))}
-        {/* Generalisation edges */}
-        {Object.values(entities).map((entity) => {
-          return Object.values(entity.generalisations).map((generalisation) => (
-            <HierarchyEdge parent={entity.id} child={generalisation.id} />
-          ));
-        })}
-        {/* Attribute edges */}
-        {showAttributeEdges(entities)}
-        {showAttributeEdges(relationships)}
-      </>
-    );
-  };
+			Object.values(entity.attributes).forEach((attr) => {
+				delete attr.parent;
+				delete attr.type;
 
-  return (
-    <Xwrapper>
-      <div className="editor" ref={parentRef}>
-        {render ? (
-          <>
-            <Toolbar {...elementFunctions} {...leftToolBarActions} />
-            <TransformWrapper {...canvasConfig}>
-              <TransformComponent>
-                <div
-                  className="canvas" // TODO: previously "dnd"
-                  // ref={parentRef}
-                  onClick={() => setPanDisabled(false)}
-                >
-                  {Object.values(entities).map((entity) => (
-                    <TestEntity
-                      key={entity.id}
-                      entity={entity}
-                      general={{
-                        ...nodeConfig,
-                        ...elementFunctions,
-                        ...generalFunctions,
-                      }}
-                    />
-                  ))}
-                  {Object.values(relationships).map((relationship) => (
-                    <TestRelationship
-                      key={relationship.id}
-                      {...relationship}
-                      {...nodeConfig}
-                      {...elementFunctions}
-                      {...generalFunctions}
-                    />
-                  ))}
-                </div>
-              </TransformComponent>
-            </TransformWrapper>
-            {showEdges()}
-            {showPendingChanges()}
-            {showRightToolbar()}
-          </>
-        ) : null}
-      </div>
-    </Xwrapper>
-  );
+				entityState.attributes.push(attr);
+			});
+
+			state.entities.push(entityState);
+		});
+
+		// Relationships and linking with entities.
+		Object.values(relationshipsClone).forEach((relationship) => {
+			let relationshipState = {
+				id: relationship.id,
+				text: relationship.text,
+				pos: relationship.pos,
+				attributes: [],
+				lHConstraints: {},
+			};
+
+			Object.values(relationship.attributes).forEach((attr) => {
+				delete attr.parent;
+				delete attr.type;
+
+				relationshipState.attributes.push(attr);
+			});
+
+			let links = Object.values(edgesClone).filter(
+				(edge) =>
+					edge.start === relationship.id ||
+					edge.end === relationship.id
+			);
+			for (let link in links) {
+				let entityID =
+					link.start === relationship.id ? link.end : link.start;
+				relationshipState.lHConstraints[entityID] = link.cardinality;
+			}
+
+			state.relationships.push(relationshipState);
+		});
+
+		return state;
+	};
+
+	const elementFunctions = {
+		getElement: getElement,
+		addElement: addElement,
+		updateElement: updateElement,
+		deleteElement: deleteElement,
+		getId: getId,
+		undo: undo,
+		setEditableId: setEditableId,
+	};
+
+	const generalFunctions = {
+		setPanDisabled: setPanDisabled,
+		setContext: setContext,
+		context: context,
+	};
+
+	const leftToolBarActions = {
+		addEdgeToRelationship: () => {
+			setContext({
+				action: actions.RELATIONSHIP_ADD.SELECT_TARGET,
+				sources: {},
+				target: null,
+			});
+		},
+		exportStateToObject,
+		undo: undo,
+		redo: redo,
+	};
+
+	const rightToolBarActions = {
+		cancel: () => {
+			setContext({ action: actions.NORMAL });
+		},
+	};
+
+	const canvasConfig = {
+		panning: {
+			disabled: panDisabled,
+			excluded: ["input", "button"],
+			velocityDisabled: true,
+		},
+		// TODO: check if we need scale here
+		onZoomStop: (ref) => setScale(ref.state.scale),
+		onZoom: forceRerender,
+		onPanning: forceRerender,
+		alignmentAnimation: { animationTime: 0 },
+		onAlignBound: forceRerender,
+		doubleClick: { disabled: true },
+	};
+
+	const nodeConfig = {
+		parentRef: parentRef,
+		scale: scale, // TODO
+	};
+
+	// TODO
+	const showPendingChanges = () => {};
+	const showRightToolbar = () => {
+		switch (context.action) {
+			case actions.NORMAL:
+				return <Normal />;
+			case actions.SELECT.NORMAL:
+			case actions.SELECT.ADD_RELATIONSHIP:
+			case actions.SELECT.ADD_SUPERSET:
+			case actions.SELECT.ADD_SUBSET:
+				switch (context.selected.type) {
+					case types.ENTITY:
+						return (
+							<SelectEntity
+								entity={entities[context.selected.id]}
+								{...elementFunctions}
+								{...generalFunctions}
+							/>
+						);
+					case types.RELATIONSHIP:
+						return (
+							<SelectRelationship
+								relationship={
+									relationships[context.selected.id]
+								}
+								{...elementFunctions}
+								{...generalFunctions}
+							/>
+						);
+					case types.GENERALISATION:
+						return (
+							<SelectGeneralisation
+								generalisation={elementGetters[
+									types.GENERALISATION
+								](context.selected.id, context.selected.parent)}
+								{...elementFunctions}
+								{...generalFunctions}
+							/>
+						);
+					case types.EDGE.RELATIONSHIP:
+					case types.EDGE.HIERARCHY:
+						return <SelectEdge edge={edges[context.selected.id]} />;
+					default:
+						return <Normal />; // TODO: type not found page
+				}
+			case actions.RELATIONSHIP_ADD.SELECT_SOURCES:
+			case actions.RELATIONSHIP_ADD.SELECT_TARGET:
+				return (
+					<EdgeToRelationship
+						{...elementFunctions}
+						{...rightToolBarActions}
+						{...generalFunctions}
+					/>
+				);
+			default:
+				// TODO
+				return <Normal />;
+		}
+	};
+
+	const showAttributeEdges = (nodes) => {
+		return Object.values(nodes).map((node) => {
+			return Object.values(node.attributes).map((attribute) => {
+				return (
+					<AttributeEdge
+						parent={attribute.parent.id}
+						child={attribute.id}
+					/>
+				);
+			});
+		});
+	};
+	const showEdges = () => {
+		return (
+			<>
+				{/* Normal relationship and hierarchy edges */}
+				{Object.values(edges).map((edge) => (
+					<Edge edge={edge} />
+				))}
+				{/* Generalisation edges */}
+				{Object.values(entities).map((entity) => {
+					return Object.values(entity.generalisations).map(
+						(generalisation) => (
+							<HierarchyEdge
+								parent={entity.id}
+								child={generalisation.id}
+							/>
+						)
+					);
+				})}
+				{/* Attribute edges */}
+				{showAttributeEdges(entities)}
+				{showAttributeEdges(relationships)}
+			</>
+		);
+	};
+
+	return (
+		<Xwrapper>
+			<div className="editor" ref={parentRef}>
+				{render ? (
+					<>
+						<Toolbar
+							{...elementFunctions}
+							{...leftToolBarActions}
+						/>
+						<TransformWrapper {...canvasConfig}>
+							<TransformComponent>
+								<div
+									className="canvas" // TODO: previously "dnd"
+									// ref={parentRef}
+									onClick={() => setPanDisabled(false)}
+								>
+									{Object.values(entities).map((entity) => (
+										<TestEntity
+											key={entity.id}
+											entity={entity}
+											general={{
+												...nodeConfig,
+												...elementFunctions,
+												...generalFunctions,
+											}}
+										/>
+									))}
+									{Object.values(relationships).map(
+										(relationship) => (
+											<TestRelationship
+												key={relationship.id}
+												{...relationship}
+												{...nodeConfig}
+												{...elementFunctions}
+												{...generalFunctions}
+											/>
+										)
+									)}
+								</div>
+							</TransformComponent>
+						</TransformWrapper>
+						{showEdges()}
+						{showPendingChanges()}
+						{showRightToolbar()}
+					</>
+				) : null}
+			</div>
+		</Xwrapper>
+	);
 }
