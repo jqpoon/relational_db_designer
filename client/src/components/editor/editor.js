@@ -34,9 +34,9 @@ export default function Editor() {
 	const [editableId, setEditableId] = useState(0);
 
 	// List of components that will be rendered
-	const [entities, setEntities] = useState(initialEntities);
-	const [relationships, setRelationships] = useState(initialRelationships);
-	const [edges, setEdges] = useState(initialEdges);
+	const [entities, setEntities] = useState({});
+	const [relationships, setRelationships] = useState({});
+	const [edges, setEdges] = useState({});
 	const [undoStack, setUndoStack] = useState([]);
 	const [redoStack, setRedoStack] = useState([]);
 
@@ -261,34 +261,64 @@ export default function Editor() {
 
 	// Translates entire model state from backend JSON into client components.
 	const importStateFromObject = (state) => {
-		for (let entity in state.entities) {
+
+		for (let entity of state.entities) {
+			let tempAttributes = entity.attributes?.map((a) => ({
+				parent: {id: entity.id, type: types.ENTITY},
+				type: types.ATTRIBUTE,
+				...a
+			}))
+			let attributeMap = {}
+			console.log(tempAttributes)
+			if (tempAttributes !== undefined) {
+				for (let tempA of tempAttributes) {
+					attributeMap[tempA.id] = tempA
+				}
+			}
 			let entityComponent = {
-				id: entity.indentifier,
-				text: entity.name,
-				pos: { x: entity.positionX, y: entity.positionY },
+				// id: entity.id,
+				// text: entity.text,
+				// pos: entity.pos,
 				type: types.ENTITY,
+				...entity,
+				attributes: attributeMap,
+				generalisations: {}
 			};
 			addElement(types.ENTITY, entityComponent);
 		}
 
-		for (let relationship in state.relationships) {
+		for (let relationship of state.relationships) {
 			let relationshipComponent = {
-				id: relationship.indentifier,
-				text: relationship.name,
-				pos: { x: relationship.positionX, y: relationship.positionY },
+				// id: relationship.id,
+				// text: relationship.text,
+				// pos: relationship.pos,
 				type: types.RELATIONSHIP,
+				...relationship,
+                // attributes: relationship.attributes.map((a) => ({
+                //     parent: relationship.id,
+                //     type: types.ATTRIBUTE,
+                //     ...a
+                // }))
 			};
+			console.log(relationshipComponent)
 			addElement(types.RELATIONSHIP, relationshipComponent);
 
-			Object.entries(relationship.lHConstraints).forEach(
-				(entityID, constraint) => {
+			console.log(Object.keys(relationship.lHConstraints));
+
+			Object.keys(relationship.lHConstraints).forEach(
+				(entityID) => {
+					let constraint = relationship.lHConstraints[entityID]
 					let edgeComponent = {
 						start: entityID,
-						end: relationship.identifier,
-						id: entityID + relationship.identifier,
-						labels: constraint,
+						end: relationship.id,
+						id: entityID + relationship.id,
+						cardinality: constraint,
+						type: types.EDGE.RELATIONSHIP,
+						source_type: types.ENTITY,
+						target_type: types.RELATIONSHIP,
 					};
-					addElement(types.EDGE, edgeComponent);
+					console.log(edgeComponent)
+					addElement(types.EDGE.RELATIONSHIP, edgeComponent);
 				}
 			);
 		}
@@ -309,7 +339,7 @@ export default function Editor() {
 		// Entities.
 		Object.values(entitiesClone).forEach((entity) => {
 			let entityState = {
-				id: entity.id,
+				id: `${entity.id}`,
 				text: entity.text,
 				pos: entity.pos,
 				isWeak: false,
@@ -317,9 +347,10 @@ export default function Editor() {
 				subsets: [], // TODO
 			};
 
-			Object.values(entity.attributes).forEach((attr) => {
+			Object.values({...entity.attributes}).forEach((attr) => {
 				delete attr.parent;
 				delete attr.type;
+				attr.id = `${attr.id}`
 
 				entityState.attributes.push(attr);
 			});
@@ -330,14 +361,14 @@ export default function Editor() {
 		// Relationships and linking with entities.
 		Object.values(relationshipsClone).forEach((relationship) => {
 			let relationshipState = {
-				id: relationship.id,
+				id: `${relationship.id}`,
 				text: relationship.text,
 				pos: relationship.pos,
 				attributes: [],
 				lHConstraints: {},
 			};
 
-			Object.values(relationship.attributes).forEach((attr) => {
+			Object.values({...relationship.attributes}).forEach((attr) => {
 				delete attr.parent;
 				delete attr.type;
 
@@ -387,6 +418,7 @@ export default function Editor() {
 			});
 		},
 		exportStateToObject,
+        importStateFromObject,
 		undo: undo,
 		redo: redo,
 	};
@@ -479,14 +511,18 @@ export default function Editor() {
 
 	const showAttributeEdges = (nodes) => {
 		return Object.values(nodes).map((node) => {
-			return Object.values(node.attributes).map((attribute) => {
-				return (
-					<AttributeEdge
-						parent={attribute.parent.id}
-						child={attribute.id}
-					/>
-				);
-			});
+			if (node.attributes !== undefined) {
+				return Object.values(node.attributes).map((attribute) => {
+					console.log(attribute)
+					return (
+						<AttributeEdge
+							parent={attribute.parent.id}
+							child={attribute.id}
+						/>
+					);
+				});
+			}
+			return null;
 		});
 	};
 	const showEdges = () => {

@@ -204,6 +204,9 @@ class DatabaseController {
                         },
                     )
                 )
+                console.log(entityIdentifier)
+                console.log(relationship.id)
+                console.log(relationship.lHConstraints.get(entityIdentifier)!)
                 DatabaseController.verifyDatabaseUpdate(firstRelation)
 
             }
@@ -275,7 +278,7 @@ class DatabaseController {
                     'MATCH (entity:ENTITY) RETURN entity',
                 )
             )
-            DatabaseController.verifyDatabaseUpdate(entities)
+            // DatabaseController.verifyDatabaseUpdate(entities)
             return entities
         } finally {
             await session.close()
@@ -293,7 +296,7 @@ class DatabaseController {
                     'attributes: collect(attributes) }',
                 )
             )
-            DatabaseController.verifyDatabaseUpdate(entitiesWithAttributes)
+            // DatabaseController.verifyDatabaseUpdate(entitiesWithAttributes)
             return entitiesWithAttributes
         } finally {
             await session.close()
@@ -311,7 +314,7 @@ class DatabaseController {
                     'subsets: collect(subsets) }',
                 )
             )
-            DatabaseController.verifyDatabaseUpdate(entitiesWithAttributes)
+            // DatabaseController.verifyDatabaseUpdate(entitiesWithAttributes)
             return entitiesWithAttributes
         } finally {
             await session.close()
@@ -328,7 +331,7 @@ class DatabaseController {
                     'as relations RETURN { relationship: r, entities: collect(relations) }',
                 )
             )
-            DatabaseController.verifyDatabaseUpdate(entitiesWithAttributes)
+            // DatabaseController.verifyDatabaseUpdate(entitiesWithAttributes)
 
             return entitiesWithAttributes
         } finally {
@@ -347,7 +350,7 @@ class DatabaseController {
                     'attributes: collect(attributes) }',
                 )
             )
-            DatabaseController.verifyDatabaseUpdate(relationshipWithAttributes)
+            // DatabaseController.verifyDatabaseUpdate(relationshipWithAttributes)
             return relationshipWithAttributes
         } finally {
             await session.close()

@@ -51,10 +51,13 @@ export default function Attribute({
 
   // Calculate position of entity end
   const calculateEntityEndPos = () => {
-    if (parentPos == null || parentPos.x == null || parentPos.y == null) {
+    if (parentPos === undefined || parentPos.x == null || parentPos.y == null) {
       let parentNode = getElement(types.ENTITY, parent.id); // assume only entities have attributes for now TODO: change to include other node types
-      parentPos = { x: parentNode.pos.x, y: parentNode.pos.y };
+      parentPos = parentNode.pos;
+      // console.log(parentPos)
+      // console.log(parentNode)
     }
+    console.log(parentPos)
     return { x: parentPos.x + relativePos.x, y: parentPos.y + relativePos.y };
   };
   let absolutePos = calculateEntityEndPos();
@@ -246,6 +249,9 @@ export function addAttributeToNode(
     text: text,
     relativePos: relativePos,
     type: types.ATTRIBUTE,
+    isMultiValued: false,
+    isOptional: false,
+    isPrimaryKey: false,
   };
 
   addElement(types.ATTRIBUTE, attributeEntry);

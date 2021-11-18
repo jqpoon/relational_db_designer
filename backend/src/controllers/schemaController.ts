@@ -71,7 +71,7 @@ class SchemaController {
 
                 const entityAttributesList: Array<Attribute> = attributes.map(
                     (e: { properties: any; }) => {
-                        e.properties['pos'] = {
+                        e.properties['relativePos'] = {
                             x: e.properties.posX,
                             y: e.properties.posX,
                         }
@@ -166,7 +166,7 @@ class SchemaController {
 
                 const relationshipAttributeList: Array<Attribute> = attributes.map(
                     (e: { properties: any; }) => {
-                        e.properties['pos'] = {
+                        e.properties['relativePos'] = {
                             x: e.properties.posX,
                             y: e.properties.posX,
                         }

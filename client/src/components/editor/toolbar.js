@@ -9,6 +9,7 @@ export default function Toolbar({
 	getId,
 	addElement,
 	exportStateToObject,
+    importStateFromObject,
 	undo,
 	redo,
 }) {
@@ -82,7 +83,16 @@ export default function Toolbar({
 				<div className="tool" onClick={redo}>
 					Redo
 				</div>
-				<div className="tool">Load</div>
+				<div className="tool"
+					 onClick={() => {
+						 axios.get('/schema/all')
+							 .then(function (response) {
+								 importStateFromObject(response.data)
+							 })
+							 .catch(function (error) {
+								 console.log(error);
+							 });
+					 }}>Load</div>
 				<div
 					className="tool"
 					onClick={() => {
