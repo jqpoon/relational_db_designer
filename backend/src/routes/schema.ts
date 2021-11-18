@@ -106,10 +106,41 @@ router.post('/all', async function (req, res, next) {
 
     var entities: Entity[] = modelAsJson.entities;
     var relationships: Relationship[] = modelAsJson.relationships;
-
     saveAll(entities, relationships);
     return res.status(OK).json({SUCCESS: true});
 })
+
+router.get('/all', async function (req, res, next) {
+
+    const entities = SchemaController.getInstance().getAllEntities()
+
+    entities.then(function (entityMap: Map<Number, Entity>) {
+        const entities = Array.from(entityMap.values())
+
+        const relationships = SchemaController.getInstance().getAllRelationships()
+
+        relationships.then(function (relationshipMap: Map<Number, Relationship>) {
+            const relationships = Array.from(relationshipMap.values())
+            const relationshipResponse: any[] = []
+            relationships.map((relationship) => {
+                const lHConstraintsConvertion: Map<number, String> = new Map()
+                Array.from(relationship.lHConstraints.keys()).map((id) => {
+                    lHConstraintsConvertion.set(id, LHConstraint[relationship.lHConstraints.get(id)!])
+                })
+
+                relationshipResponse.push({
+                    ...relationship,
+                    lHConstraints: Object.fromEntries(lHConstraintsConvertion),
+                })
+            })
+
+            return res.status(OK).json({
+                entities: entities,
+                relationships: relationshipResponse
+            });
+        })
+    })
+});
 
 router.get('/entities', async function (req, res, next) {
 
@@ -128,8 +159,20 @@ router.get('/relationship', async function (req, res, next) {
 
     relationships.then(function (relationshipMap: Map<Number, Relationship>) {
         const relationships = Array.from(relationshipMap.values())
+        const relationshipResponse: any[] = []
+        relationships.map((relationship) => {
+            const lHConstraintsConvertion: Map<number, String> = new Map()
+            Array.from(relationship.lHConstraints.keys()).map((id) => {
+                lHConstraintsConvertion.set(id, LHConstraint[relationship.lHConstraints.get(id)!])
+            })
+
+            relationshipResponse.push({
+                ...relationship,
+                lHConstraints: Object.fromEntries(lHConstraintsConvertion),
+            })
+        })
         return res.status(OK).json({
-            relationships: relationships
+            relationships: relationshipResponse
         });
     })
 });

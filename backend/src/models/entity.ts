@@ -14,8 +14,8 @@ interface Entity {
     name: string;
     isWeak?: boolean;
     attributes?: Attribute[];
-    // A list of all the sub-entities' identifier numbers.
-    subsets?: number[];
+    // A list of all the sub-entities
+    subsets?: Entity[];
 }
 
 export default Entity;
