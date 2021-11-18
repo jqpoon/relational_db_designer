@@ -7,6 +7,22 @@ import SchemaController from "../controllers/schemaController";
 
 const router = Router();
 
+export const saveAll = (entities: Entity[], relationships: Relationship[]) => {
+
+    relationships.map((relationship: Relationship) => {
+        const lHConstraintsConvertion: Map<number, LHConstraint> = new Map()
+        Object.entries(relationship.lHConstraints).map((values) => {
+            lHConstraintsConvertion.set(+values[0], values[1])
+        })
+
+        relationship.lHConstraints = lHConstraintsConvertion
+    })
+
+    SchemaController.getInstance().addAllEntities(entities);
+    SchemaController.getInstance().addAllRelationships(relationships);
+    // var disjoints: Disjoint[] = JSON.parse(modelAsJson.disjoints);
+};
+
 router.get("/example", async function (req, res, next) {
     var mockEntity = [
         {
@@ -90,20 +106,7 @@ router.post('/all', async function (req, res, next) {
 
     var entities: Entity[] = modelAsJson.entities;
     var relationships: Relationship[] = modelAsJson.relationships;
-
-    relationships.map((relationship: Relationship) => {
-        const lHConstraintsConvertion: Map<number, LHConstraint> = new Map()
-        Object.entries(relationship.lHConstraints).map((values) => {
-            lHConstraintsConvertion.set(+values[0], values[1])
-        })
-
-        relationship.lHConstraints = lHConstraintsConvertion
-    })
-
-    await SchemaController.getInstance().addAllEntities(entities);
-    await SchemaController.getInstance().addAllRelationships(relationships);
-    // var disjoints: Disjoint[] = JSON.parse(modelAsJson.disjoints);
-
+    saveAll(entities, relationships);
     return res.status(OK).json({SUCCESS: true});
 })
 
