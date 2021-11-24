@@ -38,6 +38,7 @@ export default function Toolbar({
       },
       text: "",
       type: types.RELATIONSHIP,
+      attributes: {},
       edges: {},
       attributes: {},
     };

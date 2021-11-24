@@ -17,6 +17,7 @@ export const initialEntities = {
         type: types.ATTRIBUTE,
         text: "Name",
         relativePos: { x: -100, y: -30 },
+        isMultiValued: false,
         isOptional: false,
         isPrimaryKey: false,
       },

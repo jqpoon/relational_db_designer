@@ -1,6 +1,6 @@
 .attribute-end {
-    width: 15px;
-    height: 15px;
+    width: 17px;
+    height: 17px;
     background-color:white;
     border-radius: 50%;
     border-style: solid;
@@ -8,8 +8,8 @@
     border-color: red;
     margin: 0 auto;
     position: absolute;
-    display: flex;
-    justify-content: center;
+    display: table-cell;
+    vertical-align: middle;
 }
 
 .attribute-end-center {
@@ -18,6 +18,8 @@
 }
 
 .attribute-text { 
-    display: inline-block;
-    position: absolute;
+    /* margin: 0 auto; */
+    transform-origin: center right;
+    /* display: inline-block; */
+    /* position: absolute; */
 }

@@ -6,9 +6,8 @@ export function AttributeContextMenu({
   anchorPoint, 
   show,
   toggleKeyAttribute,
-  updateNode,
-  getNode,
-  addNode
+  toggleOptionalAttribute,
+  toggleMultiValuedAttribute,
 }){
     // For context menu: anchorPoint contains position of contextMenu and show controls when contextMenu will be shown
   //const { anchorPoint, show } = useContextMenu();
@@ -26,7 +25,9 @@ export function AttributeContextMenu({
           <hr />
           <li onClick={() => toggleKeyAttribute()}>Toggle Key Attribute</li>
           <hr />
-          <li onClick={() => console.log("click 3")}>Toggle Optional Attribute</li>
+          <li onClick={() => toggleOptionalAttribute()}>Toggle Optional Attribute</li>
+          <hr />
+          <li onClick={() => toggleMultiValuedAttribute()}>Toggle Multi-valued Attribute</li>
         </ul>
       </div>
     );
