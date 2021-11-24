@@ -19,7 +19,7 @@ class FullTranslator {
         var translatedSchema: TranslatedSchema = {
             entities: new Map<string, Array<AttributesSchema>>(), 
             relationships: new Map<string, Array<AttributesSchema>>(), 
-            foreignKey: new Map<string, Array<string>>()
+            foreignKey: new Array<Array<string>>()
         }
 
         this.entities.forEach((entity: Entity) => { 
