@@ -15,6 +15,8 @@ import { useState } from "react";
 import "./toolbar-right.css";
 import { generateID } from "./utilities/general";
 import Divider from "./utilities/divider";
+import { EditableText, EditOnIcon } from "./utilities/components";
+import { addAttributeToNode } from "../edges/attribute";
 
 export default function SelectEntity({
   entity,
@@ -72,19 +74,93 @@ export default function SelectEntity({
     updateElement: updateElement,
   };
 
+  const updateNodeText = (node, text) => {
+    let newNode = { ...node };
+    newNode.text = text;
+    updateElement(node.type, newNode);
+  };
+
   return (
     <div className="toolbar-right">
       <div className="toolbar-header">Entity</div>
       {/* Name Section */}
       <div className="section">
-        <div className="section-header">Name: {entity.text}</div>
-        <div className="section-content">(TODO: make editable)</div>
+        <div className="section-header">Name:</div>
+        <EditOnIcon
+          value={entity.text}
+          updateValue={(text) => {
+            updateNodeText(entity, text);
+          }}
+        />
       </div>
       {/* Attributes Section */}
       <div className="section">
         <div className="section-header">Attributes</div>
-        <DisplayAttributes attributes={Object.values(entity.attributes)} />
+        <DisplayAttributes
+          attributes={Object.values(entity.attributes)}
+          updateNodeText={updateNodeText}
+        />
+        <hr
+          style={{
+            height: "0.5px",
+            margin: "0",
+            padding: "0",
+            backgroundColor: "black",
+          }}
+        />
+        {addingChild?.type === types.ATTRIBUTE ? (
+          <form>
+            <label>
+              Adding Attribute:
+              <input
+                type="text"
+                placeholder="Enter Name"
+                value={addingChild.name}
+                onChange={(e) =>
+                  setAddingChild((prev) => {
+                    let child = { ...prev };
+                    child.name = e.target.value;
+                    return child;
+                  })
+                }
+              />
+            </label>
+            <input
+              type="button"
+              value="Submit"
+              onClick={() => {
+                if (!addingChild.name) {
+                  alert("Name must not be empty.");
+                  return;
+                }
+                addAttributeToNode(
+                  updateElement,
+                  addElement,
+                  getElement,
+                  addingChild.name,
+                  entity.id
+                );
+                setAddingChild(null);
+              }}
+            />
+            <input
+              type="button"
+              value="Cancel"
+              onClick={() => {
+                setAddingChild(null);
+              }}
+            />
+          </form>
+        ) : (
+          <div
+            className="section-tool"
+            onClick={() => setAddingChild({ type: types.ATTRIBUTE, name: "" })}
+          >
+            + Add Attribute
+          </div>
+        )}
       </div>
+
       {/* Relationships Section */}
       <div className="section">
         <div className="section-header">Relationships</div>
@@ -180,7 +256,12 @@ export default function SelectEntity({
         {Object.values(entity.generalisations).map((generalisation) => {
           return (
             <>
-              <div>{generalisation.text}</div>
+              <div>
+                <EditOnIcon
+                  value={generalisation.text}
+                  updateValue={(text) => updateNodeText(generalisation, text)}
+                />
+              </div>
               <Divider />
               <DisplaySubsets
                 generalisation={generalisation.text}
@@ -189,7 +270,10 @@ export default function SelectEntity({
               />
               {context.action === actions.SELECT.ADD_SUBSET &&
               selectedGeneralisation === generalisation.id ? (
-                <AddingSubset {...utilities} generalisation={generalisation.id} />
+                <AddingSubset
+                  {...utilities}
+                  generalisation={generalisation.id}
+                />
               ) : (
                 <div
                   className="section-tool"

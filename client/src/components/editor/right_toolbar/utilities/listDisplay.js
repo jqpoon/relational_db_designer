@@ -12,6 +12,7 @@ import { cardinality, types } from "../../types";
 import { typeToString } from "./general";
 
 import "../toolbar-right.css";
+import { EditOnIcon } from "./components";
 
 // Generic function which maps over given ids,
 // converting them to HTML elements via idToNode
@@ -72,9 +73,24 @@ export function DisplaySubsets({ children, getElement }) {
   return <DisplayNodes ids={children} idToNode={idToNode} />;
 }
 
-export function DisplayAttributes({ attributes }) {
+export function DisplayAttributes({ attributes, updateNodeText }) {
   const idToNode = (attribute) => {
-    return <li>{attribute.text}</li>;
+    return (
+      <>
+        <hr
+          style={{
+            height: "0.5px",
+            margin: "0",
+            padding: "0",
+            backgroundColor: "black",
+          }}
+        />
+        <EditOnIcon
+          value={attribute.text}
+          updateValue={(name) => updateNodeText(attribute, name)}
+        />
+      </>
+    );
   };
   return <DisplayNodes ids={attributes} idToNode={idToNode} />;
 }
