@@ -285,6 +285,8 @@ export default function Editor() {
     alignmentAnimation: { animationTime: 0 },
     onAlignBound: forceRerender,
     doubleClick: { disabled: true },
+    minScale: 0.25,
+    limitToBounds: false,
   };
 
   const nodeConfig = {
