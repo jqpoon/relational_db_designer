@@ -3,8 +3,8 @@
 }
 
 .canvas {
-	width: 90vw;
-	height: 100vh;
+	width: 180vw;
+	height: 200vh;
 	/* Grid background */
 	background-image: radial-gradient(
 		circle at 1px 1px,
