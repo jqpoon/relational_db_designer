@@ -82,15 +82,30 @@ export default function Toolbar({
 				<div className="tool" onClick={redo}>
 					Redo
 				</div>
-				<div className="tool">Load</div>
 				<div
 					className="tool"
 					onClick={() => {
-						console.log(exportStateToObject())
-						axios.post('/schema/all', exportStateToObject())
+						axios
+							.get("/schema/all")
 							.then(function (response) {
-                                console.log(response);
-                            })
+								console.log(response);
+							})
+							.catch(function (error) {
+								console.log(error);
+							});
+					}}
+				>
+					Load
+				</div>
+				<div
+					className="tool"
+					onClick={() => {
+						console.log(exportStateToObject());
+						axios
+							.post("/schema/all", exportStateToObject())
+							.then(function (response) {
+								console.log(response);
+							})
 							.catch(function (error) {
 								console.log(error);
 							});

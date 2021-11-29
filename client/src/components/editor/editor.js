@@ -263,9 +263,9 @@ export default function Editor() {
 	const importStateFromObject = (state) => {
 		for (let entity in state.entities) {
 			let entityComponent = {
-				id: entity.indentifier,
-				text: entity.name,
-				pos: { x: entity.positionX, y: entity.positionY },
+				id: entity.id,
+				text: entity.text,
+				pos: entity.pos,
 				type: types.ENTITY,
 			};
 			addElement(types.ENTITY, entityComponent);
@@ -321,6 +321,10 @@ export default function Editor() {
 				delete attr.parent;
 				delete attr.type;
 
+				attr.isMultiValued = false;
+				attr.isPrimaryKey = false;
+				attr.isOptional = false;
+
 				entityState.attributes.push(attr);
 			});
 
@@ -350,7 +354,7 @@ export default function Editor() {
 					edge.end === relationship.id
 			);
 			for (let i in links) {
-				let link = links[i]
+				let link = links[i];
 				let entityID =
 					link.start === relationship.id ? link.end : link.start;
 				relationshipState.lHConstraints[entityID] = link.cardinality;
