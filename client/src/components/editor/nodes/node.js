@@ -13,7 +13,7 @@ export function TestRelationship(props) {
 
 export function TestEntity({ entity, general }) {
   const attributes = Object.values(entity.attributes).map((attribute) => {
-    return <Attribute {...attribute} {...general} />;
+    return <Attribute attribute={attribute} {...general} />;
   });
   const generalisations = Object.values(entity.generalisations).map(
     (generalisation) => {

@@ -67,6 +67,7 @@ export function Name({ name, updateName }) {
     <div style={{ padding: "5px" }}>
       <input
         type="text"
+        style={{ fontSize: "medium" }}
         value={name}
         onChange={(e) => updateName(e.target.value)}
       />
@@ -83,7 +84,7 @@ export function Generalisation({ generalisation, getElement, updateElement }) {
   const generalisationName = (
     <input
       type="text"
-      style={{fontSize: "medium"}}
+      style={{ fontSize: "medium" }}
       value={generalisation.text}
       onChange={(e) => {
         updateGeneralisationName(e.target.value);
@@ -99,6 +100,77 @@ export function Generalisation({ generalisation, getElement, updateElement }) {
         children={Object.keys(generalisation.edges)}
         getElement={getElement}
       />
+    </>
+  );
+}
+
+export function Attribute({ attribute, updateElement }) {
+  const updateAttributeName = (name) => {
+    let newAttribute = { ...attribute };
+    newAttribute.text = name;
+    updateElement(types.ATTRIBUTE, newAttribute);
+  };
+  const updateAttribute = (change) => {
+    let newAttribute = { ...attribute };
+    change(newAttribute);
+    console.log(newAttribute);
+    updateElement(types.ATTRIBUTE, newAttribute);
+  };
+  return (
+    <div>
+      <input
+        type="text"
+        style={{ fontSize: "medium" }}
+        value={attribute.text}
+        onChange={(e) => {
+          updateAttributeName(e.target.value);
+        }}
+      />
+      <input
+        type="checkbox"
+        checked={attribute.isMultiValued}
+        onChange={() => {
+          const change = (attribute) => {
+            attribute.isMultiValued = !attribute.isMultiValued;
+          };
+          updateAttribute(change);
+        }}
+      />
+      <label style={{ fontWeight: "normal" }}>Multi-Valued</label>
+      <br />
+      <input
+        type="checkbox"
+        checked={attribute.isOptional}
+        onChange={() => {
+          const change = (attribute) => {
+            attribute.isOptional = !attribute.isOptional;
+          };
+          updateAttribute(change);
+        }}
+      />
+      <label style={{ fontWeight: "normal" }}>Optional</label>
+      <br />
+      <input
+        type="checkbox"
+        checked={attribute.isPrimaryKey}
+        onChange={() => {
+          const change = (attribute) => {
+            attribute.isPrimaryKey = !attribute.isPrimaryKey;
+          };
+          updateAttribute(change);
+        }}
+      />
+      <label style={{ fontWeight: "normal" }}>Primary Key</label>
+    </div>
+  );
+}
+
+export function Attributes({ attributes, updateElement }) {
+  return (
+    <>
+      {attributes.map((attribute) => (
+        <Attribute attribute={attribute} updateElement={updateElement} />
+      ))}
     </>
   );
 }
@@ -182,17 +254,9 @@ export default function SelectEntity({
       {/* Attributes Section */}
       <div className="section">
         <div className="section-header">Attributes</div>
-        <DisplayAttributes
+        <Attributes
           attributes={Object.values(entity.attributes)}
-          updateNodeText={updateNodeText}
-        />
-        <hr
-          style={{
-            height: "0.5px",
-            margin: "0",
-            padding: "0",
-            backgroundColor: "black",
-          }}
+          updateElement={updateElement}
         />
         {addingChild?.type === types.ATTRIBUTE ? (
           <form>
