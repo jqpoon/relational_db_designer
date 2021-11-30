@@ -45,8 +45,15 @@ export default function Editor() {
   const [, setRerender] = useState(false);
   const forceRerender = () => setRerender((rerender) => !rerender);
 
+  const resetClick = (e) => {
+    if(e.target.classList.contains('canvas')){
+      setContext({ action: actions.NORMAL })
+    }
+  }
+
   useEffect(() => {
     setRender(true);
+    document?.addEventListener("click", resetClick);
   }, []);
 
   const getEdge = (id) => ({ ...edges[id] });
@@ -278,6 +285,8 @@ export default function Editor() {
     alignmentAnimation: { animationTime: 0 },
     onAlignBound: forceRerender,
     doubleClick: { disabled: true },
+    minScale: 0.25,
+    limitToBounds: false,
   };
 
   const nodeConfig = {
