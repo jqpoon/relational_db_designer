@@ -22,33 +22,15 @@ import { MdCheck, MdModeEdit } from "react-icons/md";
 import CardinalityChoices from "./utilities/cardinality";
 
 export function Relationship({ relationship, getElement, updateElement }) {
-  const [isEditing, setIsEditing] = useState(false);
-
   const edge = getElement(types.EDGE.RELATIONSHIP, relationship);
   const rel = getElement(edge.target_type, edge.end);
 
-  const viewMode = (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        padding: "5px",
-      }}
-    >
-      <div>
-        {rel.text} | {cardinality[edge.cardinality]}
-      </div>
-      <div style={{ cursor: "pointer" }} onClick={() => setIsEditing(true)}>
-        <MdModeEdit />
-      </div>
-    </div>
-  );
   const updateCardinality = (card) => {
     const newRel = { ...edge };
     newRel.cardinality = card;
     updateElement(types.EDGE.RELATIONSHIP, newRel);
   };
-  const editMode = (
+  return (
     <div
       style={{
         display: "flex",
@@ -56,20 +38,15 @@ export function Relationship({ relationship, getElement, updateElement }) {
         padding: "5px",
       }}
     >
+      <div>{rel.text}</div>
       <div>
-        {rel.text} |
         <CardinalityChoices
           value={edge.cardinality}
           onChange={(e) => updateCardinality(e.target.value)}
         />
       </div>
-      <div style={{ cursor: "pointer" }} onClick={() => setIsEditing(false)}>
-        <MdCheck />
-      </div>
     </div>
   );
-
-  return isEditing ? editMode : viewMode;
 }
 export function Relationships({ relationships, getElement, updateElement }) {
   return (
@@ -81,6 +58,47 @@ export function Relationships({ relationships, getElement, updateElement }) {
           updateElement={updateElement}
         />
       ))}
+    </>
+  );
+}
+
+export function Name({ name, updateName }) {
+  return (
+    <div style={{ padding: "5px" }}>
+      <input
+        type="text"
+        value={name}
+        onChange={(e) => updateName(e.target.value)}
+      />
+    </div>
+  );
+}
+
+export function Generalisation({ generalisation, getElement, updateElement }) {
+  const updateGeneralisationName = (name) => {
+    let newGeneralisation = { ...generalisation };
+    newGeneralisation.text = name;
+    updateElement(types.GENERALISATION, newGeneralisation);
+  };
+  const generalisationName = (
+    <input
+      type="text"
+      style={{fontSize: "medium"}}
+      value={generalisation.text}
+      onChange={(e) => {
+        updateGeneralisationName(e.target.value);
+      }}
+    />
+  );
+  return (
+    <>
+      <>{generalisationName}</>
+      <Divider />
+      {/* TODO: refactor */}
+      <DisplaySubsets
+        children={Object.keys(generalisation.edges)}
+        getElement={getElement}
+      />
     </>
   );
 }
@@ -147,18 +165,19 @@ export default function SelectEntity({
     updateElement(node.type, newNode);
   };
 
+  const updateName = (name) => {
+    let newEntity = { ...entity };
+    newEntity.text = name;
+    updateElement(types.ENTITY, newEntity);
+  };
+
   return (
     <div className="toolbar-right">
       <div className="toolbar-header">Entity</div>
       {/* Name Section */}
       <div className="section">
         <div className="section-header">Name:</div>
-        <EditOnIcon
-          value={entity.text}
-          updateValue={(text) => {
-            updateNodeText(entity, text);
-          }}
-        />
+        <Name name={entity.text} updateName={updateName} />
       </div>
       {/* Attributes Section */}
       <div className="section">
@@ -323,17 +342,10 @@ export default function SelectEntity({
         {Object.values(entity.generalisations).map((generalisation) => {
           return (
             <>
-              <div>
-                <EditOnIcon
-                  value={generalisation.text}
-                  updateValue={(text) => updateNodeText(generalisation, text)}
-                />
-              </div>
-              <Divider />
-              <DisplaySubsets
-                generalisation={generalisation.text}
-                children={Object.keys(generalisation.edges)}
+              <Generalisation
+                generalisation={generalisation}
                 getElement={getElement}
+                updateElement={updateElement}
               />
               {context.action === actions.SELECT.ADD_SUBSET &&
               selectedGeneralisation === generalisation.id ? (
@@ -352,7 +364,7 @@ export default function SelectEntity({
             </>
           );
         })}
-        <div>No generalisation</div>
+        <div>Without generalisation</div>
         <Divider />
         <DisplaySubsets
           generalisation={null}
