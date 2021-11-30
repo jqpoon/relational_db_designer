@@ -2,6 +2,7 @@ import Entity from "../models/entity";
 import Attribute from "../models/attribute";
 import DatabaseController from "./databaseController";
 import Relationship, {LHConstraint} from "../models/relationship";
+import Generalisation from "../models/generalisation";
 import {QueryResult} from "neo4j-driver";
 
 class SchemaController {
@@ -38,6 +39,12 @@ class SchemaController {
             for (var attribute of relationship.attributes ?? []) {
                 await DatabaseController.getInstance().addRelationshipAttribute(relationship, attribute)
             }
+        }
+    }
+
+    public async addAllGeneralisations(generalisations: Generalisation[]) {
+        for (var generalisation of generalisations) {
+            await DatabaseController.getInstance().addGeneralisation(generalisation)
         }
     }
 
@@ -185,6 +192,35 @@ class SchemaController {
         }
 
         return relationshipHashmap
+    }
+
+    public async getAllGeneralisations(): Promise<Generalisation[]> {
+        var generalisationResult: QueryResult = await DatabaseController.getInstance().getAllGeneralisations()
+
+        const generalisations: Generalisation[] = []
+
+        for (var e of generalisationResult.records) {
+            for (let key in e.toObject()) {
+                var generalisation = e.toObject()[key]['generalisation']
+                var entities = e.toObject()[key]['entities']
+
+                generalisation.properties['pos'] = {
+                        x: generalisation.properties.posX,
+                        y: generalisation.properties.posX,
+                    }
+                delete generalisation.properties.posX
+                delete generalisation.properties.posY
+                delete generalisation.properties.name
+
+                generalisations.push({
+                    ...generalisation.properties,
+                    entities: entities
+                })
+
+            }
+        }
+
+        return generalisations
     }
 
 }

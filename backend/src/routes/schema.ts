@@ -1,88 +1,11 @@
 import {OK} from "http-status-codes";
 import {Router} from "express";
-import Disjoint from "src/models/disjoint";
 import Entity from "src/models/entity";
 import Relationship, {LHConstraint} from "src/models/relationship";
 import SchemaController from "../controllers/schemaController";
+import Generalisation from "src/models/generalisation";
 
 const router = Router();
-
-// router.get("/example", async function (req, res, next) {
-//     var mockEntity = [
-//         {
-//             identifier: 1,
-//             positionX: 1,
-//             positionY: 2,
-//             shapeWidth: 4,
-//             shapeHeight: 4,
-//             name: 'Mock Entity 1',
-//             isWeak: true,
-//             attributes: [
-//                 {
-//                     identifier: 1,
-//                     positionX: 2,
-//                     positionY: 4,
-//                     shapeWidth: 4,
-//                     shapeHeight: 4,
-//                     name: 'Mock Attribute 1',
-//                     isPrimaryKey: false,
-//                     isOptional: false,
-//                 }
-//             ]
-//         },
-//         {
-//             identifier: 2,
-//             positionX: 1,
-//             positionY: 2,
-//             shapeWidth: 4,
-//             shapeHeight: 4,
-//             name: 'Mock Entity 2',
-//             isWeak: true,
-//             attributes: [
-//                 {
-//                     identifier: 2,
-//                     positionX: 2,
-//                     positionY: 4,
-//                     shapeWidth: 4,
-//                     shapeHeight: 4,
-//                     name: 'Mock Attribute 2',
-//                     isPrimaryKey: false,
-//                     isOptional: false,
-//                 }
-//             ]
-//         }
-//     ]
-//
-//     var mockRelationship = [{
-//         identifier: 1,
-//         positionX: 1,
-//         positionY: 2,
-//         shapeWidth: 4,
-//         shapeHeight: 4,
-//         name: 'Mock Relationship',
-//         attributes: [
-//             {
-//                 identifier: 3,
-//                 positionX: 2,
-//                 positionY: 4,
-//                 shapeWidth: 4,
-//                 shapeHeight: 4,
-//                 name: 'Mock Attribute Relationship',
-//                 isPrimaryKey: false,
-//                 isOptional: false,
-//             }
-//         ],
-//         lHConstraints: new Map([
-//                 [1, LHConstraint.ONE_TO_MANY],
-//                 [2, LHConstraint.ONE_TO_MANY],
-//             ],
-//         ),
-//     }]
-//
-//     SchemaController.getInstance().addAllEntities(mockEntity);
-//
-//     return res.status(OK).json({SUCCESS: true});
-// });
 
 router.post('/all', async function (req, res, next) {
     // TODO add error catching
@@ -90,6 +13,7 @@ router.post('/all', async function (req, res, next) {
 
     var entities: Entity[] = modelAsJson.entities;
     var relationships: Relationship[] = modelAsJson.relationships;
+    var generalisations: Generalisation[] = modelAsJson.generalisations;
 
     relationships.map((relationship: Relationship) => {
         const lHConstraintsConvertion: Map<string, LHConstraint> = new Map()
@@ -102,7 +26,7 @@ router.post('/all', async function (req, res, next) {
 
     await SchemaController.getInstance().addAllEntities(entities);
     await SchemaController.getInstance().addAllRelationships(relationships);
-    // var disjoints: Disjoint[] = JSON.parse(modelAsJson.disjoints);
+    await SchemaController.getInstance().addAllGeneralisations(generalisations);
 
     return res.status(OK).json({SUCCESS: true});
 })
@@ -131,10 +55,15 @@ router.get('/all', async function (req, res, next) {
                 })
             })
 
-            return res.status(OK).json({
-                entities: entities,
-                relationships: relationshipResponse
-            });
+            const generalisations = SchemaController.getInstance().getAllGeneralisations()
+
+            generalisations.then(function (generalisationResponse: Generalisation[]) {
+                return res.status(OK).json({
+                    entities: entities,
+                    relationships: relationshipResponse,
+                    generalisations: generalisationResponse
+                });
+            })
         })
     })
 });
@@ -170,6 +99,16 @@ router.get('/relationship', async function (req, res, next) {
         })
         return res.status(OK).json({
             relationships: relationshipResponse
+        });
+    })
+});
+
+router.get('/generalisation', async function (req, res, next) {
+    const generalisations = SchemaController.getInstance().getAllGeneralisations()
+
+    generalisations.then(function (generalisationResponse: Generalisation[]) {
+        return res.status(OK).json({
+            generalisations: generalisationResponse
         });
     })
 });

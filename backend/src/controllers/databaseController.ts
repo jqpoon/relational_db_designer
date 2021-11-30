@@ -3,6 +3,7 @@ import Entity from "../models/entity";
 import Attribute from "../models/attribute";
 import Relationship, {LHConstraint} from "../models/relationship";
 import {driver} from "neo4j-driver-core";
+import Generalisation from "src/models/generalisation";
 
 class DatabaseController {
 
@@ -204,9 +205,6 @@ class DatabaseController {
                         },
                     )
                 )
-                console.log(entityIdentifier)
-                console.log(relationship.id)
-                console.log(relationship.lHConstraints.get(entityIdentifier)!)
                 DatabaseController.verifyDatabaseUpdate(firstRelation)
 
             }
@@ -264,6 +262,73 @@ class DatabaseController {
             )
             DatabaseController.verifyDatabaseUpdate(entities)
             return entities
+        } finally {
+            await session.close()
+        }
+    }
+
+    public async createGeneralisation({
+                                        pos,
+                                        ...generalisation
+                                      }: Generalisation) {
+        const session = this.databaseDriver.session()
+
+        var generalisationKeys = ['id', 'posX', 'posY', 'text', 'name', 'parent']
+
+        generalisationKeys = generalisationKeys.map((key) => {
+            return `e.${key} = $${key}`
+        })
+
+        try {
+            const result: QueryResult = await session.writeTransaction(tx =>
+                tx.run(
+                    `CREATE (e:GENERALISATION) SET ${generalisationKeys.join(', ')} RETURN e.text`,
+                    {
+                        ...generalisation,
+                        posX: pos.x,
+                        posY: pos.y,
+                        name: generalisation.text
+                    },
+                )
+            )
+            DatabaseController.verifyDatabaseUpdate(result)
+        } finally {
+            await session.close()
+        }
+    }
+
+    public async addGeneralisation(generalisation: Generalisation) {
+        const session = this.databaseDriver.session()
+
+        try {
+            await this.createGeneralisation(generalisation)
+
+            const parentEntity = await session.writeTransaction(tx =>
+                tx.run(
+                    'MATCH (a:ENTITY), (b:GENERALISATION) WHERE a.id = $entityIdentifier AND b.id = $generalisationIdentifier ' +
+                    `CREATE (a)-[r:GENERALISATION]->(b) RETURN type(r)`,
+                    {
+                        entityIdentifier: generalisation.parent,
+                        generalisationIdentifier: generalisation.id,
+                    },
+                )
+            )
+            DatabaseController.verifyDatabaseUpdate(parentEntity)
+
+            for (var entityID of generalisation.entities) {
+                const chilcEntity = await session.writeTransaction(tx =>
+                    tx.run(
+                        'MATCH (a:ENTITY), (b:GENERALISATION) WHERE a.id = $entityIdentifier AND b.id = $generalisationIdentifier ' +
+                        `CREATE (b)-[r:GENERALISATION]->(a) RETURN type(r)`,
+                        {
+                            entityIdentifier: entityID,
+                            generalisationIdentifier: generalisation.id,
+                        },
+                    )
+                )
+                DatabaseController.verifyDatabaseUpdate(chilcEntity)
+            }
+
         } finally {
             await session.close()
         }
@@ -356,6 +421,24 @@ class DatabaseController {
             await session.close()
         }
 
+    }
+
+    public async getAllGeneralisations() {
+        const session = this.databaseDriver.session()
+
+        try {
+            const generalisations = await session.writeTransaction(tx =>
+                tx.run(
+                    'MATCH (n:GENERALISATION)-[r]->(e:ENTITY) WITH n, e.id as entities RETURN { generalisation: n, ' +
+                    'entities: collect(entities) }',
+                )
+            )
+
+            DatabaseController.verifyDatabaseUpdate(generalisations)
+            return generalisations
+        } finally {
+            await session.close()
+        }
     }
 
 }

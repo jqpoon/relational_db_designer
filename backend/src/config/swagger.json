@@ -189,6 +189,37 @@
         }
       }
     },
+    "Generalisation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "pos": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            }
+          }
+        },
+        "parent": {
+          "type": "string"
+        },
+        "entities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "InvalidResponse": {
       "type": "object",
       "properties": {
@@ -209,6 +240,10 @@
     {
       "name": "Relationships",
       "description": "ER Schema Relationships"
+    },
+    {
+      "name": "Generalisations",
+      "description": "ER Schema Generalisations"
     },
     {
       "name": "General",
@@ -244,6 +279,12 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/definitions/Relationship"
+                  }
+                },
+                "generalisations": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Generalisation"
                   }
                 }
               }
@@ -322,6 +363,22 @@
                           "isMultiValued": false
                         }
                       ]
+                    },
+                    {
+                      "id": "3",
+                      "pos": {
+                        "x": 1,
+                        "y": 2
+                      },
+                      "text": "Mock Entity 3"
+                    },
+                    {
+                      "id": "4",
+                      "pos": {
+                        "x": 1,
+                        "y": 2
+                      },
+                      "text": "Mock Entity 4"
                     }
                   ]
                 },
@@ -355,6 +412,24 @@
                         "1": "ONE_TO_MANY",
                         "2": "ONE_TO_MANY"
                       }
+                    }
+                  ]
+                },
+                "generalisations": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Generalisation"
+                  },
+                  "example": [
+                    {
+                      "id": "1",
+                      "text": "messages",
+                      "pos": {
+                        "x": 1,
+                        "y": 2
+                      },
+                      "parent": "1",
+                      "entities": ["3", "4"]
                     }
                   ]
                 }
@@ -412,6 +487,25 @@
               "type": "array",
               "items": {
                 "$ref": "#/definitions/Relationship"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schema/generalisation": {
+      "get": {
+        "tags": [
+          "Generalisations"
+        ],
+        "description": "Returns **ALL** generalisations",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Generalisation"
               }
             }
           }
