@@ -46,10 +46,10 @@ export default function Editor() {
   const forceRerender = () => setRerender((rerender) => !rerender);
 
   const resetClick = (e) => {
-    if(e.target.classList.contains('canvas')){
-      setContext({ action: actions.NORMAL })
+    if (e.target.classList.contains("canvas")) {
+      setContext({ action: actions.NORMAL });
     }
-  }
+  };
 
   useEffect(() => {
     setRender(true);
@@ -357,10 +357,7 @@ export default function Editor() {
     return Object.values(nodes).map((node) => {
       return Object.values(node.attributes).map((attribute) => {
         return (
-          <AttributeEdge
-                parent={attribute.parent.id}
-                child={attribute.id}
-              />
+          <AttributeEdge parent={attribute.parent.id} child={attribute.id} />
         );
       });
     });

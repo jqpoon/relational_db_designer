@@ -9,7 +9,7 @@ import {
   AddingSubset,
   AddingSuperset,
 } from "./utilities/addEdge";
-import { actions, types } from "../types";
+import { actions, cardinality, types } from "../types";
 import { useState } from "react";
 
 import "./toolbar-right.css";
@@ -17,6 +17,73 @@ import { generateID } from "./utilities/general";
 import Divider from "./utilities/divider";
 import { EditableText, EditOnIcon } from "./utilities/components";
 import { addAttributeToNode } from "../edges/attribute";
+
+import { MdCheck, MdModeEdit } from "react-icons/md";
+import CardinalityChoices from "./utilities/cardinality";
+
+export function Relationship({ relationship, getElement, updateElement }) {
+  const [isEditing, setIsEditing] = useState(false);
+
+  const edge = getElement(types.EDGE.RELATIONSHIP, relationship);
+  const rel = getElement(edge.target_type, edge.end);
+
+  const viewMode = (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        padding: "5px",
+      }}
+    >
+      <div>
+        {rel.text} | {cardinality[edge.cardinality]}
+      </div>
+      <div style={{ cursor: "pointer" }} onClick={() => setIsEditing(true)}>
+        <MdModeEdit />
+      </div>
+    </div>
+  );
+  const updateCardinality = (card) => {
+    const newRel = { ...edge };
+    newRel.cardinality = card;
+    updateElement(types.EDGE.RELATIONSHIP, newRel);
+  };
+  const editMode = (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        padding: "5px",
+      }}
+    >
+      <div>
+        {rel.text} |
+        <CardinalityChoices
+          value={edge.cardinality}
+          onChange={(e) => updateCardinality(e.target.value)}
+        />
+      </div>
+      <div style={{ cursor: "pointer" }} onClick={() => setIsEditing(false)}>
+        <MdCheck />
+      </div>
+    </div>
+  );
+
+  return isEditing ? editMode : viewMode;
+}
+export function Relationships({ relationships, getElement, updateElement }) {
+  return (
+    <>
+      {relationships.map((rel) => (
+        <Relationship
+          relationship={rel}
+          getElement={getElement}
+          updateElement={updateElement}
+        />
+      ))}
+    </>
+  );
+}
 
 export default function SelectEntity({
   entity,
@@ -164,10 +231,10 @@ export default function SelectEntity({
       {/* Relationships Section */}
       <div className="section">
         <div className="section-header">Relationships</div>
-        <DisplayRelationships
+        <Relationships
           relationships={relationships}
           getElement={getElement}
-          isSource={true}
+          updateElement={updateElement}
         />
         {context.action === actions.SELECT.ADD_RELATIONSHIP ? (
           <AddingRelationship
