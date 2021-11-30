@@ -41,7 +41,7 @@
 
 .selected-element {
   margin: 0;
-  padding: 7px;
+  padding: 0;
   /* display: flex;
   justify-content:space-between; */
 }
