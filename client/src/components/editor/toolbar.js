@@ -3,6 +3,7 @@ import { useRef } from "react";
 import "./stylesheets/toolbar.css";
 import { types } from "./types";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 export default function Toolbar({
 	addEdgeToRelationship,
@@ -100,9 +101,19 @@ export default function Toolbar({
 						axios.post('/schema/all', exportStateToObject())
 							.then(function (response) {
                                 console.log(response);
+								Swal.fire({
+									icon: 'success',
+									title: 'Success',
+									text: 'Model saved!',
+								})
                             })
 							.catch(function (error) {
 								console.log(error);
+								Swal.fire({
+									icon: 'error',
+									title: 'Oops...',
+									text: 'Something went wrong!',
+								})
 							});
 					}}
 				>
