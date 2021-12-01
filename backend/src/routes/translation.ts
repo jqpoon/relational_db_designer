@@ -3,7 +3,7 @@ import {Router} from "express";
 import Entity from "src/models/entity";
 import Relationship, {LHConstraint} from "src/models/relationship";
 import FullTranslator from "src/translators/fullTranslator";
-import TranslatedSchema from "src/translators/models/translatedSchema";
+import TranslatedTable from "src/translators/models/translatedTable";
 import { saveAll } from "./schema";
 
 const router = Router();
@@ -98,13 +98,11 @@ router.get("/example", async function (req, res, next) {
     // Translate
     const translator: FullTranslator = new FullTranslator(
         parseEntities(mockEntity), parseRelationships(mockRelationship));
-    const translatedSchema: TranslatedSchema = translator.translateFromDiagramToSchema();
-    console.log(translatedSchema)
+    const translatedTable: TranslatedTable = translator.translateFromDiagramToSchema();
+    console.log(translatedTable)
     // Return translation
-    return res.status(OK).json({SUCCESS: true, translation: {
-        entities: Object.fromEntries(translatedSchema.entities),
-        relationships: Object.fromEntries(translatedSchema.relationships),
-        foreignKeys: translatedSchema.foreignKey
+    return res.status(OK).json({SUCCESS: true, translatedtables: {
+        tables: Object.fromEntries(translatedTable.tables),
     }});
 });
 
@@ -122,13 +120,11 @@ router.post('/translate', async function (req, res, next) {
     // Translate
     const translator: FullTranslator = new FullTranslator(
         parseEntities(entities), parseRelationships(relationships));
-    const translatedSchema: TranslatedSchema = translator.translateFromDiagramToSchema();
+    const translatedTable: TranslatedTable = translator.translateFromDiagramToSchema();
 
     // Return translation
-    return res.status(OK).json({SUCCESS: true, translation: {
-        entities: Object.fromEntries(translatedSchema.entities),
-        relationships: Object.fromEntries(translatedSchema.relationships),
-        foreignKeys: Object.fromEntries(translatedSchema.foreignKey)
+    return res.status(OK).json({SUCCESS: true, translatedtables: {
+        tables: Object.fromEntries(translatedTable.tables),
     }});
 })
 
