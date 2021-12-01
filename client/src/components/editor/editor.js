@@ -36,9 +36,9 @@ export default function Editor() {
   const [editableId, setEditableId] = useState(0);
 
   // List of components that will be rendered
-  const [entities, setEntities] = useState(initialEntities);
-  const [relationships, setRelationships] = useState(initialRelationships);
-  const [edges, setEdges] = useState(initialEdges);
+  const [entities, setEntities] = useState([]);
+  const [relationships, setRelationships] = useState([]);
+  const [edges, setEdges] = useState([]);
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
 
