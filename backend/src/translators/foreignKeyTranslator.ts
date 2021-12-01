@@ -1,6 +1,6 @@
 import Entity from "../models/entity";
 import Relationship, { LHConstraint } from "../models/relationship";
-import TranslatedSchema from "./models/translatedSchema";
+import TranslatedTable, { Table, TableSource, Column, ForeignKey } from "./models/translatedTable";
 import Translator from "./translator";
 
 class ForeignKeyTranslator implements Translator {
@@ -22,7 +22,7 @@ class ForeignKeyTranslator implements Translator {
         throw new Error("no primary key found!");
     }
 
-    translateFromDiagramToSchema(translatedSchema: TranslatedSchema): TranslatedSchema {
+    translateFromDiagramToTable(translatedTable: TranslatedTable): TranslatedTable {
         this.relationships.forEach((relationship: Relationship) => {
             var oneMany:boolean = false;
             var oneManySource:Number = -1;
@@ -35,24 +35,35 @@ class ForeignKeyTranslator implements Translator {
             });
 
             if (oneMany) {
-                const foreignKey: string = this.getPrimaryKey(this.entities.get(oneManySource)!)
-                const foreignKeySchema: Array<string> = [this.entities.get(oneManySource)!.name, foreignKey]
+                const sourceEntity: Entity = this.entities.get(oneManySource)!
+                var table: Table = translatedTable.tables.get(sourceEntity.name)!
+                const key: string = this.getPrimaryKey(sourceEntity)
                 relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: Number) => {
                     if (lhConstraint != LHConstraint.ONE_TO_ONE) {
-                        foreignKeySchema.push(this.entities.get(entityID)!.name);
+                        const foreignTable = this.entities.get(entityID)!.name
+                        const foreignKey: ForeignKey = {
+                            keyName: sourceEntity.name + " " + foreignTable,
+                            foreignTable: foreignTable,
+                            columns: [key]
+                        }
+                        table.foreignKeys.push(foreignKey);
                     }
                 });
-                translatedSchema.foreignKey.push(foreignKeySchema);
             } else {
+                var table: Table = translatedTable.tables.get(relationship.name)!
                 relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: Number) => {
-                    console.log(entityID)
-                    const foreignKey: string = this.getPrimaryKey(this.entities.get(entityID)!);
-                    const foreignKeySchema: Array<string> = [relationship.name, foreignKey, this.entities.get(entityID)!.name]
-                    translatedSchema.foreignKey.push(foreignKeySchema);
+                    const key: string = this.getPrimaryKey(this.entities.get(entityID)!);
+                    const foreignTable = this.entities.get(entityID)!.name
+                    const foreignKey: ForeignKey = {
+                        keyName: relationship.name + " " + foreignTable,
+                        foreignTable: foreignTable,
+                        columns: [key]
+                    }
+                    table.foreignKeys.push(foreignKey);
                 });
             }
         });
-        return translatedSchema
+        return translatedTable
     }
 }
 

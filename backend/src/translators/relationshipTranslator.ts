@@ -1,6 +1,6 @@
 import Attribute from "../models/attribute";
 import Relationship from "../models/relationship";
-import TranslatedSchema, {AttributesSchema} from "./models/translatedSchema";
+import TranslatedTable, { Table, TableSource, Column, ForeignKey } from "./models/translatedTable";
 import Translator from "./translator";
 
 class RelationshipTranslator implements Translator {
@@ -11,21 +11,25 @@ class RelationshipTranslator implements Translator {
         this.relationship = relationship;
     }
 
-    translateFromDiagramToSchema(translatedSchema: TranslatedSchema): TranslatedSchema {
+    translateFromDiagramToTable(translatedTable: TranslatedTable): TranslatedTable {
+        var columns: Array<Column> = new Array();
         if (this.relationship.attributes !== undefined) {
-            const relationshipAttributeSchema: Array<AttributesSchema> =
+            columns =
                 this.relationship.attributes!.map((a: Attribute) => {
                 return {
-                    name: a.name,
+                    columnName: a.name,
                     isPrimaryKey: a.isPrimaryKey,
                     isOptional: a.isOptional
-                }
-            })
-
-            translatedSchema.relationships.set(this.relationship.name, relationshipAttributeSchema)
+                    }
+                })
         }
-
-        return translatedSchema;
+        var rsTable: Table = { 
+            source: TableSource.RELATIONSHIP,
+            columns: columns,
+            foreignKeys: new Array<ForeignKey>()
+        }
+        translatedTable.tables.set(this.relationship.name, rsTable)
+        return translatedTable
     }
 
 }
