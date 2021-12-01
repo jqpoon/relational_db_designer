@@ -86,6 +86,20 @@ export default function Editor() {
         let entities = { ...prev };
         switch (editType) {
           case "deleteElement":
+
+            // Remove all edges
+            for (const [edgeId, edgeInfo] of Object.entries(entity.edges))  {
+              deleteElement(edgeInfo.type, initialEdges[edgeId], false);
+            }
+
+            // Attributes are only stored within entity, so there is no need
+            // to recursively remove them
+            
+            // Remove all generalisations, and edges linked to generalisations
+            for (const [_, generalisationInfo] of Object.entries(entity.generalisations))  {
+              deleteElement(generalisationInfo.type, generalisationInfo, false);
+            }
+
             delete entities[entity.id];
             break;
           default:
@@ -102,6 +116,9 @@ export default function Editor() {
             for (const [edgeId, edgeInfo] of Object.entries(relationship.edges))  {
               deleteElement(edgeInfo.type, initialEdges[edgeId], false);
             }
+
+            // Since attributes are only stored within the relationship itself,
+            // there is no need to recursively remove attributes.
 
             // Delete relationship itself, including its attributes
             delete relationships[relationship.id];
@@ -148,12 +165,19 @@ export default function Editor() {
         let edges = { ...prev };
         switch (editType) {
           case "deleteElement":
-            delete edges[edge.id];
             // Remove edges from its source and target's edge list
             let source = elementGetters[edge.source_type](edge.start);
             let target = elementGetters[edge.target_type](edge.end);
-            delete source.edges[edge.id];
-            delete target.edges[edge.id];
+
+            // If statements in case of race conditions
+            if (source.edges !== undefined) {
+              delete source.edges[edge.id];
+            }
+            if (target.edges !== undefined) {
+              delete target.edges[edge.id];
+            }
+
+            delete edges[edge.id];
             break;
           default:
             edges[edge.id] = edge;
@@ -171,8 +195,14 @@ export default function Editor() {
             // Hierarchical edges can only exist from entity to entity
             let source = elementGetters[types.ENTITY](edge.parent);
             let target = elementGetters[types.ENTITY](edge.child);
-            delete source.edges[edge.id];
-            delete target.edges[edge.id];
+
+             // If statements in case of race conditions
+            if (source.edges !== undefined) {
+              delete source.edges[edge.id];
+            }
+            if (target.edges !== undefined) {
+              delete target.edges[edge.id];
+            }
 
             // Need to remove edge from the parent's generalisation's edge list,
             // if this is a generalisation
