@@ -30,7 +30,7 @@ const displayTable = (tableName, content) => {
         if(col.isPrimaryKey){
             primaryKeys.push(col.columnName)
         } else if(col.isOptional && col.isMulti){
-            cols.push(col.columnName + "*")
+            cols.push(col.columnName + "\u2217")
         } else if(col.isOptional){
             cols.push(col.columnName + "?")
         } else if (col.isMulti){

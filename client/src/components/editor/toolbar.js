@@ -79,7 +79,11 @@ export default function Toolbar({
         </div>
         <div className="tool">Load</div>
         <div className="tool">Save</div>
-        <div className="tool" onClick={translate}>Translate</div>
+        <div className="tool" onClick={() => {
+          axios.post('/translation/translate', exportStateToObject()).then(function (response){
+            translate(response)}).catch(function(error){console.log(error)})
+          }}
+          >Translate</div>
         <div className="tool">Validate</div>
       </div>
     </div>

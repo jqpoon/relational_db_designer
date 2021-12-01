@@ -15,7 +15,7 @@ import SelectEdge from "./right_toolbar/selectEdge";
 import EdgeToRelationship from "./right_toolbar/edgeRelationship";
 import SelectGeneralisation from "./right_toolbar/selectGeneralisation";
 import DisplayTranslation from "./right_toolbar/translationDisplay";
-import { relationalSchema } from "./right_toolbar/relationalSchemaExample";
+// import { relationalSchema } from "./right_toolbar/relationalSchemaExample";
 
 // TODO: update left,right toolbar to match new data structures
 // TODO: add initial attributes to initial.js + implement position update based on parent node of the attribute
@@ -41,6 +41,7 @@ export default function Editor() {
   const [edges, setEdges] = useState([]);
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
+  const [relationalSchema, setRelationalSchema] = useState(null);
 
   const [context, setContext] = useState({ action: actions.NORMAL });
 
@@ -266,10 +267,11 @@ export default function Editor() {
         target: null,
       });
     },
-    translate: () => {
+    translate: (schema) => {
       setContext({
         action: actions.TRANSLATE
       })
+      setRelationalSchema(schema)
     }
   };
 
