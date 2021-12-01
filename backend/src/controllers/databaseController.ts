@@ -43,17 +43,65 @@ class DatabaseController {
         }
     }
 
+    public async clearSubGraph(graphID: number) {
+        const session = this.databaseDriver.session()
+        try {
+            await session.writeTransaction(tx =>
+                tx.run(
+                    'MATCH (n) WHERE n.graphID = $graphID DETACH DELETE n',
+                    {
+                        graphID
+                    }
+                )
+            )
+        } finally {
+            await session.close()
+        }
+    }
+
     public async closeDriver() {
         await this.databaseDriver.close();
+    }
+
+    public async getNextID(): Promise<QueryResult> {
+        const session = this.databaseDriver.session()
+
+        try {
+            const nextID: QueryResult = await session.writeTransaction(tx =>
+                tx.run(
+                    `MATCH (e:ID) RETURN e`,
+                )
+            )
+
+            if (nextID.records[0] == undefined) {
+                const nextID: QueryResult = await session.writeTransaction(tx =>
+                    tx.run(
+                        `CREATE (e:ID) SET e.id = 1 RETURN e`,
+                    )
+                )
+
+                return nextID
+            } else {
+                const nextID: QueryResult = await session.writeTransaction(tx =>
+                    tx.run(
+                        `MATCH (e:ID) SET e.id = e.id + 1 RETURN e`,
+                    )
+                )
+                return nextID
+            }
+
+        } finally {
+            await session.close()
+        }
     }
 
     public async createEntity({
                                   pos,
                                   ...entity
-                              }: Entity) {
+                              }: Entity, graphID: number) {
         const session = this.databaseDriver.session()
 
-        var entityKeys = ['id', 'posX', 'posY', 'text', 'name']
+        var entityKeys = ['id', 'posX', 'posY', 'text', 'name', 'graphID']
         if (entity.isWeak !== undefined) {
             entityKeys.push('isWeak')
         }
@@ -71,6 +119,7 @@ class DatabaseController {
                         posX: pos.x,
                         posY: pos.y,
                         name: entity.text,
+                        graphID,
                     },
                 )
             )
@@ -83,11 +132,11 @@ class DatabaseController {
     private async createAttribute({
                                       relativePos,
                                       ...attribute
-                                  }: Attribute) {
+                                  }: Attribute, graphID: number) {
         const session = this.databaseDriver.session()
 
         var attributeKeys: String[] = ['id', 'posX', 'posY', 'text', 'isMultiValued',
-            'isPrimaryKey', 'isOptional', 'name']
+            'isPrimaryKey', 'isOptional', 'name', 'graphID']
 
         attributeKeys = attributeKeys.map((key) => {
             return `a.${key} = $${key}`
@@ -102,6 +151,7 @@ class DatabaseController {
                         posX: relativePos.x,
                         posY: relativePos.y,
                         name: attribute.text,
+                        graphID,
                     },
                 )
             )
@@ -111,20 +161,22 @@ class DatabaseController {
         }
     }
 
-    public async addRelationshipAttribute(relationship: Relationship, attribute: Attribute) {
+    public async addRelationshipAttribute(relationship: Relationship, attribute: Attribute, graphID: number) {
         // assume relationship node exists already
 
         const session = this.databaseDriver.session()
 
         try {
-            await this.createAttribute(attribute);
+            await this.createAttribute(attribute, graphID);
             const result = await session.writeTransaction(tx =>
                 tx.run(
                     'MATCH (a:RELATIONSHIP), (b:ATTRIBUTE) WHERE a.id = $relationshipIdentifier AND b.id = $attributeIdentifier ' +
+                    'AND b.graphID = $graphID AND a.graphID = $graphID ' +
                     'CREATE (a)-[r:Attribute]->(b) RETURN type(r)',
                     {
                         relationshipIdentifier: relationship.id,
-                        attributeIdentifier: attribute.id
+                        attributeIdentifier: attribute.id,
+                        graphID
                     },
                 )
             )
@@ -134,20 +186,21 @@ class DatabaseController {
         }
     }
 
-    public async addAttribute(entity: Entity, attribute: Attribute) {
+    public async addAttribute(entity: Entity, attribute: Attribute, graphID: number) {
         // assume entity node exists already
 
         const session = this.databaseDriver.session()
 
         try {
-            await this.createAttribute(attribute);
+            await this.createAttribute(attribute, graphID);
             const result = await session.writeTransaction(tx =>
                 tx.run(
                     'MATCH (a:ENTITY), (b:ATTRIBUTE) WHERE a.id = $entityIdentifier AND b.id = $attributeIdentifier ' +
-                    'CREATE (a)-[r:Attribute]->(b) RETURN type(r)',
+                    'AND b.graphID = $graphID AND a.graphID = $graphID CREATE (a)-[r:Attribute]->(b) RETURN type(r)',
                     {
                         entityIdentifier: entity.id,
-                        attributeIdentifier: attribute.id
+                        attributeIdentifier: attribute.id,
+                        graphID
                     },
                 )
             )
@@ -160,10 +213,10 @@ class DatabaseController {
     private async createRelationship({
                                          pos,
                                          ...relationship
-                                     }: Relationship) {
+                                     }: Relationship, graphID: number) {
         const session = this.databaseDriver.session()
 
-        var relationshipKeys: String[] = ['id', 'posX', 'posY', 'text', 'name']
+        var relationshipKeys: String[] = ['id', 'posX', 'posY', 'text', 'name', 'graphID']
 
         relationshipKeys = relationshipKeys.map((key) => {
             return `a.${key} = $${key}`
@@ -178,6 +231,7 @@ class DatabaseController {
                         posX: pos.x,
                         posY: pos.y,
                         name: relationship.text,
+                        graphID
                     },
                 )
             )
@@ -187,21 +241,23 @@ class DatabaseController {
         }
     }
 
-    public async addRelationship(relationship: Relationship) {
+    public async addRelationship(relationship: Relationship, graphID: number) {
         // assume entity node exists already
 
         const session = this.databaseDriver.session()
 
         try {
-            await this.createRelationship(relationship);
+            await this.createRelationship(relationship, graphID);
             for (var entityIdentifier of relationship.lHConstraints.keys()) {
                 const firstRelation = await session.writeTransaction(tx =>
                     tx.run(
                         'MATCH (a:ENTITY), (b:RELATIONSHIP) WHERE a.id = $entityIdentifier AND b.id = $relationshipIdentifier ' +
+                        'AND b.graphID = $graphID AND a.graphID = $graphID ' +
                         `CREATE (a)-[r:${relationship.lHConstraints.get(entityIdentifier)!}]->(b) RETURN type(r)`,
                         {
                             entityIdentifier: entityIdentifier,
                             relationshipIdentifier: relationship.id,
+                            graphID
                         },
                     )
                 )
@@ -216,10 +272,10 @@ class DatabaseController {
     public async createSubset({
                                   pos,
                                   ...subset
-                              }: Entity) {
+                              }: Entity, graphID: number) {
         const session = this.databaseDriver.session()
 
-        var entityKeys = ['id', 'posX', 'posY', 'text', 'name']
+        var entityKeys = ['id', 'posX', 'posY', 'text', 'name', 'graphID']
         if (subset.isWeak !== undefined) {
             entityKeys.push('isWeak')
         }
@@ -236,7 +292,8 @@ class DatabaseController {
                         ...subset,
                         posX: pos.x,
                         posY: pos.y,
-                        name: subset.text
+                        name: subset.text,
+                        graphID
                     },
                 )
             )
@@ -246,17 +303,18 @@ class DatabaseController {
         }
     }
 
-    public async addSubsets(entity: Entity, subset: Entity): Promise<QueryResult> {
+    public async addSubsets(entity: Entity, subset: Entity, graphID: number): Promise<QueryResult> {
         const session = this.databaseDriver.session()
 
         try {
             const entities = await session.writeTransaction(tx =>
                 tx.run(
                     'MATCH (a:ENTITY), (b:SUBSET) WHERE a.id = $entityIdentifier AND b.id = $subsetIdentifier ' +
-                    `CREATE (a)-[r:SUBSET]->(b) RETURN type(r)`,
+                    'AND b.graphID = $graphID AND a.graphID = $graphID CREATE (a)-[r:SUBSET]->(b) RETURN type(r)',
                     {
                         entityIdentifier: entity.id,
                         subsetIdentifier: subset.id,
+                        graphID
                     },
                 )
             )
@@ -270,10 +328,10 @@ class DatabaseController {
     public async createGeneralisation({
                                         pos,
                                         ...generalisation
-                                      }: Generalisation) {
+                                      }: Generalisation, graphID: number) {
         const session = this.databaseDriver.session()
 
-        var generalisationKeys = ['id', 'posX', 'posY', 'text', 'name', 'parent']
+        var generalisationKeys = ['id', 'posX', 'posY', 'text', 'name', 'parent', 'graphID']
 
         generalisationKeys = generalisationKeys.map((key) => {
             return `e.${key} = $${key}`
@@ -287,7 +345,8 @@ class DatabaseController {
                         ...generalisation,
                         posX: pos.x,
                         posY: pos.y,
-                        name: generalisation.text
+                        name: generalisation.text,
+                        graphID
                     },
                 )
             )
@@ -297,19 +356,20 @@ class DatabaseController {
         }
     }
 
-    public async addGeneralisation(generalisation: Generalisation) {
+    public async addGeneralisation(generalisation: Generalisation, graphID: number) {
         const session = this.databaseDriver.session()
 
         try {
-            await this.createGeneralisation(generalisation)
+            await this.createGeneralisation(generalisation, graphID)
 
             const parentEntity = await session.writeTransaction(tx =>
                 tx.run(
                     'MATCH (a:ENTITY), (b:GENERALISATION) WHERE a.id = $entityIdentifier AND b.id = $generalisationIdentifier ' +
-                    `CREATE (a)-[r:GENERALISATION]->(b) RETURN type(r)`,
+                    'AND b.graphID = $graphID AND a.graphID = $graphID CREATE (a)-[r:GENERALISATION]->(b) RETURN type(r)',
                     {
                         entityIdentifier: generalisation.parent,
                         generalisationIdentifier: generalisation.id,
+                        graphID
                     },
                 )
             )
@@ -319,10 +379,11 @@ class DatabaseController {
                 const chilcEntity = await session.writeTransaction(tx =>
                     tx.run(
                         'MATCH (a:ENTITY), (b:GENERALISATION) WHERE a.id = $entityIdentifier AND b.id = $generalisationIdentifier ' +
-                        `CREATE (b)-[r:GENERALISATION]->(a) RETURN type(r)`,
+                        'AND b.graphID = $graphID AND a.graphID = $graphID CREATE (b)-[r:GENERALISATION]->(a) RETURN type(r)',
                         {
                             entityIdentifier: entityID,
                             generalisationIdentifier: generalisation.id,
+                            graphID
                         },
                     )
                 )
@@ -334,16 +395,18 @@ class DatabaseController {
         }
     }
 
-    public async getAllEntities(): Promise<QueryResult> {
+    public async getAllEntities(graphID: number): Promise<QueryResult> {
         const session = this.databaseDriver.session()
 
         try {
             const entities = await session.writeTransaction(tx =>
                 tx.run(
-                    'MATCH (entity:ENTITY) RETURN entity',
+                    'MATCH (entity:ENTITY) WHERE entity.graphID = $graphID RETURN entity',
+                    {
+                        graphID
+                    }
                 )
             )
-            // DatabaseController.verifyDatabaseUpdate(entities)
             return entities
         } finally {
             await session.close()
@@ -351,17 +414,19 @@ class DatabaseController {
 
     }
 
-    public async getAllEntitiesWithAttributes(): Promise<QueryResult> {
+    public async getAllEntitiesWithAttributes(graphID: number): Promise<QueryResult> {
         const session = this.databaseDriver.session()
 
         try {
             const entitiesWithAttributes = await session.writeTransaction(tx =>
                 tx.run(
-                    'MATCH (n:ENTITY)-[r]->(a:ATTRIBUTE) WITH n, a as attributes RETURN { nodeID: n.id, ' +
-                    'attributes: collect(attributes) }',
+                    'MATCH (n:ENTITY)-[r]->(a:ATTRIBUTE) WHERE n.graphID = $graphID and a.graphID = $graphID' +
+                    ' WITH n, a as attributes RETURN { nodeID: n.id, attributes: collect(attributes) }',
+                    {
+                        graphID
+                    }
                 )
             )
-            // DatabaseController.verifyDatabaseUpdate(entitiesWithAttributes)
             return entitiesWithAttributes
         } finally {
             await session.close()
@@ -369,34 +434,39 @@ class DatabaseController {
 
     }
 
-    public async getAllSubsets(): Promise<QueryResult> {
+    public async getAllSubsets(graphID: number): Promise<QueryResult> {
         const session = this.databaseDriver.session()
 
         try {
             const entitiesWithAttributes = await session.writeTransaction(tx =>
                 tx.run(
-                    'MATCH (n:ENTITY)-[r]->(s:SUBSET) WITH n, s as subsets RETURN { nodeID: n.id, ' +
-                    'subsets: collect(subsets) }',
+                    'MATCH (n:ENTITY)-[r]->(s:SUBSET) WHERE n.graphID = $graphID and s.graphID = $graphID ' +
+                    'WITH n, s as subsets RETURN { nodeID: n.id, subsets: collect(subsets) }',
+                    {
+                        graphID
+                    }
                 )
             )
-            // DatabaseController.verifyDatabaseUpdate(entitiesWithAttributes)
             return entitiesWithAttributes
         } finally {
             await session.close()
         }
     }
 
-    public async getAllRelationships(): Promise<QueryResult> {
+    public async getAllRelationships(graphID: number): Promise<QueryResult> {
         const session = this.databaseDriver.session()
 
         try {
             const entitiesWithAttributes = await session.writeTransaction(tx =>
                 tx.run(
-                    'MATCH (r:RELATIONSHIP)<-[re]-(n:ENTITY) with r, {lhConstraint: re, entityID: n.id} ' +
-                    'as relations RETURN { relationship: r, entities: collect(relations) }',
+                    'MATCH (r:RELATIONSHIP)<-[re]-(n:ENTITY) WHERE n.graphID = $graphID and r.graphID = $graphID ' +
+                    'with r, {lhConstraint: re, entityID: n.id} as relations RETURN { relationship: r, entities: ' +
+                    'collect(relations) }',
+                    {
+                        graphID
+                    }
                 )
             )
-            // DatabaseController.verifyDatabaseUpdate(entitiesWithAttributes)
 
             return entitiesWithAttributes
         } finally {
@@ -405,17 +475,20 @@ class DatabaseController {
 
     }
 
-    public async getAllRelationshipsWithAttributes(): Promise<QueryResult> {
+    public async getAllRelationshipsWithAttributes(graphID: number): Promise<QueryResult> {
         const session = this.databaseDriver.session()
 
         try {
             const relationshipWithAttributes = await session.writeTransaction(tx =>
                 tx.run(
-                    'MATCH (n:RELATIONSHIP)-[r]->(a:ATTRIBUTE) WITH n, a as attributes RETURN { relationshipID: n.id, ' +
-                    'attributes: collect(attributes) }',
+                    'MATCH (n:RELATIONSHIP)-[r]->(a:ATTRIBUTE) WHERE n.graphID = $graphID and a.graphID = $graphID ' +
+                    'WITH n, a as attributes RETURN { relationshipID: n.id, attributes: collect(attributes) }',
+                    {
+                        graphID
+                    }
                 )
             )
-            // DatabaseController.verifyDatabaseUpdate(relationshipWithAttributes)
+
             return relationshipWithAttributes
         } finally {
             await session.close()
@@ -423,18 +496,20 @@ class DatabaseController {
 
     }
 
-    public async getAllGeneralisations() {
+    public async getAllGeneralisations(graphID: number) {
         const session = this.databaseDriver.session()
 
         try {
             const generalisations = await session.writeTransaction(tx =>
                 tx.run(
-                    'MATCH (n:GENERALISATION)-[r]->(e:ENTITY) WITH n, e.id as entities RETURN { generalisation: n, ' +
-                    'entities: collect(entities) }',
+                    'MATCH (n:GENERALISATION)-[r]->(e:ENTITY) WHERE n.graphID = $graphID and e.graphID = $graphID ' +
+                    'WITH n, e.id as entities RETURN { generalisation: n, entities: collect(entities) }',
+                    {
+                        graphID
+                    }
                 )
             )
 
-            DatabaseController.verifyDatabaseUpdate(generalisations)
             return generalisations
         } finally {
             await session.close()
