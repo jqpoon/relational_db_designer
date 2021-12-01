@@ -27,12 +27,10 @@ router.post('/all', async function (req, res, next) {
         })
     }
 
-    var currentNextID = await SchemaController.getInstance().getNextID({
-        peek: true
-    });
+    var currentNextID = await SchemaController.getInstance().getNextID(true);
 
     if (graphID === undefined) {
-        graphID = currentNextID
+        graphID =  await SchemaController.getInstance().getNextID();
     } else {
         if (graphID <= currentNextID) {
             await SchemaController.getInstance().deleteOldGraph(graphID);

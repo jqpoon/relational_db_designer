@@ -19,9 +19,7 @@ class SchemaController {
         return SchemaController.instance
     }
 
-    public async getNextID({
-                               peek = false
-                           }) {
+    public async getNextID(peek=false) {
         const nextID = await DatabaseController.getInstance().getNextID(peek)
         return nextID.records[0].toObject()['e'].properties.id.low
     }
