@@ -98,6 +98,12 @@ export default function Editor() {
         let relationships = { ...prev };
         switch (editType) {
           case "deleteElement":
+            // Delete all edges related to this relationship
+            for (const [edgeId, edgeInfo] of Object.entries(relationship.edges))  {
+              deleteElement(edgeInfo.type, initialEdges[edgeId], false);
+            }
+
+            // Delete relationship itself, including its attributes
             delete relationships[relationship.id];
             break;
           default:
@@ -418,6 +424,8 @@ export default function Editor() {
   return (
     <Xwrapper>
       <div className="editor" ref={parentRef}>
+        <button onClick={() => {console.log(edges); console.log(relationships); console.log(entities)}}> hello world </button>
+        <button onClick={() => {deleteElement(types.RELATIONSHIP, initialRelationships["R0"], false)}}> delete edge </button>
         {render ? (
           <>
             <Toolbar {...elementFunctions} {...leftToolBarActions} />
