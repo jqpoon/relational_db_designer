@@ -13,6 +13,7 @@ interface Attribute {
     name: string;
     isPrimaryKey: boolean;
     isOptional: boolean;
+    // isMulti: boolean;
 }
 
 export default Attribute;
