@@ -2,6 +2,7 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import "./stylesheets/attribute.css";
 import { types } from "../types";
 import { AttributeContextMenu } from "../contextMenus/attributeContextMenu";
+import { getId } from "../idGenerator";
 
 export default function Attribute({
   parent,
@@ -31,7 +32,7 @@ export default function Attribute({
   }, [show]);
 
   // Show context menu
-  const handleContextMenu = useCallback((event) => {    
+  const handleContextMenu = useCallback((event) => {
     event.preventDefault();
     setAnchorPoint({ x: 0, y: 0 }); // TODO: figure out how to fix anchor point
     setShow(true);
@@ -145,7 +146,7 @@ export default function Attribute({
 
     if (isKeyAttribute) {
       return <u>{text}</u>;
-    } 
+    }
 
     if (isOptional && isMultiValued) {
       if (!name.endsWith("\u2217")) {
@@ -238,7 +239,7 @@ export function addAttributeToNode(
   let relativePos = preconfiguredRelativePositions[attributeCount % 9];
 
   // Update parent node's attribute list
-  const attributeId = parentId + "A" + idCounter.getCount();
+  const attributeId = getId(types.ATTRIBUTE, parentId);
 
   const attributeEntry = {
     parent: { id: parentId, type: types.ENTITY },
