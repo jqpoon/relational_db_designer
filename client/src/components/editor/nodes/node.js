@@ -1,7 +1,7 @@
 import { useCallback, useState, useRef, useEffect } from "react";
 import Draggable from "react-draggable";
 import { useXarrow } from "react-xarrows";
-import Attribute from "../edges/attribute";
+import Attribute, { addAttributeToNode } from "../edges/attribute";
 import { actions, types } from "../types";
 import { EntityContextMenu } from "../contextMenus/entityContextMenu";
 import "./stylesheets/node.css";
@@ -60,6 +60,7 @@ export default function Node({
   setPanDisabled,
   context,
   setContext,
+  setContextMenu,
   children,
   parent,
 }) {
@@ -72,22 +73,40 @@ export default function Node({
   // To set bounds of draggable
   const [dimensions, setDimensions] = useState({});
 
-  const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
-  const [show, setShow] = useState(false);
   const [editable, setEditable] = useState(false);
 
-  const handleContextMenu = useCallback((event) => {
-    event.preventDefault();
-    setAnchorPoint({ x: 0, y: 0 }); // TODO: figure out how to fix anchor point
-    setShow(true);
-  }, []);
+  const contextMenuActions = {
+    "Edit Label": () => setEditable(true),
+  };
+
+  switch (type) {
+    case types.ENTITY:
+    case types.RELATIONSHIP:
+      contextMenuActions["Add Attribute"] = () =>
+        addAttributeToNode({
+          addElement: addElement,
+          getElement: getElement,
+          parentId: id,
+          parentType: type,
+        });
+      break;
+    default:
+  }
 
   // Hides the context menu if we left click again
-  const handleClick = useCallback(
-    (e) => {
-      setShow(false);
+  const handleClick = useCallback(() => {
+    setContextMenu(null); //TODO: check
+  }, [setContextMenu]);
+
+  const handleContextMenu = useCallback(
+    (event) => {
+      event.preventDefault();
+      setContextMenu({
+        actions: contextMenuActions,
+        anchor: { x: event.pageX, y: event.pageY },
+      });
     },
-    [show]
+    [setContextMenu]
   );
 
   // Set dimensions on mount
@@ -269,18 +288,7 @@ export default function Node({
         style={{ width: "150px", height: "75px" }}
         {...draggableConfig}
       >
-        <div {...contentsConfig}>
-          <EntityContextMenu
-            anchorPoint={anchorPoint}
-            show={show}
-            setEditable={setEditable}
-            id={id}
-            getElement={getElement}
-            addElement={addElement}
-            updateElement={updateElement}
-          />
-          {normalMode}
-        </div>
+        <div {...contentsConfig}>{normalMode}</div>
       </Draggable>
       {children}
     </>

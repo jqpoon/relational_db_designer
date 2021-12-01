@@ -14,6 +14,7 @@ import Normal from "./right_toolbar/normal";
 import SelectEdge from "./right_toolbar/selectEdge";
 import EdgeToRelationship from "./right_toolbar/edgeRelationship";
 import SelectGeneralisation from "./right_toolbar/selectGeneralisation";
+import { ContextMenu } from "./contextMenus/contextMenu";
 
 // TODO: update left,right toolbar to match new data structures
 // TODO: add initial attributes to initial.js + implement position update based on parent node of the attribute
@@ -44,6 +45,8 @@ export default function Editor() {
 
   const [, setRerender] = useState(false);
   const forceRerender = () => setRerender((rerender) => !rerender);
+
+  const [contextMenu, setContextMenu] = useState(null);
 
   const resetClick = (e) => {
     if (e.target.classList.contains("canvas")) {
@@ -254,6 +257,7 @@ export default function Editor() {
     setPanDisabled: setPanDisabled,
     setContext: setContext,
     context: context,
+    setContextMenu: setContextMenu,
   };
 
   const leftToolBarActions = {
@@ -423,6 +427,7 @@ export default function Editor() {
             {showEdges()}
             {showPendingChanges()}
             {showRightToolbar()}
+            <ContextMenu contextMenu={contextMenu} />
           </>
         ) : null}
       </div>

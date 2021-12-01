@@ -7,26 +7,54 @@ export default function Attribute({
   attribute,
   updateElement, // Generic update function for dict in editor.js
   getElement, // Generic getter for dict in editor.js
+  setContextMenu,
 }) {
   const [name, setName] = useState(attribute.text);
-  const [editable, setEditable] = useState(true);
+  const [editable, setEditable] = useState(false);
   const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 }); // Context menu stuff
   const [show, setShow] = useState(false); // State to show context menu
 
   // Ref of lollipop end
   const attributeEndRef = useRef(null);
 
+  const updateAttribute = (change) => {
+    let attr = getElement(types.ATTRIBUTE, attribute.id, attribute.parent);
+    change(attr);
+    updateElement(types.ATTRIBUTE, attr);
+  };
+
+  // Toggles key attribute feature
+  const toggleKeyAttribute = () =>
+    updateAttribute((attr) => (attr.isPrimaryKey = !attr.isPrimaryKey));
+
+  // Toggles optional attribute feature
+  const toggleOptionalAttribute = () =>
+    updateAttribute((attr) => (attr.isOptional = !attr.isOptional));
+
+  // Toggles multi-valued attribute feature
+  const toggleMultiValuedAttribute = () =>
+    updateAttribute((attr) => (attr.isMultiValued = !attr.isMultiValued));
+
+  const contextMenuActions = {
+    "Edit Label": () => setEditable(true),
+    "Toggle Key Attribute": toggleKeyAttribute,
+    "Toggle Optional Attribute": toggleOptionalAttribute,
+    "Toggle Multi-valued Attribute": toggleMultiValuedAttribute,
+  };
+
   // Hides the context menu if we left click again
   const handleClick = useCallback(() => {
-    setShow(false);
-  }, [show]);
+    setContextMenu(null); //TODO: check
+  }, [setContextMenu]);
 
   // Show context menu
   const handleContextMenu = useCallback((event) => {
     event.preventDefault();
-    setAnchorPoint({ x: 0, y: 0 }); // TODO: figure out how to fix anchor point
-    setShow(true);
-  }, []);
+    setContextMenu({
+      actions: contextMenuActions,
+      anchor: { x: event.pageX, y: event.pageY },
+    });
+  }, [setContextMenu]);
 
   // Handle context menus callbacks on mount
   useEffect(() => {
@@ -80,27 +108,6 @@ export default function Attribute({
   } else {
     textStyle = rightStyle;
   }
-
-  // Toggles key attribute feature
-  const toggleKeyAttribute = () => {
-    let attrNode = { ...attribute };
-    attrNode.isPrimaryKey = !attrNode.isPrimaryKey;
-    updateElement(types.ATTRIBUTE, attrNode);
-  };
-
-  // Toggles optional attribute feature
-  const toggleOptionalAttribute = () => {
-    let attrNode = { ...attribute };
-    attrNode.isOptional = !attrNode.isOptional;
-    updateElement(types.ATTRIBUTE, attrNode);
-  };
-
-  // Toggles multi-valued attribute feature
-  const toggleMultiValuedAttribute = () => {
-    let attrNode = { ...attribute };
-    attrNode.isMultiValued = !attrNode.isMultiValued;
-    updateElement(types.ATTRIBUTE, attrNode);
-  };
 
   // Used for editing name of attribute
   const editingMode = () => {
@@ -173,14 +180,6 @@ export default function Attribute({
         setEditable(true);
       }}
     >
-      <AttributeContextMenu
-        anchorPoint={anchorPoint}
-        show={show}
-        setEditable={setEditable}
-        toggleKeyAttribute={toggleKeyAttribute}
-        toggleOptionalAttribute={toggleOptionalAttribute}
-        toggleMultiValuedAttribute={toggleMultiValuedAttribute}
-      />
       <div style={textStyle}>{editingMode()}</div>
     </div>
   );
