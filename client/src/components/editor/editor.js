@@ -79,24 +79,6 @@ export default function Editor() {
     return elementGetters[type](id, parent);
   };
 
-  const edgeSetter = (edge, editType) => {
-    setEdges((prev) => {
-      let edges = { ...prev };
-      switch (editType) {
-        case "deleteElement":
-          delete edges[edge.id];
-          // Remove edges from its source and target's edge list
-          let source = elementGetters[edge.source_type](edge.start)
-          let target = elementGetters[edge.target_type](edge.end)
-          delete source.edges[edge.id]
-          delete target.edges[edge.id]
-          break;
-        default:
-          edges[edge.id] = edge;
-      }
-      return edges;
-    });
-  };
   // TODO:: refactor similar functions (ent, rel)
   const elementSetters = {
     [types.ENTITY]: (entity, editType) =>
@@ -147,8 +129,51 @@ export default function Editor() {
       }
       elementSetters[types.ENTITY](parent);
     },
-    [types.EDGE.RELATIONSHIP]: edgeSetter,
-    [types.EDGE.HIERARCHY]: edgeSetter,
+    [types.EDGE.RELATIONSHIP]: (edge, editType) => {
+      setEdges((prev) => {
+        let edges = { ...prev };
+        switch (editType) {
+          case "deleteElement":
+            delete edges[edge.id];
+            // Remove edges from its source and target's edge list
+            let source = elementGetters[edge.source_type](edge.start);
+            let target = elementGetters[edge.target_type](edge.end);
+            delete source.edges[edge.id];
+            delete target.edges[edge.id];
+            break;
+          default:
+            edges[edge.id] = edge;
+        }
+        return edges;
+      });
+    },
+    [types.EDGE.HIERARCHY]: (edge, editType) => {
+      setEdges((prev) => {
+        let edges = { ...prev };
+        switch (editType) {
+          case "deleteElement":
+            delete edges[edge.id];
+            // Remove edges from its source and target's edge list
+            // Hierarchical edges can only exist from entity to entity
+            let source = elementGetters[types.ENTITY](edge.parent);
+            let target = elementGetters[types.ENTITY](edge.child);
+            delete source.edges[edge.id];
+            delete target.edges[edge.id];
+
+            // Need to remove edge from the parent's generalisation's edge list,
+            // if this is a generalisation
+            if (edge.hasOwnProperty('generalisation')) {
+              delete source.generalisations[edge.generalisation].edges[edge.id];
+              // Maybe refactor to avoid possible train wreck?
+            }
+
+            break;
+          default:
+            edges[edge.id] = edge;
+        }
+        return edges;
+      });
+    }
   };
 
   const nodeFunctionsOpposite = {
