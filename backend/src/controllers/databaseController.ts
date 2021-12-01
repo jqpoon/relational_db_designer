@@ -63,7 +63,7 @@ class DatabaseController {
         await this.databaseDriver.close();
     }
 
-    public async getNextID(): Promise<QueryResult> {
+    public async getNextID(peek: boolean): Promise<QueryResult> {
         const session = this.databaseDriver.session()
 
         try {
@@ -81,10 +81,17 @@ class DatabaseController {
                 )
 
                 return nextID
-            } else {
+            } else if (!peek) {
                 const nextID: QueryResult = await session.writeTransaction(tx =>
                     tx.run(
                         `MATCH (e:ID) SET e.id = e.id + 1 RETURN e`,
+                    )
+                )
+                return nextID
+            } else {
+                const nextID: QueryResult = await session.writeTransaction(tx =>
+                    tx.run(
+                        `MATCH (e:ID) RETURN e`,
                     )
                 )
                 return nextID

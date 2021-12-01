@@ -27,11 +27,19 @@ router.post('/all', async function (req, res, next) {
         })
     }
 
+    var currentNextID = await SchemaController.getInstance().getNextID({
+        peek: true
+    });
 
     if (graphID === undefined) {
-        graphID = await SchemaController.getInstance().getNextID();
+        graphID = currentNextID
     } else {
-        await SchemaController.getInstance().deleteOldGraph(graphID);
+        if (graphID <= currentNextID) {
+            await SchemaController.getInstance().deleteOldGraph(graphID);
+        } else {
+            return res.status(400).json({SUCCESS: false, message: 'GraphID is greater than current max graphID, ' +
+                    'cannot override old graph as no graph exists'});
+        }
     }
 
     if (entities !== undefined) {
