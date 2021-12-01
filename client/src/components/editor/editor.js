@@ -14,6 +14,7 @@ import Normal from "./right_toolbar/normal";
 import SelectEdge from "./right_toolbar/selectEdge";
 import EdgeToRelationship from "./right_toolbar/edgeRelationship";
 import SelectGeneralisation from "./right_toolbar/selectGeneralisation";
+import { getId } from "./idGenerator";
 
 // TODO: update left,right toolbar to match new data structures
 // TODO: add initial attributes to initial.js + implement position update based on parent node of the attribute
@@ -27,7 +28,6 @@ const STACK_LIMIT = 25;
 export default function Editor() {
 	// Canvas states: passed to children for metadata (eg width and height of main container)
 	const parentRef = useRef(null);
-	const [counter, setCounter] = useState(1);
 	const [render, setRender] = useState(false);
 	const [scale, setScale] = useState(1);
 	const [panDisabled, setPanDisabled] = useState(false);
@@ -66,9 +66,7 @@ export default function Editor() {
 		[types.ENTITY]: (id) => ({ ...entities[id] }),
 		[types.RELATIONSHIP]: (id) => ({ ...relationships[id] }),
 		[types.ATTRIBUTE]: (id, parent) => {
-			console.assert(
-				[types.ENTITY, types.RELATIONSHIP].includes(parent.type)
-			);
+			console.assert([types.ENTITY, types.RELATIONSHIP].includes(parent.type));
 			const parentNode = elementGetters[parent.type](parent.id);
 			return { ...parentNode.attributes[id] };
 		},
@@ -125,9 +123,7 @@ export default function Editor() {
 				return relationships;
 			}),
 		[types.ATTRIBUTE]: (attribute, editType) => {
-			let parent = elementGetters[attribute.parent.type](
-				attribute.parent.id
-			);
+			let parent = elementGetters[attribute.parent.type](attribute.parent.id);
 			switch (editType) {
 				case "deleteElement":
 					delete parent.attributes[attribute.id];
@@ -174,12 +170,6 @@ export default function Editor() {
 			setRedoStack([]);
 		}
 		elementSetters[type](element, editType);
-	};
-
-	const getId = () => {
-		const id = counter;
-		setCounter(counter + 1);
-		return id;
 	};
 
 	const addToUndo = (action, type, elem) =>
@@ -406,7 +396,6 @@ export default function Editor() {
 		addElement: addElement,
 		updateElement: updateElement,
 		deleteElement: deleteElement,
-		getId: getId,
 		undo: undo,
 		setEditableId: setEditableId,
 	};
@@ -481,9 +470,7 @@ export default function Editor() {
 					case types.RELATIONSHIP:
 						return (
 							<SelectRelationship
-								relationship={
-									relationships[context.selected.id]
-								}
+								relationship={relationships[context.selected.id]}
 								{...elementFunctions}
 								{...generalFunctions}
 							/>
@@ -491,9 +478,10 @@ export default function Editor() {
 					case types.GENERALISATION:
 						return (
 							<SelectGeneralisation
-								generalisation={elementGetters[
-									types.GENERALISATION
-								](context.selected.id, context.selected.parent)}
+								generalisation={elementGetters[types.GENERALISATION](
+									context.selected.id, 
+									context.selected.parent
+								)}
 								{...elementFunctions}
 								{...generalFunctions}
 							/>

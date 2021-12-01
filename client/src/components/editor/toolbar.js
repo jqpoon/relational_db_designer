@@ -1,12 +1,12 @@
 import Draggable from "react-draggable";
-import { useRef } from "react";
-import "./stylesheets/toolbar.css";
-import { types } from "./types";
 import axios from "axios";
+import { useRef } from "react";
+import { types } from "./types";
+import { getId } from "./idGenerator";
+import "./stylesheets/toolbar.css";
 
 export default function Toolbar({
 	addEdgeToRelationship,
-	getId,
 	addElement,
 	exportStateToObject,
 	importStateFromObject,
@@ -16,36 +16,37 @@ export default function Toolbar({
 	const entityToolRef = useRef(null);
 	const relationshipToolRef = useRef(null);
 
-	const addEntity = (x, y) => {
-		const newEntity = {
-			id: getId(),
-			pos: {
-				x: x,
-				y: y,
-			},
-			text: "Enter Text",
-			type: types.ENTITY,
-			edges: {},
-			attributes: {},
-			generalisations: {},
-		};
-		addElement(types.ENTITY, newEntity);
-	};
+  const addEntity = (x, y) => {
+    const newEntity = {
+      id: getId(types.ENTITY),
+      pos: {
+        x: x,
+        y: y,
+      },
+      text: "Enter Text",
+      type: types.ENTITY,
+      edges: {},
+      attributes: {},
+      generalisations: {},
+    };
+    // console.log("id in addEntity" + newEntity.id);
+    addElement(types.ENTITY, newEntity);
+  };
 
-	const addRelationship = (x, y) => {
-		const newRelationship = {
-			id: getId(),
-			pos: {
-				x: x,
-				y: y,
-			},
-			text: "",
-			type: types.RELATIONSHIP,
-			attributes: {},
-			edges: {},
-		};
-		addElement(types.RELATIONSHIP, newRelationship);
-	};
+  const addRelationship = (x, y) => {
+    const newRelationship = {
+      id: getId(types.RELATIONSHIP),
+      pos: {
+        x: x,
+        y: y,
+      },
+      text: "",
+      type: types.RELATIONSHIP,
+      attributes: {},
+      edges: {},
+    };
+    addElement(types.RELATIONSHIP, newRelationship);
+  };
 
 	return (
 		<div className="toolbar">
