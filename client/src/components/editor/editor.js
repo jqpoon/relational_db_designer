@@ -85,6 +85,11 @@ export default function Editor() {
       switch (editType) {
         case "deleteElement":
           delete edges[edge.id];
+          // Remove edges from its source and target's edge list
+          let source = elementGetters[edge.source_type](edge.start)
+          let target = elementGetters[edge.target_type](edge.end)
+          delete source.edges[edge.id]
+          delete target.edges[edge.id]
           break;
         default:
           edges[edge.id] = edge;
@@ -224,8 +229,8 @@ export default function Editor() {
     // Grab top of stack
     let stateClone = [...state];
     let top = stateClone.pop();
-    console.log("TopELEM");
-    console.log(top["element"]);
+    // console.log("TopELEM");
+    // console.log(top["element"]);
     // Add to undo/redo stack current state
     addFunc(nodeFunctionsOpposite[top["action"]], top["type"], top["element"]);
 
