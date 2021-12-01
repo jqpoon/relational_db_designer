@@ -20,6 +20,7 @@ import { addAttributeToNode } from "../edges/attribute";
 
 import { MdCheck, MdModeEdit } from "react-icons/md";
 import CardinalityChoices from "./utilities/cardinality";
+import { AddAttribute, Attributes } from "./utilities/attribute";
 
 export function Relationship({ relationship, getElement, updateElement }) {
   const edge = getElement(types.EDGE.RELATIONSHIP, relationship);
@@ -104,78 +105,6 @@ export function Generalisation({ generalisation, getElement, updateElement }) {
   );
 }
 
-export function Attribute({ attribute, updateElement }) {
-  const updateAttributeName = (name) => {
-    let newAttribute = { ...attribute };
-    newAttribute.text = name;
-    updateElement(types.ATTRIBUTE, newAttribute);
-  };
-  const updateAttribute = (change) => {
-    let newAttribute = { ...attribute };
-    change(newAttribute);
-    console.log(newAttribute);
-    updateElement(types.ATTRIBUTE, newAttribute);
-  };
-  return (
-    <div>
-      <input
-        type="text"
-        style={{ fontSize: "medium" }}
-        value={attribute.text}
-        onChange={(e) => {
-          updateAttributeName(e.target.value);
-        }}
-      />
-      <br />
-      <input
-        type="checkbox"
-        checked={attribute.isMultiValued}
-        onChange={() => {
-          const change = (attribute) => {
-            attribute.isMultiValued = !attribute.isMultiValued;
-          };
-          updateAttribute(change);
-        }}
-      />
-      <label style={{ fontWeight: "normal" }}>Multi-Valued</label>
-      <br />
-      <input
-        type="checkbox"
-        checked={attribute.isOptional}
-        onChange={() => {
-          const change = (attribute) => {
-            attribute.isOptional = !attribute.isOptional;
-          };
-          updateAttribute(change);
-        }}
-      />
-      <label style={{ fontWeight: "normal" }}>Optional</label>
-      <br />
-      <input
-        type="checkbox"
-        checked={attribute.isPrimaryKey}
-        onChange={() => {
-          const change = (attribute) => {
-            attribute.isPrimaryKey = !attribute.isPrimaryKey;
-          };
-          updateAttribute(change);
-        }}
-      />
-      <label style={{ fontWeight: "normal" }}>Primary Key</label>
-    </div>
-  );
-}
-
-export function Attributes({ attributes, updateElement }) {
-  return (
-    <>
-      {attributes.map((attribute) => (
-        <Attribute attribute={attribute} updateElement={updateElement} />
-      ))}
-    </>
-  );
-}
-
 export default function SelectEntity({
   entity,
   getElement,
@@ -252,6 +181,7 @@ export default function SelectEntity({
         <div className="section-header">Name:</div>
         <Name name={entity.text} updateName={updateName} />
       </div>
+
       {/* Attributes Section */}
       <div className="section">
         <div className="section-header">Attributes</div>
@@ -259,20 +189,11 @@ export default function SelectEntity({
           attributes={Object.values(entity.attributes)}
           updateElement={updateElement}
         />
-        <div
-          className="section-tool"
-          onClick={() =>
-            addAttributeToNode(
-              updateElement,
-              addElement,
-              getElement,
-              "Attribute",
-              entity.id
-            )
-          }
-        >
-          + Add Attribute
-        </div>
+        <AddAttribute
+          parentType={types.ENTITY}
+          parentId={entity.id}
+          {...utilities}
+        />
       </div>
 
       {/* Relationships Section */}

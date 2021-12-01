@@ -3,6 +3,7 @@ import "./toolbar-right.css";
 import { RelationshipAdding } from "./utilities/addEdge";
 import { DisplayRelationships } from "./utilities/listDisplay";
 import CardinalityChoices from "./utilities/cardinality";
+import { AddAttribute, Attributes } from "./utilities/attribute";
 
 export function Name({ name, updateName }) {
   return (
@@ -80,6 +81,12 @@ export default function SelectRelationship({
     updateElement(types.RELATIONSHIP, newRelationship);
   };
 
+  const utilities = {
+    getElement: getElement,
+    addElement: addElement,
+    updateElement: updateElement,
+  };
+
   return (
     <div className="toolbar-right">
       <div className="toolbar-header">Relationship</div>
@@ -91,7 +98,21 @@ export default function SelectRelationship({
         <Name name={relationship.text} updateName={updateName} />
       </div>
 
-      {/* Connections? Section */}
+      {/* Attributes Section */}
+      <div className="section">
+        <div className="section-header">Attributes</div>
+        <Attributes
+          attributes={Object.values(relationship.attributes)}
+          updateElement={updateElement}
+        />
+        <AddAttribute
+          parentType={types.RELATIONSHIP}
+          parentId={relationship.id}
+          {...utilities}
+        />
+      </div>
+
+      {/* Connections Section */}
       <div className="section">
         <div className="section-header">Connections</div>
         <Relationships

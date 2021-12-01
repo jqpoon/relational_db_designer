@@ -409,10 +409,12 @@ export default function Editor() {
                   {Object.values(relationships).map((relationship) => (
                     <TestRelationship
                       key={relationship.id}
-                      {...relationship}
-                      {...nodeConfig}
-                      {...elementFunctions}
-                      {...generalFunctions}
+                      relationship={relationship}
+                      general={{
+                        ...nodeConfig,
+                        ...elementFunctions,
+                        ...generalFunctions,
+                      }}
                     />
                   ))}
                 </div>

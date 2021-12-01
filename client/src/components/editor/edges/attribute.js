@@ -5,7 +5,6 @@ import { AttributeContextMenu } from "../contextMenus/attributeContextMenu";
 
 export default function Attribute({
   attribute,
-  parentPos, // Position of parent node. If this field is null, then the parent's position will be obtained by going through list of entities/relationships
   updateElement, // Generic update function for dict in editor.js
   getElement, // Generic getter for dict in editor.js
 }) {
@@ -23,7 +22,7 @@ export default function Attribute({
   }, [show]);
 
   // Show context menu
-  const handleContextMenu = useCallback((event) => {    
+  const handleContextMenu = useCallback((event) => {
     event.preventDefault();
     setAnchorPoint({ x: 0, y: 0 }); // TODO: figure out how to fix anchor point
     setShow(true);
@@ -43,11 +42,13 @@ export default function Attribute({
 
   // Calculate position of entity end
   const calculateEntityEndPos = () => {
-    if (parentPos == null || parentPos.x == null || parentPos.y == null) {
-      let parentNode = getElement(types.ENTITY, attribute.parent.id); // assume only entities have attributes for now TODO: change to include other node types
-      parentPos = { x: parentNode.pos.x, y: parentNode.pos.y };
-    }
-    return { x: parentPos.x + attribute.relativePos.x, y: parentPos.y + attribute.relativePos.y };
+    let parentNode = getElement(attribute.parent.type, attribute.parent.id);
+    console.log(`calculatepos`);
+    console.log(parentNode);
+    return {
+      x: parentNode.pos.x + attribute.relativePos.x,
+      y: parentNode.pos.y + attribute.relativePos.y,
+    };
   };
   let absolutePos = calculateEntityEndPos();
 
@@ -82,21 +83,21 @@ export default function Attribute({
 
   // Toggles key attribute feature
   const toggleKeyAttribute = () => {
-    let attrNode = {...attribute};
+    let attrNode = { ...attribute };
     attrNode.isPrimaryKey = !attrNode.isPrimaryKey;
     updateElement(types.ATTRIBUTE, attrNode);
   };
 
   // Toggles optional attribute feature
   const toggleOptionalAttribute = () => {
-    let attrNode = {...attribute};
+    let attrNode = { ...attribute };
     attrNode.isOptional = !attrNode.isOptional;
     updateElement(types.ATTRIBUTE, attrNode);
   };
 
   // Toggles multi-valued attribute feature
   const toggleMultiValuedAttribute = () => {
-    let attrNode = {...attribute};
+    let attrNode = { ...attribute };
     attrNode.isMultiValued = !attrNode.isMultiValued;
     updateElement(types.ATTRIBUTE, attrNode);
   };
@@ -114,7 +115,7 @@ export default function Attribute({
             onKeyPress={(e) => {
               if (e.key === "Enter") {
                 // Update node text
-                let newNode = {...attribute};
+                let newNode = { ...attribute };
                 newNode.text = name;
                 updateElement(types.ATTRIBUTE, newNode);
                 setEditable(false);
@@ -134,7 +135,7 @@ export default function Attribute({
 
     if (attribute.isPrimaryKey) {
       return <u>{attribute.text}</u>;
-    } 
+    }
 
     if (attribute.isOptional && attribute.isMultiValued) {
       if (!name.endsWith("\u2217")) {
@@ -145,21 +146,20 @@ export default function Attribute({
     if (attribute.isOptional) {
       // Manually add a question mark (for optional attr) if it doesn't exist
       // Maybe change such that users cannot input special chars
-      if (!name.endsWith('?')) {
-        return <div>{attribute.text + '?'}</div>;
+      if (!name.endsWith("?")) {
+        return <div>{attribute.text + "?"}</div>;
       }
     }
 
     if (attribute.isMultiValued) {
       // Manually add a question mark (for optional attr) if it doesn't exist
       // Maybe change such that users cannot input special chars
-      if (!name.endsWith('+')) {
-        return <div>{attribute.text + '+'}</div>;
+      if (!name.endsWith("+")) {
+        return <div>{attribute.text + "+"}</div>;
       }
     }
 
     return <div>{attribute.text}</div>;
-
   };
 
   // Define component to be rendered
@@ -185,11 +185,7 @@ export default function Attribute({
     </div>
   );
 
-  return (
-    <div>
-      {attributeEnd}
-    </div>
-  );;
+  return <div>{attributeEnd}</div>;
 }
 
 // Class to store global count of attributes, so that we can generate
@@ -201,15 +197,14 @@ class idCounter {
   }
 }
 
-export function addAttributeToNode(
-  updateElement, // Generic update node function from editor.js
+export function addAttributeToNode({
   addElement, // Generic add node function from editor.js
   getElement, // Generic get node function from editor.js
-  text, // Attribute name
-  parentId // Id of parent node
-) {
+  parentId, // Id of parent node
+  parentType,
+}) {
   // Assume only entities have attributes for now TODO: change to include other node types
-  const parentNode = getElement(types.ENTITY, parentId);
+  const parentNode = getElement(parentType, parentId);
   const attributeCount = Object.keys(parentNode.attributes).length;
 
   // Calculate relative position based on number of attributes parent has
@@ -230,12 +225,13 @@ export function addAttributeToNode(
   const attributeId = parentId + "A" + idCounter.getCount();
 
   const attributeEntry = {
-    parent: { id: parentId, type: types.ENTITY },
+    parent: { id: parentId, type: parentType },
     id: attributeId,
-    text: text,
+    text: "Attribute",
     relativePos: relativePos,
     type: types.ATTRIBUTE,
   };
+  console.log(attributeEntry);
 
   addElement(types.ATTRIBUTE, attributeEntry);
 }
