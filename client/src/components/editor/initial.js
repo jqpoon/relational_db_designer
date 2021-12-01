@@ -30,8 +30,8 @@ export const initialEntities = {
         text: "Messages",
         pos: { x: 300, y: 400 },
         edges: {
-          E3E0G0: {},
-          E4E0G0: {},
+          E3E0G0: { type: types.EDGE.HIERARCHY },
+          E4E0G0: { type: types.EDGE.HIERARCHY },
         },
       },
     },
