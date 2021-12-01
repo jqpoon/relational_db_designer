@@ -126,6 +126,7 @@ export function Attribute({ attribute, updateElement }) {
           updateAttributeName(e.target.value);
         }}
       />
+      <br />
       <input
         type="checkbox"
         checked={attribute.isMultiValued}
@@ -258,57 +259,20 @@ export default function SelectEntity({
           attributes={Object.values(entity.attributes)}
           updateElement={updateElement}
         />
-        {addingChild?.type === types.ATTRIBUTE ? (
-          <form>
-            <label>
-              Adding Attribute:
-              <input
-                type="text"
-                placeholder="Enter Name"
-                value={addingChild.name}
-                onChange={(e) =>
-                  setAddingChild((prev) => {
-                    let child = { ...prev };
-                    child.name = e.target.value;
-                    return child;
-                  })
-                }
-              />
-            </label>
-            <input
-              type="button"
-              value="Submit"
-              onClick={() => {
-                if (!addingChild.name) {
-                  alert("Name must not be empty.");
-                  return;
-                }
-                addAttributeToNode(
-                  updateElement,
-                  addElement,
-                  getElement,
-                  addingChild.name,
-                  entity.id
-                );
-                setAddingChild(null);
-              }}
-            />
-            <input
-              type="button"
-              value="Cancel"
-              onClick={() => {
-                setAddingChild(null);
-              }}
-            />
-          </form>
-        ) : (
-          <div
-            className="section-tool"
-            onClick={() => setAddingChild({ type: types.ATTRIBUTE, name: "" })}
-          >
-            + Add Attribute
-          </div>
-        )}
+        <div
+          className="section-tool"
+          onClick={() =>
+            addAttributeToNode(
+              updateElement,
+              addElement,
+              getElement,
+              "Attribute",
+              entity.id
+            )
+          }
+        >
+          + Add Attribute
+        </div>
       </div>
 
       {/* Relationships Section */}
@@ -348,61 +312,22 @@ export default function SelectEntity({
       {/* Subset sections */}
       <div className="section">
         <div className="section-header">Subset(s)</div>
-        {addingChild?.type === types.GENERALISATION ? (
-          <form>
-            <label>
-              Adding Generalisation:
-              <input
-                type="text"
-                placeholder="Enter Name"
-                value={addingChild.name}
-                onChange={(e) =>
-                  setAddingChild((prev) => {
-                    let child = { ...prev };
-                    child.name = e.target.value;
-                    return child;
-                  })
-                }
-              />
-            </label>
-            <input
-              type="button"
-              value="Submit"
-              onClick={() => {
-                if (!addingChild.name) {
-                  alert("Name must not be empty.");
-                  return;
-                }
-                const generalisation = {
-                  id: generateID(entity.id, addingChild.name), // TODO: change id generation
-                  type: types.GENERALISATION,
-                  parent: { id: entity.id },
-                  text: addingChild.name,
-                  pos: { x: entity.pos.x, y: entity.pos.y + 200 }, // TODO: discuss how to set generalisation node position
-                  edges: {},
-                };
-                addElement(types.GENERALISATION, generalisation);
-                setAddingChild(null);
-              }}
-            />
-            <input
-              type="button"
-              value="Cancel"
-              onClick={() => {
-                setAddingChild(null);
-              }}
-            />
-          </form>
-        ) : (
-          <div
-            className="section-tool"
-            onClick={() =>
-              setAddingChild({ type: types.GENERALISATION, name: "" })
-            }
-          >
-            + Add Generalisation
-          </div>
-        )}
+        <div
+          className="section-tool"
+          onClick={() => {
+            const generalisation = {
+              id: generateID(entity.id, "Generalisation"), // TODO: change id generation
+              type: types.GENERALISATION,
+              parent: { id: entity.id },
+              text: "Generalisation",
+              pos: { x: entity.pos.x, y: entity.pos.y + 200 }, // TODO: discuss how to set generalisation node position
+              edges: {},
+            };
+            addElement(types.GENERALISATION, generalisation);
+          }}
+        >
+          + Add Generalisation
+        </div>
         {Object.values(entity.generalisations).map((generalisation) => {
           return (
             <>

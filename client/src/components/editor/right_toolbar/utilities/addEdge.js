@@ -24,6 +24,9 @@ function AddingEdge({
   };
 
   const updateNodeWithEdge = (nodeID, nodeType, edge, parent) => {
+    console.log(`updatenodewithedge(${nodeID}, ${nodeType})`)
+    console.log(edge);
+    console.log(parent);
     let node = getElement(nodeType, nodeID, parent);
     node.edges[edge.id] = { type: edge.type };
     updateElement(nodeType, node);
@@ -175,8 +178,8 @@ export function AddingSuperset(props) {
       type: types.EDGE.HIERARCHY,
       source_type: selected.type,
       target_type: target.type,
-      start: selected.id,
-      end: target.id,
+      child: selected.id,
+      parent: target.id,
     };
     return newEdge;
   };
