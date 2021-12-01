@@ -12,8 +12,6 @@ export default function Attribute({
 }) {
   const [name, setName] = useState(attribute.text);
   const [editable, setEditable] = useState(false);
-  const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 }); // Context menu stuff
-  const [show, setShow] = useState(false); // State to show context menu
 
   // Ref of lollipop end
   const attributeEndRef = useRef(null);
@@ -72,8 +70,6 @@ export default function Attribute({
   // Calculate position of entity end
   const calculateEntityEndPos = () => {
     let parentNode = getElement(attribute.parent.type, attribute.parent.id);
-    console.log(`calculatepos`);
-    console.log(parentNode);
     return {
       x: parentNode.pos.x + attribute.relativePos.x,
       y: parentNode.pos.y + attribute.relativePos.y,

@@ -124,27 +124,35 @@ export default function Editor() {
         return relationships;
       }),
     [types.ATTRIBUTE]: (attribute, editType) => {
-      let parent = elementGetters[attribute.parent.type](attribute.parent.id);
-      switch (editType) {
-        case "deleteElement":
-          delete parent.attributes[attribute.id];
-          break;
-        default:
-          parent.attributes[attribute.id] = attribute;
-      }
-      elementSetters[attribute.parent.type](parent);
+      const setter =
+        attribute.parent.type === types.ENTITY ? setEntities : setRelationships;
+      setter((prev) => {
+        let newState = { ...prev };
+        let parent = newState[attribute.parent.id];
+        switch (editType) {
+          case "deleteElement":
+            delete parent.attributes[attribute.id];
+            break;
+          default:
+            parent.attributes[attribute.id] = attribute;
+        }
+        return newState;
+      });
     },
     [types.GENERALISATION]: (generalisation, editType) => {
       // Parent type must be of ENTITY type
-      let parent = elementGetters[types.ENTITY](generalisation.parent.id);
-      switch (editType) {
-        case "deleteElement":
-          delete parent.generalisations[generalisation.id];
-          break;
-        default:
-          parent.generalisations[generalisation.id] = generalisation;
-      }
-      elementSetters[types.ENTITY](parent);
+      setEntities((prev) => {
+        let newEntities = { ...prev };
+        let parent = newEntities[generalisation.parent.id];
+        switch (editType) {
+          case "deleteElement":
+            delete parent.generalisations[generalisation.id];
+            break;
+          default:
+            parent.generalisations[generalisation.id] = generalisation;
+        }
+        return newEntities;
+      });
     },
     [types.EDGE.RELATIONSHIP]: edgeSetter,
     [types.EDGE.HIERARCHY]: edgeSetter,
@@ -165,8 +173,6 @@ export default function Editor() {
     setElement(type, element, "updateElement", isHistory);
   };
   const setElement = (type, element, editType, isHistory) => {
-    console.log(`setElem(${type})`);
-    console.log(element);
     if (!isHistory) {
       const inverse = nodeFunctionsOpposite[editType];
       addToUndo(inverse, type, element);
