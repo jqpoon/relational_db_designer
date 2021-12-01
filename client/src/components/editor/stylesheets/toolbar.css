@@ -3,7 +3,7 @@
   height: 100vh;
   background-color: antiquewhite;
   z-index: 6;
-  text-align: center;
+
   /* position: fixed;
   top: 0;
   left: 0;
@@ -11,10 +11,45 @@
   height: 100%; */
 }
 
-.tool {
+.react-draggable {
+  margin: 0px;
+}
+.create-tool {
+  cursor: move;
+  display: flex;
+  height: 30px;
   padding: 10px;
   margin: 0;
-  border-bottom: 1px solid navy;
+  background: antiquewhite;
+  border: 1px solid navy;
+  border-radius: 3px;
+  box-shadow: 1px 1px;
+}
+
+.tool {
+  height: 30px;
+  padding: 10px;
+  margin: 0;
+  border: 1px solid navy;
+}
+
+span.grippy {
+  width: 20px;
+  height: 20px;
+  overflow: hidden;
+  line-height: 5px;
+  cursor: move;
+  vertical-align: middle;
+  margin-top: -.1em;
+  margin-right: .3em;
+  font-size: 14px;
+  font-family: sans-serif;
+  letter-spacing: 2px;
+  color: #282525;
+}
+
+span.grippy::after {
+  content: '.. .. ..';
 }
 
 .entity-tool {
@@ -32,5 +67,5 @@
   margin: 0;
 	position:absolute;
   bottom: 0;
-	
+
 }

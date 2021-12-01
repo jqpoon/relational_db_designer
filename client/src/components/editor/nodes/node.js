@@ -80,7 +80,7 @@ export default function Node({
   }, []);
 
   // Hides the context menu if we left click again
-  const handleClick = useCallback(() => {
+  const handleClick = useCallback((e) => {
     setShow(false);
   }, [show]);
 
@@ -116,7 +116,6 @@ export default function Node({
     setPanDisabled(false);
   };
   const onClick = () => {
-    console.log(context.action);
     switch (context.action) {
       case actions.NORMAL:
       case actions.SELECT.NORMAL:
@@ -162,11 +161,11 @@ export default function Node({
     position: pos,
     scale: scale,
     bounds: {
-      // ?
-      left: 5,
-      top: 5,
-      right: parentRef.current.clientWidth - dimensions.width - 5,
-      bottom: parentRef.current.clientHeight - dimensions.height - 5,
+      // Uncomment below to limit nodes to only be dragged within the canvas
+      // left: 5,
+      // top: 5,
+      // right: parentRef.current.clientWidth - dimensions.width - 5,
+      // bottom: parentRef.current.clientHeight - dimensions.height - 5,
     },
     onDrag: onDrag,
     onStop: onStop,
@@ -229,7 +228,7 @@ export default function Node({
 
   const normalMode = (
     <div style={highlightStyle()} className={classFromNodeType[type]}>
-      {editable ? editingMode() : <div>{text}</div>}
+      {editable ? editingMode() : <div className={classFromNodeType[type]+'-label'}>{text}</div>}
     </div>
   );
   // TODO:conditional rendering
