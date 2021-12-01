@@ -17,10 +17,10 @@ class EntityTranslator implements Translator {
             columns =
                 this.entity.attributes!.map((a: Attribute) => {
                 return {
-                    columnName: a.name,
+                    columnName: a.text,
                     isPrimaryKey: a.isPrimaryKey,
                     isOptional: a.isOptional,
-                    // isMulti: a.isMulti
+                    isMultiValued: a.isMultiValued
                     }
                 })
         }
@@ -29,7 +29,7 @@ class EntityTranslator implements Translator {
             columns: columns,
             foreignKeys: new Array<ForeignKey>()
         }
-        translatedTable.tables.set(this.entity.name, entityTable)
+        translatedTable.tables.set(this.entity.text, entityTable)
         return translatedTable
     }
 }

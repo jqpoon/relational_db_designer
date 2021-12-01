@@ -2,15 +2,15 @@ import Entity from "../models/entity";
 import Relationship from "../models/relationship";
 import EntityTranslator from "./entityTranslator";
 import ForeignKeyTranslator from "./foreignKeyTranslator";
-import TranslatedTable, { Table, TableSource, Column, ForeignKey } from "./models/translatedTable";
+import TranslatedTable, { Table } from "./models/translatedTable";
 import RelationshipTranslator from "./relationshipTranslator";
 
 class FullTranslator {
 
-    entities: Map<Number, Entity>;
-    relationships: Map<Number, Relationship>;
+    entities: Map<string, Entity>;
+    relationships: Map<string, Relationship>;
 
-    constructor(entities: Map<Number, Entity>, relationships: Map<Number, Relationship>) {
+    constructor(entities: Map<string, Entity>, relationships: Map<string, Relationship>) {
         this.entities = entities;
         this.relationships = relationships
     }

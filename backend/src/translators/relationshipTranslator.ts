@@ -17,9 +17,10 @@ class RelationshipTranslator implements Translator {
             columns =
                 this.relationship.attributes!.map((a: Attribute) => {
                 return {
-                    columnName: a.name,
+                    columnName: a.text,
                     isPrimaryKey: a.isPrimaryKey,
-                    isOptional: a.isOptional
+                    isOptional: a.isOptional,
+                    isMultiValued: a.isMultiValued
                     }
                 })
         }
@@ -28,7 +29,7 @@ class RelationshipTranslator implements Translator {
             columns: columns,
             foreignKeys: new Array<ForeignKey>()
         }
-        translatedTable.tables.set(this.relationship.name, rsTable)
+        translatedTable.tables.set(this.relationship.text, rsTable)
         return translatedTable
     }
 

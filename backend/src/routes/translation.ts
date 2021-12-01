@@ -8,103 +8,21 @@ import { saveAll } from "./schema";
 
 const router = Router();
 
-const parseEntities = (entities: Entity[]): Map<number, Entity> => {
-    var entityMap = new Map<number, Entity>();
+const parseEntities = (entities: Entity[]): Map<string, Entity> => {
+    var entityMap = new Map<string, Entity>();
     for (var entity of entities) {
-        entityMap.set(entity.identifier, entity);
+        entityMap.set(entity.id, entity);
     }
     return entityMap;
 };
 
-const parseRelationships = (relationships: Relationship[]): Map<number, Relationship> => {
-    var rsMap = new Map<number, Relationship>();
+const parseRelationships = (relationships: Relationship[]): Map<string, Relationship> => {
+    var rsMap = new Map<string, Relationship>();
     for (var rs of relationships) {
-        rsMap.set(rs.identifier, rs);
+        rsMap.set(rs.id, rs);
     }
     return rsMap;
 };
-
-router.get("/example", async function (req, res, next) {
-    var mockEntity = [
-        {
-            identifier: 1,
-            positionX: 1,
-            positionY: 2,
-            shapeWidth: 4,
-            shapeHeight: 4,
-            name: 'Mock Entity 1',
-            isWeak: true,
-            attributes: [
-                {
-                    identifier: 1,
-                    positionX: 2,
-                    positionY: 4,
-                    shapeWidth: 4,
-                    shapeHeight: 4,
-                    name: 'Mock Attribute 1',
-                    isPrimaryKey: true,
-                    isOptional: false,
-                }
-            ]
-        },
-        {
-            identifier: 2,
-            positionX: 1,
-            positionY: 2,
-            shapeWidth: 4,
-            shapeHeight: 4,
-            name: 'Mock Entity 2',
-            isWeak: true,
-            attributes: [
-                {
-                    identifier: 2,
-                    positionX: 2,
-                    positionY: 4,
-                    shapeWidth: 4,
-                    shapeHeight: 4,
-                    name: 'Mock Attribute 2',
-                    isPrimaryKey: true,
-                    isOptional: false,
-                }
-            ]
-        }
-    ]
-
-    var mockRelationship = [{
-        identifier: 1,
-        positionX: 1,
-        positionY: 2,
-        shapeWidth: 4,
-        shapeHeight: 4,
-        name: 'Mock Relationship',
-        attributes: [
-            {
-                identifier: 3,
-                positionX: 2,
-                positionY: 4,
-                shapeWidth: 4,
-                shapeHeight: 4,
-                name: 'Mock Attribute Relationship',
-                isPrimaryKey: false,
-                isOptional: false,
-            }
-        ],
-        lHConstraints: new Map([
-                [1, LHConstraint.ONE_TO_MANY],
-                [2, LHConstraint.ONE_TO_MANY],
-            ],
-        ),
-    }]
-    // Translate
-    const translator: FullTranslator = new FullTranslator(
-        parseEntities(mockEntity), parseRelationships(mockRelationship));
-    const translatedTable: TranslatedTable = translator.translateFromDiagramToSchema();
-    console.log(translatedTable)
-    // Return translation
-    return res.status(OK).json({SUCCESS: true, translatedtables: {
-        tables: Object.fromEntries(translatedTable.tables),
-    }});
-});
 
 router.post('/translate', async function (req, res, next) {
     // TODO add error catching
