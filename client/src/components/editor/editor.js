@@ -128,6 +128,14 @@ export default function Editor() {
       let parent = elementGetters[types.ENTITY](generalisation.parent.id);
       switch (editType) {
         case "deleteElement":
+
+          // Delete all edges related to this generalisation
+          for (const [edgeId, edgeInfo] of Object.entries(generalisation.edges))  {
+            deleteElement(edgeInfo.type, initialEdges[edgeId], false);
+          }
+
+          // Warning: Potential race condition here, where the generalisation
+          // is removed from parent before deleteElement can access it
           delete parent.generalisations[generalisation.id];
           break;
         default:
@@ -169,8 +177,13 @@ export default function Editor() {
             // Need to remove edge from the parent's generalisation's edge list,
             // if this is a generalisation
             if (edge.hasOwnProperty('generalisation')) {
-              delete source.generalisations[edge.generalisation].edges[edge.id];
-              // Maybe refactor to avoid possible train wreck?
+              // Check before trying to access generalisation, because there
+              // could be a race condition where the generalisation is deleted
+              // before the edges can get to it.
+              if (edge.generalisation in source.generalisations) {
+                delete source.generalisations[edge.generalisation].edges[edge.id];
+                // Maybe refactor to avoid possible train wreck?
+              }
             }
 
             break;
@@ -424,8 +437,6 @@ export default function Editor() {
   return (
     <Xwrapper>
       <div className="editor" ref={parentRef}>
-        <button onClick={() => {console.log(edges); console.log(relationships); console.log(entities)}}> hello world </button>
-        <button onClick={() => {deleteElement(types.RELATIONSHIP, initialRelationships["R0"], false)}}> delete edge </button>
         {render ? (
           <>
             <Toolbar {...elementFunctions} {...leftToolBarActions} />
