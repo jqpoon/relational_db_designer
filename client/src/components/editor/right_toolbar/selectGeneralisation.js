@@ -2,6 +2,19 @@ import { actions, types } from "../types";
 import { AddingSubsetViaGeneralisation } from "./utilities/addEdge";
 import { DisplaySubsets } from "./utilities/listDisplay";
 
+export function Name({ name, updateName }) {
+  return (
+    <div style={{ padding: "5px" }}>
+      <input
+        type="text"
+        style={{ fontSize: "medium" }}
+        value={name}
+        onChange={(e) => updateName(e.target.value)}
+      />
+    </div>
+  );
+}
+
 export default function SelectGeneralisation({
   generalisation,
   context,
@@ -18,12 +31,21 @@ export default function SelectGeneralisation({
       return newCtx;
     });
   };
+  const updateName = (name) => {
+    let newGen = { ...generalisation };
+    newGen.text = name;
+    updateElement(types.GENERALISATION, newGen);
+  };
   const addSubset = () => updateAction(actions.SELECT.ADD_SUBSET);
   const parent = getElement(types.ENTITY, generalisation.parent.id);
   return (
     <div className="toolbar-right">
       <div className="toolbar-header">
-        Generalisation: {generalisation.text}
+        Generalisation
+      </div>
+      <div className="section">
+        <div className="section-header">Name:</div>
+        <Name name={generalisation.text} updateName={updateName} />
       </div>
       <div className="section">
         <div className="section-header">Parent</div>

@@ -1,10 +1,62 @@
-import { actions } from "../types";
+import { actions, types } from "../types";
 import "./toolbar-right.css";
 import { RelationshipAdding } from "./utilities/addEdge";
 import { DisplayRelationships } from "./utilities/listDisplay";
+import CardinalityChoices from "./utilities/cardinality";
 
-// TODO: refactor with SelectEntity?
-// React fragments vs divs ?
+export function Name({ name, updateName }) {
+  return (
+    <div style={{ padding: "5px" }}>
+      <input
+        type="text"
+        style={{ fontSize: "medium" }}
+        value={name}
+        onChange={(e) => updateName(e.target.value)}
+      />
+    </div>
+  );
+}
+export function Relationship({ relationship, getElement, updateElement }) {
+  const edge = getElement(types.EDGE.RELATIONSHIP, relationship);
+  const target = getElement(edge.source_type, edge.start);
+  // TODO: nested relationship - which do we store as src/target
+  const updateCardinality = (card) => {
+    const newRel = { ...edge };
+    newRel.cardinality = card;
+    updateElement(types.EDGE.RELATIONSHIP, newRel);
+  };
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        padding: "5px",
+      }}
+    >
+      <div>{target.text}</div>
+      <div>
+        <CardinalityChoices
+          value={edge.cardinality}
+          onChange={(e) => updateCardinality(e.target.value)}
+        />
+      </div>
+    </div>
+  );
+}
+export function Relationships({ relationships, getElement, updateElement }) {
+  return (
+    <>
+      {relationships.map((rel) => (
+        <Relationship
+          relationship={rel}
+          getElement={getElement}
+          updateElement={updateElement}
+        />
+      ))}
+    </>
+  );
+}
+
 export default function SelectRelationship({
   relationship,
   getElement,
@@ -22,6 +74,12 @@ export default function SelectRelationship({
     });
   };
 
+  const updateName = (name) => {
+    let newRelationship = { ...relationship };
+    newRelationship.text = name;
+    updateElement(types.RELATIONSHIP, newRelationship);
+  };
+
   return (
     <div className="toolbar-right">
       <div className="toolbar-header">Relationship</div>
@@ -29,16 +87,17 @@ export default function SelectRelationship({
 
       {/* Name Section */}
       <div className="section">
-        <div className="section-header">Name: {relationship.text}</div>
+        <div className="section-header">Name:</div>
+        <Name name={relationship.text} updateName={updateName} />
       </div>
 
       {/* Connections? Section */}
       <div className="section">
         <div className="section-header">Connections</div>
-        <DisplayRelationships
+        <Relationships
           relationships={Object.keys(relationship.edges)}
           getElement={getElement}
-          isSource={false}
+          updateElement={updateElement}
         />
         {context.action === actions.SELECT.ADD_RELATIONSHIP ? (
           <RelationshipAdding
