@@ -204,82 +204,64 @@
         }
       }
     },
-    "TranslatedSchema": {
+    "TranslatedTable": {
       "type": "object",
       "properties": {
-        "entities": {
+        "tables": {
           "type": "object",
           "properties": {
-              "entity name": {
+              "table name": {
                 "type": "string"
               },
-              "attributes": {
+              "table": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
-                    "name": {
-                      "type": "string"
+                    "source": {
+                      "type": "number"
                     },
-                    "isPrimaryKey": {
-                      "type": "boolean"
+                    "columns": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "columnName": {
+                            "type": "string"
+                          },
+                          "isPrimaryKey": {
+                            "type": "boolean"
+                          },
+                          "isOptional": {
+                            "type": "boolean"
+                          }
+                        }
+                      }
                     },
-                    "isOptional": {
-                      "type": "boolean"
+                    "foreignKeys": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "keyName": {
+                            "type": "string"
+                          },
+                          "foreignTable": {
+                            "type": "string"
+                          },
+                          "columns": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
                     }
                   }
                 } 
               }
           }
-        },
-        "relationships": {
-          "type": "object",
-          "properties": {
-              "relationship name": {
-                "type": "string"
-              },
-              "attributes": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "isPrimaryKey": {
-                      "type": "boolean"
-                    },
-                    "isOptional": {
-                      "type": "boolean"
-                    }
-                  }
-                } 
-              }
-          }
-        },
-        "foreignKey": {
-          "type": "array",
-          "description": "Array of [object 1, foreign key, object 2] with object 1 mapping to object 2 in the key",
-          "items": {
-            "type": "array", 
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    "AttributesSchema": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "isPrimaryKey": {
-          "type": "boolean"
-        },
-        "isOptional": {
-          "type": "boolean"
         }
       }
     }
@@ -579,7 +561,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/TranslatedSchema"
+                "$ref": "#/definitions/TranslatedTable"
               }
             }
           }
