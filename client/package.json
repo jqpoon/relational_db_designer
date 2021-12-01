@@ -11,8 +11,8 @@
 		"react-dom": "^17.0.2",
 		"react-draggable": "^4.4.4",
 		"react-scripts": "4.0.3",
-		"react-zoom-pan-pinch": "https://github.com/bhsz/react-zoom-pan-pinch.git#alignbound-callback",
 		"react-xarrows": "^2.0.2",
+		"react-zoom-pan-pinch": "github:bhsz/react-zoom-pan-pinch#alignbound-callback",
 		"web-vitals": "^1.0.1"
 	},
 	"scripts": {
@@ -26,6 +26,7 @@
 			"react-app"
 		]
 	},
+	"proxy": "http://localhost:3000",
 	"browserslist": {
 		"production": [
 			">0.2%",

@@ -60,7 +60,7 @@ export default function Node({
   children,
   parent,
 }) {
-   console.log(`Rendering node (id: ${id})`);
+  // console.log(`Rendering node (id: ${id})`);
   // Reference to self allows info about self to be propagated
   const nodeRef = useRef(null);
   // Name of node which will be displayed
@@ -161,11 +161,11 @@ export default function Node({
     position: pos,
     scale: scale,
     bounds: {
-      // ?
-      left: 5,
-      top: 5,
-      right: parentRef.current.clientWidth - dimensions.width - 5,
-      bottom: parentRef.current.clientHeight - dimensions.height - 5,
+      // Uncomment below to limit nodes to only be dragged within the canvas
+      // left: 5,
+      // top: 5,
+      // right: parentRef.current.clientWidth - dimensions.width - 5,
+      // bottom: parentRef.current.clientHeight - dimensions.height - 5,
     },
     onDrag: onDrag,
     onStop: onStop,
@@ -219,7 +219,7 @@ export default function Node({
 
   const idIsInSelectedRelationship = (sources) => {
     for (const x of sources) {
-      if(parseInt(x,10) === id){
+      if(x === id){
         return true;
       }
     }
