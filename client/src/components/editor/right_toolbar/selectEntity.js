@@ -1,80 +1,18 @@
-import {
-  DisplayAttributes,
-  DisplayRelationships,
-  DisplaySubsets,
-  DisplaySupersets,
-} from "./utilities/listDisplay";
+import { DisplaySubsets, DisplaySupersets } from "./utilities/listDisplay";
 import {
   AddingRelationship,
   AddingSubset,
   AddingSuperset,
 } from "./utilities/addEdge";
-import { actions, cardinality, types } from "../types";
+import { actions, types } from "../types";
 import { useState } from "react";
 
 import "./toolbar-right.css";
-import { generateID } from "./utilities/general";
 import Divider from "./utilities/divider";
-import { EditableText, EditOnIcon } from "./utilities/components";
-import { addAttributeToNode } from "../edges/attribute";
-
-import { MdCheck, MdModeEdit } from "react-icons/md";
-import CardinalityChoices from "./utilities/cardinality";
 import { AddAttribute, Attributes } from "./utilities/attribute";
-
-export function Relationship({ relationship, getElement, updateElement }) {
-  const edge = getElement(types.EDGE.RELATIONSHIP, relationship);
-  const rel = getElement(edge.target_type, edge.end);
-
-  const updateCardinality = (card) => {
-    const newRel = { ...edge };
-    newRel.cardinality = card;
-    updateElement(types.EDGE.RELATIONSHIP, newRel);
-  };
-  return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        padding: "5px",
-      }}
-    >
-      <div>{rel.text}</div>
-      <div>
-        <CardinalityChoices
-          value={edge.cardinality}
-          onChange={(e) => updateCardinality(e.target.value)}
-        />
-      </div>
-    </div>
-  );
-}
-export function Relationships({ relationships, getElement, updateElement }) {
-  return (
-    <>
-      {relationships.map((rel) => (
-        <Relationship
-          relationship={rel}
-          getElement={getElement}
-          updateElement={updateElement}
-        />
-      ))}
-    </>
-  );
-}
-
-export function Name({ name, updateName }) {
-  return (
-    <div style={{ padding: "5px" }}>
-      <input
-        type="text"
-        style={{ fontSize: "medium" }}
-        value={name}
-        onChange={(e) => updateName(e.target.value)}
-      />
-    </div>
-  );
-}
+import { getId } from "../idGenerator";
+import { Name } from "./utilities/name";
+import { Relationships } from "./utilities/relationship";
 
 export function Generalisation({ generalisation, getElement, updateElement }) {
   const updateGeneralisationName = (name) => {
@@ -115,8 +53,6 @@ export default function SelectEntity({
 }) {
   // For use with adding subsets under generalisations
   const [selectedGeneralisation, setGeneralisation] = useState(null);
-  // For use with adding a child node under this node
-  const [addingChild, setAddingChild] = useState(null);
 
   const updateAction = (action) => {
     setContext((ctx) => {
@@ -161,25 +97,13 @@ export default function SelectEntity({
     updateElement: updateElement,
   };
 
-  const updateNodeText = (node, text) => {
-    let newNode = { ...node };
-    newNode.text = text;
-    updateElement(node.type, newNode);
-  };
-
-  const updateName = (name) => {
-    let newEntity = { ...entity };
-    newEntity.text = name;
-    updateElement(types.ENTITY, newEntity);
-  };
-
   return (
     <div className="toolbar-right">
       <div className="toolbar-header">Entity</div>
       {/* Name Section */}
       <div className="section">
         <div className="section-header">Name:</div>
-        <Name name={entity.text} updateName={updateName} />
+        <Name {...entity} {...utilities} />
       </div>
 
       {/* Attributes Section */}
@@ -203,6 +127,7 @@ export default function SelectEntity({
           relationships={relationships}
           getElement={getElement}
           updateElement={updateElement}
+          selected={entity.id}
         />
         {context.action === actions.SELECT.ADD_RELATIONSHIP ? (
           <AddingRelationship
@@ -237,7 +162,7 @@ export default function SelectEntity({
           className="section-tool"
           onClick={() => {
             const generalisation = {
-              id: generateID(entity.id, "Generalisation"), // TODO: change id generation
+              id: getId(types.GENERALISATION, entity.id),
               type: types.GENERALISATION,
               parent: { id: entity.id },
               text: "Generalisation",

@@ -1,6 +1,7 @@
 import { actions, cardinality, types } from "../../types";
 import { generateID, typeToString } from "./general";
 import CardinalityChoices from "./cardinality";
+import { MdCheck, MdClear } from "react-icons/md";
 
 // Generic function for adding a single edge
 function AddingEdge({
@@ -24,7 +25,7 @@ function AddingEdge({
   };
 
   const updateNodeWithEdge = (nodeID, nodeType, edge, parent) => {
-    console.log(`updatenodewithedge(${nodeID}, ${nodeType})`)
+    console.log(`updatenodewithedge(${nodeID}, ${nodeType})`);
     console.log(edge);
     console.log(parent);
     let node = getElement(nodeType, nodeID, parent);
@@ -69,15 +70,20 @@ function AddingEdge({
   };
   if (target === null) {
     return (
-      <>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          padding: "5px",
+        }}
+      >
         <div>No target selected</div>
-        <div onClick={reset}>Cancel</div>
-      </>
+        <div onClick={reset}>
+          <MdClear />
+        </div>
+      </div>
     );
   }
-
-  const node = getElement(target.type, target.id);
-  const nodeType = typeToString(target.type);
 
   let warning = null;
   switch (action) {
@@ -101,21 +107,52 @@ function AddingEdge({
       }
   }
 
+  if (warning !== null) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          padding: "5px",
+        }}
+      >
+        {warning}
+        <div>
+          <MdClear />
+        </div>
+      </div>
+    );
+  }
+
+  const node = getElement(target.type, target.id);
+  const nodeType = typeToString(target.type);
+
   return (
-    <>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        padding: "5px",
+      }}
+    >
       <div>
         {nodeType}: {node.text}
+        {action === actions.SELECT.ADD_RELATIONSHIP ? (
+          <CardinalityChoices
+            value={target.cardinality}
+            onChange={updateCardinality}
+          />
+        ) : null}
       </div>
-      {action === actions.SELECT.ADD_RELATIONSHIP ? (
-        <CardinalityChoices
-          value={target.cardinality}
-          onChange={updateCardinality}
-        />
-      ) : null}
-      {warning}
-      <div onClick={addEdge}>Confirm</div>
-      <div onClick={reset}>Cancel</div>
-    </>
+      <div style={{ display: "flex" }}>
+        <div onClick={addEdge}>
+          <MdCheck />
+        </div>
+        <div onClick={reset}>
+          <MdClear />
+        </div>
+      </div>
+    </div>
   );
 }
 

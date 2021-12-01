@@ -68,9 +68,6 @@ export default function Toolbar({
       >
          <div className="create-tool"><span class="grippy"></span>Relationship</div>
       </Draggable>
-      <div className="tool" onClick={addEdgeToRelationship}>
-        Connect to Relationship
-      </div>
       <div className="footer">
         <div className="tool" onClick={undo}>
           Undo
