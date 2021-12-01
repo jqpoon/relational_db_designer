@@ -64,7 +64,6 @@ export default function Node({
   children,
   parent,
 }) {
-  console.log(`Rendering node (id: ${id})`);
   // Reference to self allows info about self to be propagated
   const nodeRef = useRef(null);
   // Name of node which will be displayed
@@ -264,7 +263,7 @@ export default function Node({
 
   const idIsInSelectedRelationship = (sources) => {
     for (const x of sources) {
-      if (parseInt(x, 10) === id) {
+      if(x === id){
         return true;
       }
     }

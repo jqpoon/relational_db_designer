@@ -2,6 +2,7 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import "./stylesheets/attribute.css";
 import { types } from "../types";
 import { AttributeContextMenu } from "../contextMenus/attributeContextMenu";
+import { getId } from "../idGenerator";
 
 export default function Attribute({
   attribute,
@@ -221,7 +222,7 @@ export function addAttributeToNode({
   let relativePos = preconfiguredRelativePositions[attributeCount % 9];
 
   // Update parent node's attribute list
-  const attributeId = parentId + "A" + idCounter.getCount();
+  const attributeId = getId(types.ATTRIBUTE, parentId);
 
   const attributeEntry = {
     parent: { id: parentId, type: parentType },

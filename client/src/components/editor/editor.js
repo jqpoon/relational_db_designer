@@ -15,6 +15,7 @@ import SelectEdge from "./right_toolbar/selectEdge";
 import EdgeToRelationship from "./right_toolbar/edgeRelationship";
 import SelectGeneralisation from "./right_toolbar/selectGeneralisation";
 import { ContextMenu } from "./contextMenus/contextMenu";
+import { getId } from "./idGenerator";
 
 // TODO: update left,right toolbar to match new data structures
 // TODO: add initial attributes to initial.js + implement position update based on parent node of the attribute
@@ -172,11 +173,6 @@ export default function Editor() {
     elementSetters[type](element, editType);
   };
 
-  const getId = () => {
-    const id = counter;
-    setCounter(counter + 1);
-    return id;
-  };
 
   const addToUndo = (action, type, elem) =>
     addToHistory(action, type, elem, true);
@@ -248,7 +244,6 @@ export default function Editor() {
     addElement: addElement,
     updateElement: updateElement,
     deleteElement: deleteElement,
-    getId: getId,
     undo: undo,
     setEditableId: setEditableId,
   };
