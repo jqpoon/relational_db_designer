@@ -151,7 +151,12 @@ export default function Node({
       case actions.SELECT.ADD_RELATIONSHIP:
         setContext((prev) => {
           let newCtx = { ...prev };
-          newCtx.target = { type: type, id: id, cardinality: "" };
+          newCtx.target = {
+            type: type,
+            id: id,
+            parent: parent,
+            cardinality: "",
+          };
           return newCtx;
         });
         break;
@@ -159,7 +164,7 @@ export default function Node({
       case actions.SELECT.ADD_SUBSET:
         setContext((prev) => {
           let newCtx = { ...prev };
-          newCtx.target = { type: type, id: id };
+          newCtx.target = { type: type, id: id, parent: parent };
           return newCtx;
         });
         break;
@@ -263,7 +268,7 @@ export default function Node({
 
   const idIsInSelectedRelationship = (sources) => {
     for (const x of sources) {
-      if(x === id){
+      if (x === id) {
         return true;
       }
     }

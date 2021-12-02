@@ -10,6 +10,7 @@ export default function SelectRelationship({
   getElement,
   addElement,
   updateElement,
+  deleteElement,
   context,
   setContext,
 }) {
@@ -31,7 +32,17 @@ export default function SelectRelationship({
   return (
     <div className="toolbar-right">
       <div className="toolbar-header">Relationship</div>
-      <div>Label: {relationship.id}</div>
+      <div className="section">
+        <div
+          className="section-header"
+          onClick={() => {
+            deleteElement(types.RELATIONSHIP, relationship);
+            setContext({ action: actions.NORMAL });
+          }}
+        >
+          Delete
+        </div>
+      </div>
 
       {/* Name Section */}
       <div className="section">
@@ -45,6 +56,7 @@ export default function SelectRelationship({
         <Attributes
           attributes={Object.values(relationship.attributes)}
           updateElement={updateElement}
+          deleteElement={deleteElement}
         />
         <AddAttribute
           parentType={types.RELATIONSHIP}
@@ -60,6 +72,7 @@ export default function SelectRelationship({
           relationships={Object.keys(relationship.edges)}
           getElement={getElement}
           updateElement={updateElement}
+          deleteElement={deleteElement}
           selected={relationship.id}
         />
         {context.action === actions.SELECT.ADD_RELATIONSHIP ? (

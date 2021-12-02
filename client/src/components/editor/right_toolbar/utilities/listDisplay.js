@@ -13,6 +13,7 @@ import { typeToString } from "./general";
 
 import "../toolbar-right.css";
 import { EditOnIcon } from "./components";
+import { MdClear } from "react-icons/md";
 
 // Generic function which maps over given ids,
 // converting them to HTML elements via idToNode
@@ -45,7 +46,7 @@ export function DisplayRelationships({ relationships, getElement, isSource }) {
   return <DisplayNodes ids={relationships} idToNode={idToNode} />;
 }
 
-export function DisplaySupersets({ parents, getElement }) {
+export function DisplaySupersets({ parents, getElement, deleteElement }) {
   const idToNode = (id) => {
     const edge = getElement(types.EDGE.HIERARCHY, id);
     const parent = getElement(types.ENTITY, edge.parent);
@@ -53,22 +54,55 @@ export function DisplaySupersets({ parents, getElement }) {
       <>Generalisation: {parent.generalisations[edge.generalisation].text}</>
     ) : null;
     return (
-      <div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          padding: "5px",
+        }}
+      >
         <div>
-          {typeToString(types.ENTITY)}: {parent.text}
+          {parent.text}
+          <br />
+          {generalisation}
         </div>
-        <div>{generalisation}</div>
+        <div>
+          <MdClear
+            onClick={() => {
+              deleteElement(types.EDGE.HIERARCHY, edge);
+            }}
+          />
+        </div>
       </div>
     );
   };
   return <DisplayNodes ids={parents} idToNode={idToNode} />;
 }
 
-export function DisplaySubsets({ children, getElement }) {
+export function DisplaySubsets({ children, getElement, deleteElement }) {
   const idToNode = (id) => {
     const edge = getElement(types.EDGE.HIERARCHY, id);
     const child = getElement(types.ENTITY, edge.child);
-    return <li>{child.text}</li>;
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          padding: "5px",
+        }}
+      >
+        <div>
+          <li>{child.text}</li>
+        </div>
+        <div>
+          <MdClear
+            onClick={() => {
+              deleteElement(types.EDGE.HIERARCHY, edge);
+            }}
+          />
+        </div>
+      </div>
+    );
   };
   return <DisplayNodes ids={children} idToNode={idToNode} />;
 }

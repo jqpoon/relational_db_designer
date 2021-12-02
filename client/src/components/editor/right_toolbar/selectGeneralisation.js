@@ -1,19 +1,7 @@
 import { actions, types } from "../types";
 import { AddingSubsetViaGeneralisation } from "./utilities/addEdge";
 import { DisplaySubsets } from "./utilities/listDisplay";
-
-export function Name({ name, updateName }) {
-  return (
-    <div style={{ padding: "5px" }}>
-      <input
-        type="text"
-        style={{ fontSize: "medium" }}
-        value={name}
-        onChange={(e) => updateName(e.target.value)}
-      />
-    </div>
-  );
-}
+import { Name } from "./utilities/name";
 
 export default function SelectGeneralisation({
   generalisation,
@@ -22,7 +10,9 @@ export default function SelectGeneralisation({
   getElement,
   addElement,
   updateElement,
+  deleteElement,
 }) {
+  console.log(generalisation);
   const updateAction = (action) => {
     setContext((ctx) => {
       let newCtx = { ...ctx };
@@ -31,21 +21,29 @@ export default function SelectGeneralisation({
       return newCtx;
     });
   };
-  const updateName = (name) => {
-    let newGen = { ...generalisation };
-    newGen.text = name;
-    updateElement(types.GENERALISATION, newGen);
-  };
   const addSubset = () => updateAction(actions.SELECT.ADD_SUBSET);
   const parent = getElement(types.ENTITY, generalisation.parent.id);
   return (
     <div className="toolbar-right">
-      <div className="toolbar-header">
-        Generalisation
+      <div className="toolbar-header">Generalisation</div>
+      <div className="section">
+        <div
+          className="section-header"
+          onClick={() => {
+            deleteElement(types.GENERALISATION, generalisation);
+            setContext({ action: actions.NORMAL });
+          }}
+        >
+          Delete
+        </div>
       </div>
       <div className="section">
         <div className="section-header">Name:</div>
-        <Name name={generalisation.text} updateName={updateName} />
+        <Name
+          {...generalisation}
+          getElement={getElement}
+          updateElement={updateElement}
+        />
       </div>
       <div className="section">
         <div className="section-header">Parent</div>
@@ -56,6 +54,7 @@ export default function SelectGeneralisation({
         <DisplaySubsets
           children={Object.keys(generalisation.edges)}
           getElement={getElement}
+          deleteElement={deleteElement}
         />
         {context.action === actions.SELECT.ADD_SUBSET ? (
           <AddingSubsetViaGeneralisation

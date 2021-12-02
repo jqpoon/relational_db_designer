@@ -29,10 +29,10 @@ const STACK_LIMIT = 25;
 export default function Editor() {
   // Canvas states: passed to children for metadata (eg width and height of main container)
   const parentRef = useRef(null);
-	const [render, setRender] = useState(false);
-	const [scale, setScale] = useState(1);
-	const [panDisabled, setPanDisabled] = useState(false);
-	const [editableId, setEditableId] = useState(0);
+  const [render, setRender] = useState(false);
+  const [scale, setScale] = useState(1);
+  const [panDisabled, setPanDisabled] = useState(false);
+  const [editableId, setEditableId] = useState(0);
 
   // List of components that will be rendered
   const [entities, setEntities] = useState({});
@@ -82,67 +82,58 @@ export default function Editor() {
     return elementGetters[type](id, parent);
   };
 
-  const edgeSetter = (edge, editType) => {
-    setEdges((prev) => {
-      let edges = { ...prev };
-      switch (editType) {
-        case "deleteElement":
-          delete edges[edge.id];
-          break;
-        default:
-          edges[edge.id] = edge;
-      }
-      return edges;
-    });
-  };
   // TODO:: refactor similar functions (ent, rel)
   const elementSetters = {
     [types.ENTITY]: (entity, editType) =>
-		setEntities((prev) => {
-			let entities = { ...prev };
-			switch (editType) {
-				case "deleteElement":
-					// Remove all edges
-					for (const [edgeId, edgeInfo] of Object.entries(entity.edges))  {
-						deleteElement(edgeInfo.type, initialEdges[edgeId], false);
-					}
+      setEntities((prev) => {
+        let entities = { ...prev };
+        switch (editType) {
+          case "deleteElement":
+            // Remove all edges
+            for (const [edgeId, edgeInfo] of Object.entries(entity.edges)) {
+              deleteElement(edgeInfo.type, initialEdges[edgeId], false);
+            }
 
-					// Attributes are only stored within entity, so there is no need
-					// to recursively remove them
-					
-					// Remove all generalisations, and edges linked to generalisations
-					for (const [_, generalisationInfo] of Object.entries(entity.generalisations))  {
-						deleteElement(generalisationInfo.type, generalisationInfo, false);
-					}
-					delete entities[entity.id];
-					break;
-				default:
-					entities[entity.id] = entity;
-			}
-			return entities;
-		}),
+            // Attributes are only stored within entity, so there is no need
+            // to recursively remove them
+
+            // Remove all generalisations, and edges linked to generalisations
+            for (const [_, generalisationInfo] of Object.entries(
+              entity.generalisations
+            )) {
+              deleteElement(generalisationInfo.type, generalisationInfo, false);
+            }
+            delete entities[entity.id];
+            break;
+          default:
+            entities[entity.id] = entity;
+        }
+        return entities;
+      }),
     [types.RELATIONSHIP]: (relationship, editType) =>
-		setRelationships((prev) => {
-			let relationships = { ...prev };
-			switch (editType) {
-				case "deleteElement":
-					// Delete all edges related to this relationship
-					for (const [edgeId, edgeInfo] of Object.entries(relationship.edges))  {
-						deleteElement(edgeInfo.type, initialEdges[edgeId], false);
-					}
+      setRelationships((prev) => {
+        let relationships = { ...prev };
+        switch (editType) {
+          case "deleteElement":
+            // Delete all edges related to this relationship
+            for (const [edgeId, edgeInfo] of Object.entries(
+              relationship.edges
+            )) {
+              deleteElement(edgeInfo.type, initialEdges[edgeId], false);
+            }
 
-					// Since attributes are only stored within the relationship itself,
-					// there is no need to recursively remove attributes.
+            // Since attributes are only stored within the relationship itself,
+            // there is no need to recursively remove attributes.
 
-					// Delete relationship itself, including its attributes
-					delete relationships[relationship.id];
-					break;
-				default:
-					relationships[relationship.id] = relationship;
-			}
+            // Delete relationship itself, including its attributes
+            delete relationships[relationship.id];
+            break;
+          default:
+            relationships[relationship.id] = relationship;
+        }
 
-			return relationships;
-		}),
+        return relationships;
+      }),
     [types.ATTRIBUTE]: (attribute, editType) => {
       const setter =
         attribute.parent.type === types.ENTITY ? setEntities : setRelationships;
@@ -166,13 +157,15 @@ export default function Editor() {
         let parent = newEntities[generalisation.parent.id];
         switch (editType) {
           case "deleteElement":
-						// Delete all edges related to this generalisation
-						for (const [edgeId, edgeInfo] of Object.entries(generalisation.edges))  {
-							deleteElement(edgeInfo.type, initialEdges[edgeId], false);
-						}
-	
-						// Warning: Potential race condition here, where the generalisation
-						// is removed from parent before deleteElement can access it
+            // Delete all edges related to this generalisation
+            for (const [edgeId, edgeInfo] of Object.entries(
+              generalisation.edges
+            )) {
+              deleteElement(edgeInfo.type, initialEdges[edgeId], false);
+            }
+
+            // Warning: Potential race condition here, where the generalisation
+            // is removed from parent before deleteElement can access it
             delete parent.generalisations[generalisation.id];
             break;
           default:
@@ -217,7 +210,7 @@ export default function Editor() {
             let source = elementGetters[types.ENTITY](edge.parent);
             let target = elementGetters[types.ENTITY](edge.child);
 
-             // If statements in case of race conditions
+            // If statements in case of race conditions
             if (source.edges !== undefined) {
               delete source.edges[edge.id];
             }
@@ -227,12 +220,14 @@ export default function Editor() {
 
             // Need to remove edge from the parent's generalisation's edge list,
             // if this is a generalisation
-            if (edge.hasOwnProperty('generalisation')) {
+            if (edge.hasOwnProperty("generalisation")) {
               // Check before trying to access generalisation, because there
               // could be a race condition where the generalisation is deleted
               // before the edges can get to it.
               if (edge.generalisation in source.generalisations) {
-                delete source.generalisations[edge.generalisation].edges[edge.id];
+                delete source.generalisations[edge.generalisation].edges[
+                  edge.id
+                ];
                 // Maybe refactor to avoid possible train wreck?
               }
             }
@@ -243,7 +238,7 @@ export default function Editor() {
         }
         return edges;
       });
-    }
+    },
   };
 
   const nodeFunctionsOpposite = {

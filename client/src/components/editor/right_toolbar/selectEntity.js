@@ -13,8 +13,14 @@ import { AddAttribute, Attributes } from "./utilities/attribute";
 import { getId } from "../idGenerator";
 import { Name } from "./utilities/name";
 import { Relationships } from "./utilities/relationship";
+import { MdClear } from "react-icons/md";
 
-export function Generalisation({ generalisation, getElement, updateElement }) {
+export function Generalisation({
+  generalisation,
+  getElement,
+  updateElement,
+  deleteElement,
+}) {
   const updateGeneralisationName = (name) => {
     let newGeneralisation = { ...generalisation };
     newGeneralisation.text = name;
@@ -32,7 +38,22 @@ export function Generalisation({ generalisation, getElement, updateElement }) {
   );
   return (
     <>
-      <>{generalisationName}</>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          padding: "5px",
+        }}
+      >
+        <div>{generalisationName}</div>
+        <div>
+          <MdClear
+            onClick={() => {
+              deleteElement(types.GENERALISATION, generalisation);
+            }}
+          />
+        </div>
+      </div>
       <Divider />
       {/* TODO: refactor */}
       <DisplaySubsets
@@ -48,6 +69,7 @@ export default function SelectEntity({
   getElement,
   addElement,
   updateElement,
+  deleteElement,
   context,
   setContext,
 }) {
@@ -100,6 +122,17 @@ export default function SelectEntity({
   return (
     <div className="toolbar-right">
       <div className="toolbar-header">Entity</div>
+      <div className="section">
+        <div
+          className="section-header"
+          onClick={() => {
+            deleteElement(types.ENTITY, entity);
+            setContext({ action: actions.NORMAL });
+          }}
+        >
+          Delete
+        </div>
+      </div>
       {/* Name Section */}
       <div className="section">
         <div className="section-header">Name:</div>
@@ -112,6 +145,7 @@ export default function SelectEntity({
         <Attributes
           attributes={Object.values(entity.attributes)}
           updateElement={updateElement}
+          deleteElement={deleteElement}
         />
         <AddAttribute
           parentType={types.ENTITY}
@@ -127,6 +161,7 @@ export default function SelectEntity({
           relationships={relationships}
           getElement={getElement}
           updateElement={updateElement}
+          deleteElement={deleteElement}
           selected={entity.id}
         />
         {context.action === actions.SELECT.ADD_RELATIONSHIP ? (
@@ -146,7 +181,11 @@ export default function SelectEntity({
       {/* Superset sections */}
       <div className="section">
         <div className="section-header">Superset(s)</div>
-        <DisplaySupersets parents={parents} getElement={getElement} />
+        <DisplaySupersets
+          parents={parents}
+          getElement={getElement}
+          deleteElement={deleteElement}
+        />
         {context.action === actions.SELECT.ADD_SUPERSET ? (
           <AddingSuperset {...utilities} />
         ) : (
@@ -181,6 +220,7 @@ export default function SelectEntity({
                 generalisation={generalisation}
                 getElement={getElement}
                 updateElement={updateElement}
+                deleteElement={deleteElement}
               />
               {context.action === actions.SELECT.ADD_SUBSET &&
               selectedGeneralisation === generalisation.id ? (
@@ -205,6 +245,7 @@ export default function SelectEntity({
           generalisation={null}
           children={children}
           getElement={getElement}
+          deleteElement={deleteElement}
         />
         {context.action === actions.SELECT.ADD_SUBSET &&
         selectedGeneralisation === null ? (
