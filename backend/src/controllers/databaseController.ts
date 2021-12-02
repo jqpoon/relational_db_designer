@@ -11,7 +11,7 @@ class DatabaseController {
 
     private constructor() {
         // TODO use config or env to store variables
-        this.databaseDriver = neo4j.driver("bolt://localhost:7687", neo4j.auth.basic("neo4j", "123456"));
+        this.databaseDriver = neo4j.driver("bolt://localhost:7687", neo4j.auth.basic("neo4j", "admin"));
         // this.databaseDriver = neo4j.driver((process.env.NEO_URL ?? ""), neo4j.auth.basic((process.env.NEO_USERNAME ?? ""), (process.env.NEO_PASSWORD ?? "")));
     }
 
@@ -275,7 +275,6 @@ class DatabaseController {
                     'MATCH (entity:ENTITY) RETURN entity',
                 )
             )
-            DatabaseController.verifyDatabaseUpdate(entities)
             return entities
         } finally {
             await session.close()
@@ -293,7 +292,6 @@ class DatabaseController {
                     'attributes: collect(attributes) }',
                 )
             )
-            DatabaseController.verifyDatabaseUpdate(entitiesWithAttributes)
             return entitiesWithAttributes
         } finally {
             await session.close()
@@ -311,7 +309,6 @@ class DatabaseController {
                     'subsets: collect(subsets) }',
                 )
             )
-            DatabaseController.verifyDatabaseUpdate(entitiesWithAttributes)
             return entitiesWithAttributes
         } finally {
             await session.close()
@@ -328,8 +325,6 @@ class DatabaseController {
                     'as relations RETURN { relationship: r, entities: collect(relations) }',
                 )
             )
-            DatabaseController.verifyDatabaseUpdate(entitiesWithAttributes)
-
             return entitiesWithAttributes
         } finally {
             await session.close()
@@ -347,7 +342,6 @@ class DatabaseController {
                     'attributes: collect(attributes) }',
                 )
             )
-            DatabaseController.verifyDatabaseUpdate(relationshipWithAttributes)
             return relationshipWithAttributes
         } finally {
             await session.close()
