@@ -44,7 +44,6 @@ export default function Editor() {
 	const [edges, setEdges] = useState({});
 	const [undoStack, setUndoStack] = useState([]);
 	const [redoStack, setRedoStack] = useState([]);
-  const [relationalSchema, setRelationalSchema] = useState(null);
 
 	const [context, setContext] = useState({ action: actions.NORMAL });
 
@@ -421,14 +420,7 @@ export default function Editor() {
 				subsets: [], // TODO
 			};
 
-			Object.values(entity.attributes).forEach((attr) => {
-				delete attr.parent;
-				delete attr.type;
-
-				attr.isMultiValued = false;
-				attr.isPrimaryKey = false;
-				attr.isOptional = false;
-
+			Object.values(entity.attributes).forEach(({parent, type, ...attr}) => {
 				entityState.attributes.push(attr);
 			});
 
@@ -445,10 +437,7 @@ export default function Editor() {
 				lHConstraints: {},
 			};
 
-			Object.values(relationship.attributes).forEach((attr) => {
-				delete attr.parent;
-				delete attr.type;
-
+			Object.values(relationship.attributes).forEach(({parent, type, ...attr}) => {
 				relationshipState.attributes.push(attr);
 			});
 
@@ -497,9 +486,9 @@ export default function Editor() {
 		importStateFromObject,
     translate: (schema) => {
       setContext({
-        action: actions.TRANSLATE
-      })
-      setRelationalSchema(schema)
+        action: actions.TRANSLATE,
+				tables: schema.translatedtables.tables,
+      });
     },
 		undo: undo,
 		redo: redo,
@@ -538,7 +527,7 @@ export default function Editor() {
 	const showRightToolbar = () => {
 		switch (context.action) {
       case actions.TRANSLATE:
-        return <DisplayTranslation relationalSchema={relationalSchema} />
+        return <DisplayTranslation relationalSchema={context.tables} />
 			case actions.NORMAL:
 				return <Normal />;
 			case actions.SELECT.NORMAL:
