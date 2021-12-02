@@ -1,12 +1,12 @@
 import "./toolbar-right.css";
 
 
-export default function DisplayTranslation({relationalSchema}) {
+export default function DisplayTranslation(props) {
   return (
     <div className="toolbar-right">
     <div> <b>Relational Schema:</b> </div>
     {
-        displayTables(relationalSchema.tables)
+        displayTables(props.relationalSchema)
     }
 </div>
   )
@@ -15,10 +15,10 @@ export default function DisplayTranslation({relationalSchema}) {
 const displayTables = (tables) => {
     var tabs = []
     var fks = []
-    Object.entries(tables).forEach(([key, val]) =>
-    {
-        tabs.push(displayTable(key,val))
-        fks.push(displayTablesFK(key, val))
+    Object.keys(tables).forEach((key) =>
+    {	
+        tabs.push(displayTable(key, tables[key]))
+        fks.push(displayTablesFK(key, tables[key]))
     })
     return <div className="translation"> {tabs} {fks} </div>;
 }
