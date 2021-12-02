@@ -17,7 +17,7 @@ export function getId(type, parentId = null) {
         case types.RELATIONSHIP:
             return "R" + IdCounter.getCount();
         case types.GENERALISATION:
-            return "G" + IdCounter.getCount();
+            return parentId + "G" + IdCounter.getCount();
         //TODO edges
         default:
             console.error("type not valid when generating id");

@@ -14,6 +14,7 @@ import Normal from "./right_toolbar/normal";
 import SelectEdge from "./right_toolbar/selectEdge";
 import EdgeToRelationship from "./right_toolbar/edgeRelationship";
 import SelectGeneralisation from "./right_toolbar/selectGeneralisation";
+import { ContextMenu } from "./contextMenus/contextMenu";
 import DisplayTranslation from "./right_toolbar/translationDisplay";
 // import { relationalSchema } from "./right_toolbar/relationalSchemaExample";
 import { getId } from "./idGenerator";
@@ -28,71 +29,70 @@ import { getId } from "./idGenerator";
 const STACK_LIMIT = 25;
 
 export default function Editor() {
-	// Canvas states: passed to children for metadata (eg width and height of main container)
-	const parentRef = useRef(null);
-	const [render, setRender] = useState(false);
-	const [scale, setScale] = useState(1);
-	const [panDisabled, setPanDisabled] = useState(false);
-	const [editableId, setEditableId] = useState(0);
+  // Canvas states: passed to children for metadata (eg width and height of main container)
+  const parentRef = useRef(null);
+  const [render, setRender] = useState(false);
+  const [scale, setScale] = useState(1);
+  const [panDisabled, setPanDisabled] = useState(false);
+  const [editableId, setEditableId] = useState(0);
 
-	// List of components that will be rendered
-	// const [entities, setEntities] = useState(initialEntities);
-	// const [relationships, setRelationships] = useState(initialRelationships);
-	// const [edges, setEdges] = useState(initialEdges);
-	const [entities, setEntities] = useState({});
-	const [relationships, setRelationships] = useState({});
-	const [edges, setEdges] = useState({});
-	const [undoStack, setUndoStack] = useState([]);
-	const [redoStack, setRedoStack] = useState([]);
+  // List of components that will be rendered
+  const [entities, setEntities] = useState({});
+  const [relationships, setRelationships] = useState({});
+  const [edges, setEdges] = useState({});
+  const [undoStack, setUndoStack] = useState([]);
+  const [redoStack, setRedoStack] = useState([]);
 
-	const [context, setContext] = useState({ action: actions.NORMAL });
+  const [context, setContext] = useState({ action: actions.NORMAL });
 
-	const [, setRerender] = useState(false);
-	const forceRerender = () => setRerender((rerender) => !rerender);
+  const [, setRerender] = useState(false);
+  const forceRerender = () => setRerender((rerender) => !rerender);
 
-	const resetClick = (e) => {
-		if (e.target.classList.contains("canvas")) {
-			setContext({ action: actions.NORMAL });
-		}
-	};
+  const [contextMenu, setContextMenu] = useState(null);
 
-	useEffect(() => {
-		setRender(true);
-		document?.addEventListener("click", resetClick);
-	}, []);
+  const resetClick = (e) => {
+    if (e.target.classList.contains("canvas")) {
+      setContext({ action: actions.NORMAL });
+    }
+  };
 
-	const getEdge = (id) => ({ ...edges[id] });
+  useEffect(() => {
+    setRender(true);
+    document?.addEventListener("click", resetClick);
+  }, []);
 
-	// Returns a copy of the element
-	const elementGetters = {
-		[types.ENTITY]: (id) => ({ ...entities[id] }),
-		[types.RELATIONSHIP]: (id) => ({ ...relationships[id] }),
-		[types.ATTRIBUTE]: (id, parent) => {
-			console.assert([types.ENTITY, types.RELATIONSHIP].includes(parent.type));
-			const parentNode = elementGetters[parent.type](parent.id);
-			return { ...parentNode.attributes[id] };
-		},
-		[types.GENERALISATION]: (id, parent) => {
-			// Parent must be of ENTITY type
-			const parentNode = elementGetters[types.ENTITY](parent.id);
-			return { ...parentNode.generalisations[id] };
-		},
-		[types.EDGE.RELATIONSHIP]: getEdge,
-		[types.EDGE.HIERARCHY]: getEdge,
-	};
-	const getElement = (type, id, parent) => {
-		return elementGetters[type](id, parent);
-	};
+  const getEdge = (id) => ({ ...edges[id] });
 
-	// TODO:: refactor similar functions (ent, rel)
-	const elementSetters = {
-		[types.ENTITY]: (entity, editType) =>
-			setEntities((prev) => {
-				let entities = { ...prev };
-				switch (editType) {
-					case "deleteElement":
+  // Returns a copy of the element
+  const elementGetters = {
+    [types.ENTITY]: (id) => ({ ...entities[id] }),
+    [types.RELATIONSHIP]: (id) => ({ ...relationships[id] }),
+    [types.ATTRIBUTE]: (id, parent) => {
+      console.assert([types.ENTITY, types.RELATIONSHIP].includes(parent.type));
+      const parentNode = elementGetters[parent.type](parent.id);
+      return { ...parentNode.attributes[id] };
+    },
+    [types.GENERALISATION]: (id, parent) => {
+      // Parent must be of ENTITY type
+      const parentNode = elementGetters[types.ENTITY](parent.id);
+      return { ...parentNode.generalisations[id] };
+    },
+    [types.EDGE.RELATIONSHIP]: getEdge,
+    [types.EDGE.HIERARCHY]: getEdge,
+  };
+  const getElement = (type, id, parent) => {
+    return elementGetters[type](id, parent);
+  };
+
+  // TODO:: refactor similar functions (ent, rel)
+  const elementSetters = {
+    [types.ENTITY]: (entity, editType) =>
+      setEntities((prev) => {
+        let entities = { ...prev };
+        switch (editType) {
+          case "deleteElement":
             // Remove all edges
-            for (const [edgeId, edgeInfo] of Object.entries(entity.edges))  {
+            for (const [edgeId, edgeInfo] of Object.entries(entity.edges)) {
               deleteElement(edgeInfo.type, initialEdges[edgeId], false);
             }
 
@@ -100,23 +100,27 @@ export default function Editor() {
             // to recursively remove them
 
             // Remove all generalisations, and edges linked to generalisations
-            for (const [_, generalisationInfo] of Object.entries(entity.generalisations))  {
+            for (const [_, generalisationInfo] of Object.entries(
+              entity.generalisations
+            )) {
               deleteElement(generalisationInfo.type, generalisationInfo, false);
             }
-						delete entities[entity.id];
-						break;
-					default:
-						entities[entity.id] = entity;
-				}
-				return entities;
-			}),
-		[types.RELATIONSHIP]: (relationship, editType) =>
-			setRelationships((prev) => {
-				let relationships = { ...prev };
-				switch (editType) {
-					case "deleteElement":
+            delete entities[entity.id];
+            break;
+          default:
+            entities[entity.id] = entity;
+        }
+        return entities;
+      }),
+    [types.RELATIONSHIP]: (relationship, editType) =>
+      setRelationships((prev) => {
+        let relationships = { ...prev };
+        switch (editType) {
+          case "deleteElement":
             // Delete all edges related to this relationship
-            for (const [edgeId, edgeInfo] of Object.entries(relationship.edges))  {
+            for (const [edgeId, edgeInfo] of Object.entries(
+              relationship.edges
+            )) {
               deleteElement(edgeInfo.type, initialEdges[edgeId], false);
             }
 
@@ -124,45 +128,55 @@ export default function Editor() {
             // there is no need to recursively remove attributes.
 
             // Delete relationship itself, including its attributes
-						delete relationships[relationship.id];
-						break;
-					default:
-						relationships[relationship.id] = relationship;
-				}
+            delete relationships[relationship.id];
+            break;
+          default:
+            relationships[relationship.id] = relationship;
+        }
 
-				return relationships;
-			}),
-		[types.ATTRIBUTE]: (attribute, editType) => {
-			let parent = elementGetters[attribute.parent.type](attribute.parent.id);
-			switch (editType) {
-				case "deleteElement":
-					delete parent.attributes[attribute.id];
-					break;
-				default:
-					parent.attributes[attribute.id] = attribute;
-			}
-			elementSetters[attribute.parent.type](parent);
-		},
-		[types.GENERALISATION]: (generalisation, editType) => {
-			// Parent type must be of ENTITY type
-			let parent = elementGetters[types.ENTITY](generalisation.parent.id);
-			switch (editType) {
-				case "deleteElement":
-          // Delete all edges related to this generalisation
-          for (const [edgeId, edgeInfo] of Object.entries(generalisation.edges))  {
-            deleteElement(edgeInfo.type, initialEdges[edgeId], false);
-          }
+        return relationships;
+      }),
+    [types.ATTRIBUTE]: (attribute, editType) => {
+      const setter =
+        attribute.parent.type === types.ENTITY ? setEntities : setRelationships;
+      setter((prev) => {
+        let newState = { ...prev };
+        let parent = newState[attribute.parent.id];
+        switch (editType) {
+          case "deleteElement":
+            delete parent.attributes[attribute.id];
+            break;
+          default:
+            parent.attributes[attribute.id] = attribute;
+        }
+        return newState;
+      });
+    },
+    [types.GENERALISATION]: (generalisation, editType) => {
+      // Parent type must be of ENTITY type
+      setEntities((prev) => {
+        let newEntities = { ...prev };
+        let parent = newEntities[generalisation.parent.id];
+        switch (editType) {
+          case "deleteElement":
+            // Delete all edges related to this generalisation
+            for (const [edgeId, edgeInfo] of Object.entries(
+              generalisation.edges
+            )) {
+              deleteElement(edgeInfo.type, initialEdges[edgeId], false);
+            }
 
-          // Warning: Potential race condition here, where the generalisation
-          // is removed from parent before deleteElement can access it
-					delete parent.generalisations[generalisation.id];
-					break;
-				default:
-					parent.generalisations[generalisation.id] = generalisation;
-			}
-			elementSetters[types.ENTITY](parent);
-		},
-		[types.EDGE.RELATIONSHIP]: (edge, editType) => {
+            // Warning: Potential race condition here, where the generalisation
+            // is removed from parent before deleteElement can access it
+            delete parent.generalisations[generalisation.id];
+            break;
+          default:
+            parent.generalisations[generalisation.id] = generalisation;
+        }
+        return newEntities;
+      });
+    },
+    [types.EDGE.RELATIONSHIP]: (edge, editType) => {
       setEdges((prev) => {
         let edges = { ...prev };
         switch (editType) {
@@ -198,7 +212,7 @@ export default function Editor() {
             let source = elementGetters[types.ENTITY](edge.parent);
             let target = elementGetters[types.ENTITY](edge.child);
 
-             // If statements in case of race conditions
+            // If statements in case of race conditions
             if (source.edges !== undefined) {
               delete source.edges[edge.id];
             }
@@ -208,12 +222,14 @@ export default function Editor() {
 
             // Need to remove edge from the parent's generalisation's edge list,
             // if this is a generalisation
-            if (edge.hasOwnProperty('generalisation')) {
+            if (edge.hasOwnProperty("generalisation")) {
               // Check before trying to access generalisation, because there
               // could be a race condition where the generalisation is deleted
               // before the edges can get to it.
               if (edge.generalisation in source.generalisations) {
-                delete source.generalisations[edge.generalisation].edges[edge.id];
+                delete source.generalisations[edge.generalisation].edges[
+                  edge.id
+                ];
                 // Maybe refactor to avoid possible train wreck?
               }
             }
@@ -224,7 +240,7 @@ export default function Editor() {
         }
         return edges;
       });
-    }
+    },
   };
 
 	const nodeFunctionsOpposite = {
@@ -472,6 +488,7 @@ export default function Editor() {
 		setPanDisabled: setPanDisabled,
 		setContext: setContext,
 		context: context,
+    setContextMenu: setContextMenu,
 	};
 
 	const leftToolBarActions = {
@@ -651,12 +668,14 @@ export default function Editor() {
 									{Object.values(relationships).map(
 										(relationship) => (
 											<TestRelationship
-												key={relationship.id}
-												{...relationship}
-												{...nodeConfig}
-												{...elementFunctions}
-												{...generalFunctions}
-											/>
+                      key={relationship.id}
+                      relationship={relationship}
+                      general={{
+                        ...nodeConfig,
+                        ...elementFunctions,
+                        ...generalFunctions,
+                      }}
+                    />
 										)
 									)}
 								</div>
@@ -665,6 +684,7 @@ export default function Editor() {
 						{showEdges()}
 						{showPendingChanges()}
 						{showRightToolbar()}
+            <ContextMenu contextMenu={contextMenu} />
 					</>
 				) : null}
 			</div>

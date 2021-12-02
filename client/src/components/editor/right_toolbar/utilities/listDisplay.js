@@ -12,13 +12,14 @@ import { cardinality, types } from "../../types";
 import { typeToString } from "./general";
 
 import "../toolbar-right.css";
+import { EditOnIcon } from "./components";
+import { MdClear } from "react-icons/md";
 
 // Generic function which maps over given ids,
 // converting them to HTML elements via idToNode
 function DisplayNodes({ ids, idToNode }) {
   return (
     <>
-      {ids.length === 0 ? null : <Divider />}
       {ids.map((id) => (
         <>
           <div className="selected-element">{idToNode(id)}</div>
@@ -36,18 +37,16 @@ export function DisplayRelationships({ relationships, getElement, isSource }) {
       : getElement(edge.source_type, edge.start);
     return (
       <>
-        <div>
-          {typeToString(connected.type)}: {connected.text}
-        </div>
-        <div>Cardinality: {cardinality[edge.cardinality]}</div>
-        <Divider />
+        <li>
+          {connected.text} | {cardinality[edge.cardinality]}
+        </li>
       </>
     );
   };
   return <DisplayNodes ids={relationships} idToNode={idToNode} />;
 }
 
-export function DisplaySupersets({ parents, getElement }) {
+export function DisplaySupersets({ parents, getElement, deleteElement }) {
   const idToNode = (id) => {
     const edge = getElement(types.EDGE.HIERARCHY, id);
     const parent = getElement(types.ENTITY, edge.parent);
@@ -55,29 +54,77 @@ export function DisplaySupersets({ parents, getElement }) {
       <>Generalisation: {parent.generalisations[edge.generalisation].text}</>
     ) : null;
     return (
-      <div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          padding: "5px",
+        }}
+      >
         <div>
-          {typeToString(types.ENTITY)}: {parent.text}
+          {parent.text}
+          <br />
+          {generalisation}
         </div>
-        <div>{generalisation}</div>
+        <div>
+          <MdClear
+            onClick={() => {
+              deleteElement(types.EDGE.HIERARCHY, edge);
+            }}
+          />
+        </div>
       </div>
     );
   };
   return <DisplayNodes ids={parents} idToNode={idToNode} />;
 }
 
-export function DisplaySubsets({ children, getElement }) {
+export function DisplaySubsets({ children, getElement, deleteElement }) {
   const idToNode = (id) => {
     const edge = getElement(types.EDGE.HIERARCHY, id);
     const child = getElement(types.ENTITY, edge.child);
-    return <li>{child.text}</li>;
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          padding: "5px",
+        }}
+      >
+        <div>
+          <li>{child.text}</li>
+        </div>
+        <div>
+          <MdClear
+            onClick={() => {
+              deleteElement(types.EDGE.HIERARCHY, edge);
+            }}
+          />
+        </div>
+      </div>
+    );
   };
   return <DisplayNodes ids={children} idToNode={idToNode} />;
 }
 
-export function DisplayAttributes({ attributes }) {
+export function DisplayAttributes({ attributes, updateNodeText }) {
   const idToNode = (attribute) => {
-    return <div>{attribute.text}</div>;
+    return (
+      <>
+        <hr
+          style={{
+            height: "0.5px",
+            margin: "0",
+            padding: "0",
+            backgroundColor: "black",
+          }}
+        />
+        <EditOnIcon
+          value={attribute.text}
+          updateValue={(name) => updateNodeText(attribute, name)}
+        />
+      </>
+    );
   };
   return <DisplayNodes ids={attributes} idToNode={idToNode} />;
 }

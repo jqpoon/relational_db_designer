@@ -1,15 +1,16 @@
-import { actions } from "../types";
+import { actions, types } from "../types";
 import "./toolbar-right.css";
 import { RelationshipAdding } from "./utilities/addEdge";
-import { DisplayRelationships } from "./utilities/listDisplay";
+import { AddAttribute, Attributes } from "./utilities/attribute";
+import { Name } from "./utilities/name";
+import { Relationships } from "./utilities/relationship";
 
-// TODO: refactor with SelectEntity?
-// React fragments vs divs ?
 export default function SelectRelationship({
   relationship,
   getElement,
   addElement,
   updateElement,
+  deleteElement,
   context,
   setContext,
 }) {
@@ -22,23 +23,57 @@ export default function SelectRelationship({
     });
   };
 
+  const utilities = {
+    getElement: getElement,
+    addElement: addElement,
+    updateElement: updateElement,
+  };
+
   return (
     <div className="toolbar-right">
       <div className="toolbar-header">Relationship</div>
-      <div>Label: {relationship.id}</div>
+      <div className="section">
+        <div
+          className="section-header"
+          onClick={() => {
+            deleteElement(types.RELATIONSHIP, relationship);
+            setContext({ action: actions.NORMAL });
+          }}
+        >
+          Delete
+        </div>
+      </div>
 
       {/* Name Section */}
       <div className="section">
-        <div className="section-header">Name: {relationship.text}</div>
+        <div className="section-header">Name:</div>
+        <Name {...relationship} {...utilities} />
       </div>
 
-      {/* Connections? Section */}
+      {/* Attributes Section */}
+      <div className="section">
+        <div className="section-header">Attributes</div>
+        <Attributes
+          attributes={Object.values(relationship.attributes)}
+          updateElement={updateElement}
+          deleteElement={deleteElement}
+        />
+        <AddAttribute
+          parentType={types.RELATIONSHIP}
+          parentId={relationship.id}
+          {...utilities}
+        />
+      </div>
+
+      {/* Connections Section */}
       <div className="section">
         <div className="section-header">Connections</div>
-        <DisplayRelationships
+        <Relationships
           relationships={Object.keys(relationship.edges)}
           getElement={getElement}
-          isSource={false}
+          updateElement={updateElement}
+          deleteElement={deleteElement}
+          selected={relationship.id}
         />
         {context.action === actions.SELECT.ADD_RELATIONSHIP ? (
           <RelationshipAdding
