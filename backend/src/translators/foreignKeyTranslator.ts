@@ -26,19 +26,13 @@ class ForeignKeyTranslator implements Translator {
         this.relationships.forEach((relationship: Relationship) => {
             var oneMany:boolean = false;
             var oneManySource:string = "-1";
-						Object.keys(relationship.lHConstraints).forEach((entityId: string) => {
-							let lhConstraint: LHConstraint = relationship.lHConstraints.get(entityId)!
-							if (lhConstraint === LHConstraint.ONE_TO_ONE) {
-								oneMany = true;
-								oneManySource = entityId;
-							}
-						})
-            // relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: string) => {
-            //     if (lhConstraint == LHConstraint.ONE_TO_ONE) {
-            //         oneMany = true;
-            //         oneManySource = entityID;
-            //     }
-            // });
+            Object.keys(relationship.lHConstraints).forEach((entityId: string) => {
+                let lhConstraint: LHConstraint = relationship.lHConstraints.get(entityId)!
+                if (lhConstraint === LHConstraint.ONE_TO_ONE) {
+                    oneMany = true;
+                    oneManySource = entityId;
+                }
+            })
 
             if (oneMany) {
                 const sourceEntity: Entity = this.entities.get(oneManySource)!
@@ -55,6 +49,7 @@ class ForeignKeyTranslator implements Translator {
                         table.foreignKeys.push(foreignKey);
                     }
                 });
+                translatedTable.tables.set(sourceEntity.text, table);
             } else {
                 var table: Table = translatedTable.tables.get(relationship.text)!
                 relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: string) => {
@@ -67,6 +62,7 @@ class ForeignKeyTranslator implements Translator {
                     }
                     table.foreignKeys.push(foreignKey);
                 });
+                translatedTable.tables.set(relationship.text, table);
             }
         });
         return translatedTable
