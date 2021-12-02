@@ -1,7 +1,18 @@
 import Entity from "../models/entity";
+import Attribute from "../models/attribute"
 import Relationship, { LHConstraint } from "../models/relationship";
 import TranslatedTable, { Table, TableSource, Column, ForeignKey } from "./models/translatedTable";
 import Translator from "./translator";
+
+export const getPrimaryKey = (entity: Entity): Attribute => {
+
+    for (var attribute of entity.attributes ?? []) {
+        if (attribute.isPrimaryKey) {
+            return attribute;
+        }
+    }
+    throw new Error("no primary key found!");
+};
 
 class ForeignKeyTranslator implements Translator {
 
@@ -11,15 +22,6 @@ class ForeignKeyTranslator implements Translator {
     constructor(entities: Map<string, Entity>, relationships: Map<string, Relationship>) {
         this.entities = entities;
         this.relationships = relationships
-    }
-
-    getPrimaryKey(entity: Entity): string {
-        for (var attribute of entity.attributes ?? []) {
-            if (attribute.isPrimaryKey) {
-                return attribute.text;
-            }
-        }
-        throw new Error("no primary key found!");
     }
 
     translateFromDiagramToTable(translatedTable: TranslatedTable): TranslatedTable {
@@ -37,7 +39,7 @@ class ForeignKeyTranslator implements Translator {
             if (oneMany) {
                 const sourceEntity: Entity = this.entities.get(oneManySource)!
                 var table: Table = translatedTable.tables.get(sourceEntity.text)!
-                const key: string = this.getPrimaryKey(sourceEntity)
+                const key: string = getPrimaryKey(sourceEntity).text
                 relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: string) => {
                     if (lhConstraint != LHConstraint.ONE_TO_ONE) {
                         const foreignTable = this.entities.get(entityID)!.text
@@ -53,7 +55,7 @@ class ForeignKeyTranslator implements Translator {
             } else {
                 var table: Table = translatedTable.tables.get(relationship.text)!
                 relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: string) => {
-                    const key: string = this.getPrimaryKey(this.entities.get(entityID)!);
+                    const key: string = getPrimaryKey(this.entities.get(entityID)!).text;
                     const foreignTable = this.entities.get(entityID)!.text
                     const foreignKey: ForeignKey = {
                         keyName: relationship.text + " " + foreignTable,

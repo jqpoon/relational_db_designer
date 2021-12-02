@@ -26,7 +26,7 @@ class FullTranslator {
         });
 
         this.relationships.forEach((relationship: Relationship) => { 
-            const rsTranslator:RelationshipTranslator = new RelationshipTranslator(relationship);
+            const rsTranslator:RelationshipTranslator = new RelationshipTranslator(this.entities, relationship);
             rsTranslator.translateFromDiagramToTable(translatedTable);
         });
 
