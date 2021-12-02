@@ -26,13 +26,19 @@ class ForeignKeyTranslator implements Translator {
         this.relationships.forEach((relationship: Relationship) => {
             var oneMany:boolean = false;
             var oneManySource:string = "-1";
-            console.log(relationship.lHConstraints)
-            relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: string) => {
-                if (lhConstraint == LHConstraint.ONE_TO_ONE) {
-                    oneMany = true;
-                    oneManySource = entityID;
-                }
-            });
+						Object.keys(relationship.lHConstraints).forEach((entityId: string) => {
+							let lhConstraint: LHConstraint = relationship.lHConstraints.get(entityId)!
+							if (lhConstraint === LHConstraint.ONE_TO_ONE) {
+								oneMany = true;
+								oneManySource = entityId;
+							}
+						})
+            // relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: string) => {
+            //     if (lhConstraint == LHConstraint.ONE_TO_ONE) {
+            //         oneMany = true;
+            //         oneManySource = entityID;
+            //     }
+            // });
 
             if (oneMany) {
                 const sourceEntity: Entity = this.entities.get(oneManySource)!

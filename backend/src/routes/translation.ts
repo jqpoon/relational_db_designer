@@ -30,7 +30,15 @@ router.post('/translate', async function (req, res, next) {
     // Parse req body for entities and relationships
     var modelAsJson = req.body;
     var entities: Entity[] = modelAsJson.entities;
-    var relationships: Relationship[] = modelAsJson.relationships;
+    var relationships: Relationship[] = modelAsJson.relationships
+			.map((r: any) => {
+				let map = new Map<string, LHConstraint>()
+				for (var entityId in r.lHConstraints) {
+					map.set(entityId, r.lHConstraints[entityId])
+				}
+				r.lHConstraints = map
+				return r;
+			});
 
     // // Save to database
     // saveAll(entities, relationships);
