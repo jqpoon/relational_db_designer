@@ -10,6 +10,7 @@ export default function Toolbar({
 	addElement,
 	exportStateToObject,
 	importStateFromObject,
+  translate,
 	undo,
 	redo,
 }) {
@@ -108,7 +109,17 @@ export default function Toolbar({
 				>
 					Save
 				</div>
-				<div className="tool">Translate</div>
+        <div className="tool" onClick={() => {
+          axios
+            .post('/translation/translate', exportStateToObject())
+            .then(function (response){
+              translate(response.data);
+            })
+            .catch(function(error){
+              console.log(error);
+            })
+          }}
+          >Translate</div>
 				<div className="tool">Validate</div>
 			</div>
 		</div>

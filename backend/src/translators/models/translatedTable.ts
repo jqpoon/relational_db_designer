@@ -17,7 +17,7 @@ interface Column {
     columnName: string,
     isPrimaryKey: boolean,
     isOptional: boolean
-    // isMulti: boolean
+    isMultiValued: boolean
 }
 
 interface ForeignKey {

@@ -96,3 +96,8 @@ input[type=text]:hover {
   border: 0;
   outline: none;
 }
+
+.translation{
+  display: inline-block;
+  font-size: 12px
+}

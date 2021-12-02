@@ -5,10 +5,10 @@ import Translator from "./translator";
 
 class ForeignKeyTranslator implements Translator {
 
-    entities: Map<Number, Entity>;
-    relationships: Map<Number, Relationship>;
+    entities: Map<string, Entity>;
+    relationships: Map<string, Relationship>;
 
-    constructor(entities: Map<Number, Entity>, relationships: Map<Number, Relationship>) {
+    constructor(entities: Map<string, Entity>, relationships: Map<string, Relationship>) {
         this.entities = entities;
         this.relationships = relationships
     }
@@ -16,7 +16,7 @@ class ForeignKeyTranslator implements Translator {
     getPrimaryKey(entity: Entity): string {
         for (var attribute of entity.attributes ?? []) {
             if (attribute.isPrimaryKey) {
-                return attribute.name;
+                return attribute.text;
             }
         }
         throw new Error("no primary key found!");
@@ -25,42 +25,44 @@ class ForeignKeyTranslator implements Translator {
     translateFromDiagramToTable(translatedTable: TranslatedTable): TranslatedTable {
         this.relationships.forEach((relationship: Relationship) => {
             var oneMany:boolean = false;
-            var oneManySource:Number = -1;
-            console.log(relationship.lHConstraints)
-            relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: Number) => {
-                if (lhConstraint == LHConstraint.ONE_TO_ONE) {
+            var oneManySource:string = "-1";
+            Object.keys(relationship.lHConstraints).forEach((entityId: string) => {
+                let lhConstraint: LHConstraint = relationship.lHConstraints.get(entityId)!
+                if (lhConstraint === LHConstraint.ONE_TO_ONE) {
                     oneMany = true;
-                    oneManySource = entityID;
+                    oneManySource = entityId;
                 }
-            });
+            })
 
             if (oneMany) {
                 const sourceEntity: Entity = this.entities.get(oneManySource)!
-                var table: Table = translatedTable.tables.get(sourceEntity.name)!
+                var table: Table = translatedTable.tables.get(sourceEntity.text)!
                 const key: string = this.getPrimaryKey(sourceEntity)
-                relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: Number) => {
+                relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: string) => {
                     if (lhConstraint != LHConstraint.ONE_TO_ONE) {
-                        const foreignTable = this.entities.get(entityID)!.name
+                        const foreignTable = this.entities.get(entityID)!.text
                         const foreignKey: ForeignKey = {
-                            keyName: sourceEntity.name + " " + foreignTable,
+                            keyName: sourceEntity.text + " " + foreignTable,
                             foreignTable: foreignTable,
                             columns: [key]
                         }
                         table.foreignKeys.push(foreignKey);
                     }
                 });
+                translatedTable.tables.set(sourceEntity.text, table);
             } else {
-                var table: Table = translatedTable.tables.get(relationship.name)!
-                relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: Number) => {
+                var table: Table = translatedTable.tables.get(relationship.text)!
+                relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: string) => {
                     const key: string = this.getPrimaryKey(this.entities.get(entityID)!);
-                    const foreignTable = this.entities.get(entityID)!.name
+                    const foreignTable = this.entities.get(entityID)!.text
                     const foreignKey: ForeignKey = {
-                        keyName: relationship.name + " " + foreignTable,
+                        keyName: relationship.text + " " + foreignTable,
                         foreignTable: foreignTable,
                         columns: [key]
                     }
                     table.foreignKeys.push(foreignKey);
                 });
+                translatedTable.tables.set(relationship.text, table);
             }
         });
         return translatedTable

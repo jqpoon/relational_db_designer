@@ -9,12 +9,12 @@ const router = Router();
 export const saveAll = async (entities: Entity[], relationships: Relationship[]) => {
 
     relationships.map((relationship: Relationship) => {
-        const lHConstraintsConvertion: Map<string, LHConstraint> = new Map()
+        const lHConstraintsConversion: Map<string, LHConstraint> = new Map()
         Object.entries(relationship.lHConstraints).map((values) => {
-            lHConstraintsConvertion.set(values[0], values[1])
+            lHConstraintsConversion.set(values[0], values[1])
         })
 
-        relationship.lHConstraints = lHConstraintsConvertion
+        relationship.lHConstraints = lHConstraintsConversion
     })
 
     await SchemaController.getInstance().addAllEntities(entities)

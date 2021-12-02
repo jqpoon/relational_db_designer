@@ -11,6 +11,7 @@ export const types = {
 
 export const actions = {
   NORMAL: "normal",
+  TRANSLATE: "translate",
   SELECT: {
     NORMAL: "select_normal",
     ADD_RELATIONSHIP: "select_add_relationship",
