@@ -246,6 +246,9 @@ export function addAttributeToNode(
     id: attributeId,
     text: text,
     relativePos: relativePos,
+		isPrimaryKey: false,
+		isMultiValued: false,
+		isOptional: false,
     type: types.ATTRIBUTE,
   };
 
