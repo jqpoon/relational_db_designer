@@ -11,7 +11,14 @@ export function TestRelationship({ relationship, general }) {
   const attributes = Object.values(relationship.attributes).map((attribute) => {
     return <Attribute attribute={attribute} {...general} />;
   });
-  return <Node {...relationship} {...general} children={attributes} />;
+  return (
+    <Node
+      {...relationship}
+      {...general}
+      children={attributes}
+      className="relationship"
+    />
+  );
 }
 
 export function TestEntity({ entity, general }) {
@@ -33,18 +40,19 @@ export function TestEntity({ entity, general }) {
       {generalisations}
     </>
   );
-  return <Node {...entity} {...general} children={children} />;
+  return (
+    <Node
+      {...entity}
+      {...general}
+      children={children}
+      className={entity.isWeak.length === 0 ? "entity" : "weak-entity"}
+    />
+  );
 }
 
 export function Generalisation(props) {
-  return <Node {...props} />;
+  return <Node {...props} className="generalisation" />;
 }
-
-const classFromNodeType = {
-  [types.ENTITY]: "entity",
-  [types.RELATIONSHIP]: "relationship",
-  [types.GENERALISATION]: "generalisation",
-};
 
 // General draggable, editable node
 export default function Node({
@@ -63,6 +71,7 @@ export default function Node({
   setContextMenu,
   children,
   parent,
+  className,
 }) {
   // Reference to self allows info about self to be propagated
   const nodeRef = useRef(null);
@@ -211,7 +220,7 @@ export default function Node({
   // Contents displayed in node
   const editingMode = () => {
     return (
-      <div className={classFromNodeType[type] + "-input"}>
+      <div className={className + "-input"}>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -276,11 +285,11 @@ export default function Node({
   };
 
   const normalMode = (
-    <div style={highlightStyle()} className={classFromNodeType[type]}>
+    <div style={highlightStyle()} className={className}>
       {editable ? (
         editingMode()
       ) : (
-        <div className={classFromNodeType[type] + "-label"}>{text}</div>
+        <div className={className + "-label"}>{text}</div>
       )}
     </div>
   );

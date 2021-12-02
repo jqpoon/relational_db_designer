@@ -133,10 +133,12 @@ function AddingEdge({
         display: "flex",
         justifyContent: "space-between",
         padding: "5px",
+        position: "relative",
       }}
     >
       <div>
-        {nodeType}: {node.text}
+        {node.text}
+        <br />
         {action === actions.SELECT.ADD_RELATIONSHIP ? (
           <CardinalityChoices
             value={target.cardinality}
@@ -144,7 +146,14 @@ function AddingEdge({
           />
         ) : null}
       </div>
-      <div style={{ display: "flex" }}>
+      <div
+        style={{
+          display: "flex",
+          position: "absolute",
+          bottom: "0",
+          right: "0",
+        }}
+      >
         <div onClick={addEdge}>
           <MdCheck />
         </div>
@@ -166,6 +175,7 @@ export function RelationshipAdding(props) {
       target_type: selected.type,
       start: target.id,
       end: selected.id,
+      isKey: false,
       cardinality: target.cardinality,
     };
     return newEdge;
@@ -190,6 +200,7 @@ export function AddingRelationship(props) {
       target_type: target.type,
       start: selected.id,
       end: target.id,
+      isKey: false,
       cardinality: target.cardinality,
     };
     return newEdge;
