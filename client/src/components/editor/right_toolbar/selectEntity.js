@@ -162,7 +162,7 @@ export default function SelectEntity({
           getElement={getElement}
           updateElement={updateElement}
           deleteElement={deleteElement}
-          selected={entity.id}
+          selected={{ id: entity.id, type: types.ENTITY }}
         />
         {context.action === actions.SELECT.ADD_RELATIONSHIP ? (
           <AddingRelationship

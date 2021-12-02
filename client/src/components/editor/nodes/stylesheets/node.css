@@ -6,30 +6,42 @@
   align-items: center;
 }
 
-.entity {
+.entity,
+.weak-entity {
   width: 150px;
   height: 75px;
   border: 1px solid black;
-  background-color: lightblue;
   z-index: 15;
   justify-content: center;
   align-items: center;
   display: table;
 }
 
-.entity-input {
-	display: flex;
-	justify-content: center;
-	margin-top: 20px;
-	width: 100%;
-	align-items: center;
+.entity {
+  background-color: lightblue;
 }
 
-.entity-input input {
-	width: 80%;
-	margin-top: 5px;
+.weak-entity {
+  background-color: palegreen;
 }
-.entity-label, .generalisation-label{
+
+.entity-input,
+.weak-entity-input {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  width: 100%;
+  align-items: center;
+}
+
+.entity-input input,
+.weak-entity-input input {
+  width: 80%;
+  margin-top: 5px;
+}
+.entity-label,
+.generalisation-label,
+.weak-entity-label {
   height: 100%;
   display: table-cell;
   vertical-align: middle;
@@ -72,16 +84,14 @@
 }
 
 .generalisation-input {
-	display: flex;
-	justify-content: center;
-	margin-top: 20px;
-	width: 100%;
-	align-items: center;
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  width: 100%;
+  align-items: center;
 }
 
 .generalisation-input input {
-	width: 80%;
-	margin-top: 5px;
+  width: 80%;
+  margin-top: 5px;
 }
-
-

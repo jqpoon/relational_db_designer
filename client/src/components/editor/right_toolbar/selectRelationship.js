@@ -73,7 +73,7 @@ export default function SelectRelationship({
           getElement={getElement}
           updateElement={updateElement}
           deleteElement={deleteElement}
-          selected={relationship.id}
+          selected={{ id: relationship.id, type: types.RELATIONSHIP }}
         />
         {context.action === actions.SELECT.ADD_RELATIONSHIP ? (
           <RelationshipAdding

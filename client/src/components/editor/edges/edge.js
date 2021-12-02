@@ -2,13 +2,20 @@ import Xarrow from "react-xarrows";
 import { cardinality as cardinality_all, types } from "../types";
 import "./stylesheets/attribute.css";
 
-function RelationshipEdge({ start, end, cardinality }) {
+function RelationshipEdge({ start, end, cardinality, isKey }) {
   console.log("Start:" + start + ", End: " + end);
+  const style = {
+    backgroundColor: "white",
+    padding: "2.5px",
+  };
+  if (isKey) {
+    style["textDecoration"] = "underline";
+  }
   return (
     <Xarrow
       start={start.toString()}
       end={end.toString()}
-      labels={cardinality_all[cardinality]}
+      labels={<div style={style}>{cardinality_all[cardinality]}</div>}
       showHead={false}
       curveness={0}
       endAnchor="middle"

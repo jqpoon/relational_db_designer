@@ -26,6 +26,7 @@ export default function Toolbar({
       },
       text: "Enter Text",
       type: types.ENTITY,
+      isWeak: [],
       edges: {},
       attributes: {},
       generalisations: {},

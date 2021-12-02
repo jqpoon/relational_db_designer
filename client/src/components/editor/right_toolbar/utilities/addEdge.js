@@ -98,10 +98,14 @@ function AddingEdge({
     case actions.SELECT.ADD_SUBSET:
     case actions.SELECT.ADD_SUPERSET:
       console.assert(selected.type === types.ENTITY);
-      if (target.type !== types.ENTITY) {
+      if (
+        target.type !== types.ENTITY &&
+        target.type !== types.GENERALISATION
+      ) {
         warning = (
           <div>
-            ! Target selected as superset/subset must be of 'Entity' type
+            ! Target selected as superset/subset must be of
+            'Entity'/'Generalisation' type
           </div>
         );
       }
@@ -124,7 +128,7 @@ function AddingEdge({
     );
   }
 
-  const node = getElement(target.type, target.id);
+  const node = getElement(target.type, target.id, target.parent);
   const nodeType = typeToString(target.type);
 
   return (
@@ -133,10 +137,12 @@ function AddingEdge({
         display: "flex",
         justifyContent: "space-between",
         padding: "5px",
+        position: "relative",
       }}
     >
       <div>
-        {nodeType}: {node.text}
+        {node.text}
+        <br />
         {action === actions.SELECT.ADD_RELATIONSHIP ? (
           <CardinalityChoices
             value={target.cardinality}
@@ -144,7 +150,14 @@ function AddingEdge({
           />
         ) : null}
       </div>
-      <div style={{ display: "flex" }}>
+      <div
+        style={{
+          display: "flex",
+          position: "absolute",
+          bottom: "0",
+          right: "0",
+        }}
+      >
         <div onClick={addEdge}>
           <MdCheck />
         </div>
@@ -166,6 +179,7 @@ export function RelationshipAdding(props) {
       target_type: selected.type,
       start: target.id,
       end: selected.id,
+      isKey: false,
       cardinality: target.cardinality,
     };
     return newEdge;
@@ -190,6 +204,7 @@ export function AddingRelationship(props) {
       target_type: target.type,
       start: selected.id,
       end: target.id,
+      isKey: false,
       cardinality: target.cardinality,
     };
     return newEdge;
@@ -210,14 +225,17 @@ export function AddingRelationship(props) {
 
 export function AddingSuperset(props) {
   const createEdge = (selected, target) => {
-    const newEdge = {
+    let newEdge = {
       id: generateID(selected.id, target.id),
       type: types.EDGE.HIERARCHY,
-      source_type: selected.type,
-      target_type: target.type,
       child: selected.id,
-      parent: target.id,
     };
+    if (target.type === types.GENERALISATION) {
+      newEdge.parent = target.parent.id;
+      newEdge.generalisation = target.id;
+    } else {
+      newEdge.parent = target.id;
+    }
     return newEdge;
   };
   return <AddingEdge {...props} createEdge={createEdge} />;

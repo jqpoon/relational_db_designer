@@ -32,9 +32,9 @@ function Relationship({
   selected,
 }) {
   const edge = getElement(types.EDGE.RELATIONSHIP, relationship);
-  const targetId = selected === edge.start ? edge.end : edge.start;
+  const targetId = selected.id === edge.start ? edge.end : edge.start;
   const targetType =
-    selected === edge.start ? edge.target_type : edge.source_type;
+    selected.id === edge.start ? edge.target_type : edge.source_type;
   const target = getElement(targetType, targetId);
   // TODO: nested relationship - which do we store as src/target
   const updateCardinality = (card) => {
@@ -42,6 +42,7 @@ function Relationship({
     newRel.cardinality = card;
     updateElement(types.EDGE.RELATIONSHIP, newRel);
   };
+
   return (
     <div
       style={{
@@ -50,12 +51,39 @@ function Relationship({
         padding: "5px",
       }}
     >
-      <div>{target.text}</div>
-      <div style={{ display: "flex" }}>
-        <CardinalityChoices
-          value={edge.cardinality}
-          onChange={(e) => updateCardinality(e.target.value)}
-        />
+      <div>
+        <div>{target.text}</div>
+        <div>
+          <CardinalityChoices
+            value={edge.cardinality}
+            onChange={(e) => updateCardinality(e.target.value)}
+          />
+        </div>
+        {selected.type === types.ENTITY ? (
+          <div>
+            <input
+              type="checkbox"
+              checked={edge.isKey}
+              onChange={() => {
+                let newEdge = { ...edge }; // TODO: should we use getElement instead?
+                newEdge.isKey = !newEdge.isKey;
+                updateElement(types.EDGE.RELATIONSHIP, newEdge);
+                let newNode = getElement(selected.type, selected.id);
+                if (newEdge.isKey) {
+                  newNode.isWeak.push(relationship);
+                } else {
+                  newNode.isWeak = newNode.isWeak.filter((id) => {
+                    return id !== relationship;
+                  });
+                }
+                updateElement(selected.type, newNode);
+              }}
+            />
+            <label style={{ fontWeight: "normal" }}>Toggle as key</label>
+          </div>
+        ) : null}
+      </div>
+      <div>
         <MdClear
           style={{ padding: "5px" }}
           onClick={() => {
