@@ -98,10 +98,14 @@ function AddingEdge({
     case actions.SELECT.ADD_SUBSET:
     case actions.SELECT.ADD_SUPERSET:
       console.assert(selected.type === types.ENTITY);
-      if (target.type !== types.ENTITY) {
+      if (
+        target.type !== types.ENTITY &&
+        target.type !== types.GENERALISATION
+      ) {
         warning = (
           <div>
-            ! Target selected as superset/subset must be of 'Entity' type
+            ! Target selected as superset/subset must be of
+            'Entity'/'Generalisation' type
           </div>
         );
       }
@@ -124,7 +128,7 @@ function AddingEdge({
     );
   }
 
-  const node = getElement(target.type, target.id);
+  const node = getElement(target.type, target.id, target.parent);
   const nodeType = typeToString(target.type);
 
   return (
@@ -221,14 +225,17 @@ export function AddingRelationship(props) {
 
 export function AddingSuperset(props) {
   const createEdge = (selected, target) => {
-    const newEdge = {
+    let newEdge = {
       id: generateID(selected.id, target.id),
       type: types.EDGE.HIERARCHY,
-      source_type: selected.type,
-      target_type: target.type,
       child: selected.id,
-      parent: target.id,
     };
+    if (target.type === types.GENERALISATION) {
+      newEdge.parent = target.parent.id;
+      newEdge.generalisation = target.id;
+    } else {
+      newEdge.parent = target.id;
+    }
     return newEdge;
   };
   return <AddingEdge {...props} createEdge={createEdge} />;
