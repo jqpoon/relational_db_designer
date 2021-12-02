@@ -119,7 +119,7 @@ export default function Toolbar({
           axios
             .post('/translation/translate', exportStateToObject())
             .then(function (response){
-              translate(response);
+              translate(response.data);
             })
             .catch(function(error){
               console.log(error);
