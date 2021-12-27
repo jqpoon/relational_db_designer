@@ -10,6 +10,7 @@ export default function Toolbar({
                                   addElement,
                                   importStateFromObject,
                                   exportStateToObject,
+                                  uploadStateFromObject,
                                   downloadStateAsObject,
                                   translate,
                                   undo,
@@ -124,10 +125,11 @@ export default function Toolbar({
           Translate
         </div>
         <div className="tool">Validate</div>
-        <div className="tool">Import JSON file</div>
-        <div className="tool" onClick={() => {
-          downloadStateAsObject();
-        }}>
+        <div className="tool">
+          <input type="file" onChange={uploadStateFromObject}>
+          </input>
+        </div>
+        <div className="tool" onClick={downloadStateAsObject}>
           Export JSON file
         </div>
       </div>

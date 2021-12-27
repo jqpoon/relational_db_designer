@@ -475,6 +475,16 @@ export default function Editor() {
     return state;
   };
 
+  const uploadStateFromObject = e => {
+    const fileReader = new FileReader();
+    fileReader.readAsText(e.target.files[0], "UTF-8");
+    fileReader.onload = e => {
+      // TODO: Clear existing nodes from whiteboard first.
+      const state = JSON.parse(e.target.result);
+      importStateFromObject(state);
+    };
+  };
+
   const downloadStateAsObject = () => {
     const fileName = "schema.json";
     const blob = new Blob([JSON.stringify(exportStateToObject())], { type: "text/json" });
@@ -516,6 +526,7 @@ export default function Editor() {
     },
     importStateFromObject: importStateFromObject,
     exportStateToObject: exportStateToObject,
+    uploadStateFromObject: uploadStateFromObject,
     downloadStateAsObject: downloadStateAsObject,
     translate: (schema) => {
       setContext({
