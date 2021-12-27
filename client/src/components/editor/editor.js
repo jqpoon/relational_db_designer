@@ -475,6 +475,21 @@ export default function Editor() {
     return state;
   };
 
+  const downloadStateAsObject = () => {
+    const fileName = "schema.json";
+    const blob = new Blob([JSON.stringify(exportStateToObject())], { type: "text/json" });
+    const a = document.createElement("a");
+    a.download = fileName;
+    a.href = window.URL.createObjectURL(blob);
+    const mouseEvent = new MouseEvent('click', {
+      view: window,
+      bubbles: true,
+      cancelable: true,
+    });
+    a.dispatchEvent(mouseEvent);
+    a.remove();
+  };
+
   const elementFunctions = {
     getElement: getElement,
     addElement: addElement,
@@ -499,8 +514,9 @@ export default function Editor() {
         target: null,
       });
     },
-    exportStateToObject,
-    importStateFromObject,
+    importStateFromObject: importStateFromObject,
+    exportStateToObject: exportStateToObject,
+    downloadStateAsObject: downloadStateAsObject,
     translate: (schema) => {
       setContext({
         action: actions.TRANSLATE,

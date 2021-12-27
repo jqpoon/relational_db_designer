@@ -1,21 +1,22 @@
 import Draggable from "react-draggable";
 import axios from "axios";
-import { useRef } from "react";
-import { types } from "./types";
-import { getId } from "./idGenerator";
+import {useRef} from "react";
+import {types} from "./types";
+import {getId} from "./idGenerator";
 import "./stylesheets/toolbar.css";
 
 export default function Toolbar({
-	addEdgeToRelationship,
-	addElement,
-	exportStateToObject,
-	importStateFromObject,
-  translate,
-	undo,
-	redo,
-}) {
-	const entityToolRef = useRef(null);
-	const relationshipToolRef = useRef(null);
+                                  addEdgeToRelationship,
+                                  addElement,
+                                  importStateFromObject,
+                                  exportStateToObject,
+                                  downloadStateAsObject,
+                                  translate,
+                                  undo,
+                                  redo,
+                                }) {
+  const entityToolRef = useRef(null);
+  const relationshipToolRef = useRef(null);
 
   const addEntity = (x, y) => {
     const newEntity = {
@@ -44,7 +45,6 @@ export default function Toolbar({
       },
       text: "",
       type: types.RELATIONSHIP,
-      attributes: {},
       edges: {},
       attributes: {},
     };
@@ -61,7 +61,7 @@ export default function Toolbar({
           entityToolRef.current.state.y = 0;
         }}
       >
-      <div className="create-tool"><span class="grippy"></span> Entity </div>
+        <div className="create-tool"><span class="grippy"></span> Entity</div>
       </Draggable>
       <Draggable
         ref={relationshipToolRef}
@@ -71,7 +71,7 @@ export default function Toolbar({
           relationshipToolRef.current.state.y = 0;
         }}
       >
-         <div className="create-tool"><span class="grippy"></span>Relationship</div>
+        <div className="create-tool"><span class="grippy"></span>Relationship</div>
       </Draggable>
       <div className="footer">
         <div className="tool" onClick={undo}>
@@ -81,48 +81,56 @@ export default function Toolbar({
           Redo
         </div>
         <div
-					className="tool"
-					onClick={() => {
-						axios
-							.get("/schema/all")
-							.then(function (response) {
-								importStateFromObject(response.data);
-							})
-							.catch(function (error) {
-								console.log(error);
-							});
-					}}
-				>
-					Load
-				</div>
-				<div
-					className="tool"
-					onClick={() => {
-						axios
-							.post("/schema/all", exportStateToObject())
-							.then(function (response) {
-								console.log(response);
-							})
-							.catch(function (error) {
-								console.log(error);
-							});
-					}}
-				>
-					Save
-				</div>
+          className="tool"
+          onClick={() => {
+            axios
+              .get("/schema/all")
+              .then(function (response) {
+                importStateFromObject(response.data);
+              })
+              .catch(function (error) {
+                console.log(error);
+              });
+          }}
+        >
+          Load
+        </div>
+        <div
+          className="tool"
+          onClick={() => {
+            axios
+              .post("/schema/all", exportStateToObject())
+              .then(function (response) {
+                console.log(response);
+              })
+              .catch(function (error) {
+                console.log(error);
+              });
+          }}
+        >
+          Save
+        </div>
         <div className="tool" onClick={() => {
           axios
             .post('/translation/translate', exportStateToObject())
-            .then(function (response){
+            .then(function (response) {
               translate(response.data);
             })
-            .catch(function(error){
+            .catch(function (error) {
               console.log(error);
             })
-          }}
-          >Translate</div>
-				<div className="tool">Validate</div>
-			</div>
-		</div>
+        }}
+        >
+          Translate
+        </div>
+        <div className="tool">Validate</div>
+        <div className="tool">Import JSON file</div>
+        <div className="tool" onClick={() => {
+          downloadStateAsObject();
+        }}>
+          Export JSON file
+        </div>
+      </div>
+    </div>
   );
 }
