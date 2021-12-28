@@ -18,10 +18,8 @@ router.post('/signup', function (req, res) {
 
 
 router.post('/login', function (req, res) {
-    const modelAsJson = req.body;
-
-    const email: string = modelAsJson.email ?? undefined;
-    const password: string = modelAsJson.password ?? undefined;
+    const email: string = req.body.email ?? undefined;
+    const password: string = req.body.password ?? undefined;
 
     FirebaseController.getInstance().login(email, password)
 				.then((message: string) =>{
