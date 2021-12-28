@@ -111,6 +111,7 @@ export default function Editor() {
           delete newRelationships[edge.end].edges[edge.id];
         }
       });
+      console.log(newRelationships);
       return newRelationships;
     });
     setEntities((prev) => {
@@ -130,6 +131,7 @@ export default function Editor() {
       });
       // Delete this entity
       delete newEntities[entity.id];
+      console.log(newEntities);
       return newEntities;
     });
     setEdges((prev) => {
@@ -137,6 +139,7 @@ export default function Editor() {
       data.edges.forEach((edge) => {
         delete newEdges[edge.id];
       });
+      console.log(newEdges);
       return newEdges;
     });
     // Return deep copy to be saved in history for un/redo
@@ -145,6 +148,7 @@ export default function Editor() {
     return data;
   };
 
+  // TODO: change isWeak if a key edge deleted
   const deleteRelationship = (relationship) => {
     let data = { node: relationship, edges: [] };
     // Find all edges connected to the relationship
@@ -288,29 +292,43 @@ export default function Editor() {
     [types.ENTITY]: (entity, editType) => {
       switch (editType) {
         case "deleteElement":
-          deleteEntity(entity);
-          break;
+          return deleteEntity(entity);
         default:
+          // Make copy of previous state
+          let data = {
+            node: entities[entity.id], // TODO: does this return null or undefined if id doesn't exist?
+            edges: [],
+          };
+          data = JSON.parse(JSON.stringify(data));
+          // Amend state
           setEntities((prev) => {
             let entities = { ...prev };
             entities[entity.id] = entity;
             return entities;
           });
-          break;
+          // Previous state to be saved to history
+          return data;
       }
     },
     [types.RELATIONSHIP]: (relationship, editType) => {
       switch (editType) {
         case "deleteElement":
-          deleteRelationship(relationship);
-          break;
+          return deleteRelationship(relationship);
         default:
+          // Make copy of previous state
+          let data = {
+            node: relationships[relationship.id],
+            edges: [],
+          };
+          data = JSON.parse(JSON.stringify(data));
+          // Amend state
           setRelationships((prev) => {
             let relationships = { ...prev };
             relationships[relationship.id] = relationship;
             return relationships;
           });
-          break;
+          // Previous state to be saved to history
+          return data;
       }
     },
     [types.ATTRIBUTE]: (attribute, editType) => {
@@ -332,53 +350,65 @@ export default function Editor() {
     [types.GENERALISATION]: (generalisation, editType) => {
       switch (editType) {
         case "deleteElement":
-          deleteGeneralisation(generalisation);
-          break;
+          return deleteGeneralisation(generalisation);
         default:
+          // Make copy of previous state
+          let data = {
+            node: entities[generalisation.parent].generalisations[
+              generalisation.id
+            ],
+            edges: [],
+          };
+          data = JSON.parse(JSON.stringify(data));
+          // Amend state
           setEntities((prev) => {
             let newEntities = { ...prev };
             let parent = newEntities[generalisation.parent.id];
             parent.generalisations[generalisation.id] = generalisation;
             return newEntities;
           });
-          break;
+          // Previous state to be saved to history
+          return data;
       }
     },
     [types.EDGE.RELATIONSHIP]: (edge, editType) => {
       switch (editType) {
         case "deleteElement":
-          deleteRelationshipEdge(edge);
-          break;
+          return deleteRelationshipEdge(edge);
         default:
+          // Make copy of previous state
+          let data = { node: null, edges: [edges[edge.id]] };
+          data = JSON.parse(JSON.stringify(data));
+          // Amend state
           setEdges((prev) => {
             let edges = { ...prev };
             edges[edge.id] = edge;
             return edges;
           });
-          break;
+          // Previous state to be saved to history
+          return data;
       }
     },
     [types.EDGE.HIERARCHY]: (edge, editType) => {
       switch (editType) {
         case "deleteElement":
-          deleteHierarchyEdge(edge);
-          break;
+          return deleteHierarchyEdge(edge);
         default:
+          // Make copy of previous state
+          let data = { node: null, edges: [edges[edge.id]] };
+          data = JSON.parse(JSON.stringify(data));
+          // Amend state
           setEdges((prev) => {
             let edges = { ...prev };
             edges[edge.id] = edge;
             return edges;
           });
-          break;
+          // Previous state to be saved to history
+          return data;
       }
     },
   };
 
-  const nodeFunctionsOpposite = {
-    updateElement: "updateElement",
-    addElement: "deleteElement",
-    deleteElement: "addElement",
-  };
   const deleteElement = (type, element, isHistory) => {
     setElement(type, element, "deleteElement", isHistory);
   };
@@ -389,80 +419,90 @@ export default function Editor() {
     setElement(type, element, "updateElement", isHistory);
   };
   const setElement = (type, element, editType, isHistory) => {
-    if (!isHistory) {
-      const inverse = nodeFunctionsOpposite[editType];
-      addToUndo(inverse, type, element);
-      setRedoStack([]);
+    const data = elementSetters[type](element, editType);
+    addToUndo(editType, data);
+  };
+  /** UNDO, REDO */
+  const addToUndo = (editType, data) => {
+    setUndoStack((prev) => {
+      let newEntry = { action: editType, data: data };
+      let newStack = [...prev, newEntry];
+      if (newStack.length > STACK_LIMIT) {
+        newStack.shift();
+      }
+      return newStack;
+    });
+  };
+
+  const undo = () => {
+    if (undoStack.length === 0) return;
+    let entry = null;
+    setUndoStack((prev) => {
+      let newStack = [...prev];
+      entry = newStack.pop();
+      return newStack;
+    });
+    console.log(`Undo:`);
+    console.log(entry);
+    switch (entry.action) {
+      case "deleteElement":
+        undoDelete(entry.data);
+        break;
+      case "updateElement":
+      case "addElement":
     }
-    elementSetters[type](element, editType);
   };
 
-  const addToUndo = (action, type, elem) =>
-    addToHistory(action, type, elem, true);
-  const addToRedo = (action, type, elem) =>
-    addToHistory(action, type, elem, false);
-  // Utility for adding to undo and redo
-  const addToHistory = (action, type, elem, isUndo) => {
-    // Toggle between undo and redo
-    let state = isUndo ? undoStack : redoStack;
-    let setter = isUndo ? setUndoStack : setRedoStack;
+  const redo = () => {};
 
-    let elemOld = elementGetters[type](elem.id, elem.parent);
-
-    // Build func object (Note that element should be passed in as a copy)
-    let func = {
-      action,
-      type,
-      id: elem.id,
-      // Gets a copy of the old element state if existing
-      // otherwise it is newly created and we pass in ...elem
-      // (note that elem passed in is of new state, so we can't use ...elem directly)
-      element:
-        elemOld === null || Object.keys(elemOld).length === 0
-          ? { ...elem }
-          : { ...elemOld },
-    };
-
-    // Update state within limit
-    let stateClone = [...state, func];
-    if (stateClone.length > STACK_LIMIT) {
-      stateClone.shift();
+  const undoDelete = (data) => {
+    if (data.node) {
+      elementSetters[data.node.type](data.node, "addElement");
     }
-    setter(stateClone);
+    setEdges((prev) => {
+      let newEdges = { ...prev };
+      data.edges.forEach((edge) => {
+        newEdges[edge.id] = edge;
+      });
+      return newEdges;
+    });
+    setEntities((prev) => {
+      let newEntities = { ...prev };
+      data.edges.forEach((edge) => {
+        if (
+          edge.type === types.EDGE.RELATIONSHIP &&
+          edge.source_type === types.ENTITY
+        ) {
+          // TODO refactor addEdge.js into addElement
+          newEntities[edge.start].edges[edge.id] = { type: edge.type };
+        } else if (edge.type === types.EDGE.HIERARCHY) {
+          newEntities[edge.child].edges[edge.id] = { type: edge.type };
+          if (edge.generalisation) {
+            newEntities[edge.parent].generalisations[edge.generalisation].edges[
+              edge.id
+            ] = { type: edge.type };
+          } else {
+            newEntities[edge.parent].edges[edge.id] = { type: edge.type };
+          }
+        }
+      });
+      return newEntities;
+    });
+    setRelationships((prev) => {
+      let newRelationships = { ...prev };
+      data.edges.forEach((edge) => {
+        if (edge.type === types.EDGE.RELATIONSHIP) {
+          if (edge.source_type === types.RELATIONSHIP) {
+            newRelationships[edge.start].edges[edge.id] = { type: edge.type };
+          }
+          newRelationships[edge.end].edges[edge.id] = { type: edge.type };
+        }
+      });
+      return newRelationships;
+    });
   };
 
-  const undo = () => execHistory(true);
-  const redo = () => execHistory(false);
-  // Utility for executing undo and redo
-  const execHistory = (isUndo) => {
-    // Toggle between undo and redo
-    let state = isUndo ? undoStack : redoStack;
-    let setter = isUndo ? setUndoStack : setRedoStack;
-    let addFunc = isUndo ? addToRedo : addToUndo;
-
-    // Nothing to do
-    if (state.length === 0) return;
-
-    // Grab top of stack
-    let stateClone = [...state];
-    let top = stateClone.pop();
-    console.log("TopELEM");
-    console.log(top["element"]);
-    // Add to undo/redo stack current state
-    addFunc(nodeFunctionsOpposite[top["action"]], top["type"], top["element"]);
-
-    // Run and update state
-    // TODO: confirm that element should never be null or empty
-    let element = top["element"];
-    // let element =
-    //   top["element"] && Object.keys(top["element"]).length > 0
-    //     ? top["element"]
-    //     : { ...nodeStates[top["type"]][top["id"]] };
-    elementFunctions[top["action"]](top["type"], element, true);
-    setter(stateClone);
-    setContext({ action: actions.NORMAL });
-  };
-
+  /** IMPORT FROM / EXPORT TO BACKEND */
   // Translates entire model state from backend JSON into client components.
   const importStateFromObject = (state) => {
     let entitiesToAdd = {};
