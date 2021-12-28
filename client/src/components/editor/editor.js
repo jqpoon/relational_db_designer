@@ -226,7 +226,64 @@ export default function Editor() {
     return data;
   };
 
-  // TODO:: refactor similar functions (ent, rel)
+  const deleteRelationshipEdge = (edge) => {
+    let data = { node: null, edges: [edge] };
+    data = JSON.parse(JSON.stringify(data));
+    if (edge.source_type === types.ENTITY) {
+      setEntities((prev) => {
+        let newEntities = { ...prev };
+        let source = newEntities[edge.start];
+        source.isWeak = source.isWeak.filter((id) => id !== edge.id);
+        delete source.edges[edge.id];
+        return newEntities;
+      });
+    }
+    setRelationships((prev) => {
+      let newRelationships = { ...prev };
+      if (edge.source_type === types.RELATIONSHIP) {
+        delete newRelationships[edge.start].edges[edge.id];
+      }
+      delete newRelationships[edge.end].edges[edge.id];
+      return newRelationships;
+    });
+    setEdges((prev) => {
+      let newEdges = { ...prev };
+      data.edges.forEach((edge) => {
+        delete newEdges[edge.id];
+      });
+      return newEdges;
+    });
+    console.log(`deleteRelationshipEdge:`);
+    console.log(data);
+    return data;
+  };
+
+  const deleteHierarchyEdge = (edge) => {
+    let data = { node: null, edges: [edge] };
+    data = JSON.parse(JSON.stringify(data));
+    setEntities((prev) => {
+      let newEntities = { ...prev };
+      delete newEntities[edge.child].edges[edge.id];
+      if (edge.generalisation) {
+        delete newEntities[edge.parent].generalisations[edge.generalisation]
+          .edges[edge.id];
+      } else {
+        delete newEntities[edge.parent].edges[edge.id];
+      }
+      return newEntities;
+    });
+    setEdges((prev) => {
+      let newEdges = { ...prev };
+      data.edges.forEach((edge) => {
+        delete newEdges[edge.id];
+      });
+      return newEdges;
+    });
+    console.log(`deleteHierarchyEdge:`);
+    console.log(data);
+    return data;
+  };
+
   const elementSetters = {
     [types.ENTITY]: (entity, editType) => {
       switch (editType) {
@@ -288,72 +345,32 @@ export default function Editor() {
       }
     },
     [types.EDGE.RELATIONSHIP]: (edge, editType) => {
-      setEdges((prev) => {
-        let edges = { ...prev };
-        switch (editType) {
-          case "deleteElement":
-            // Remove edges from its source and target's edge list
-            let source = elementGetters[edge.source_type](edge.start);
-            let target = elementGetters[edge.target_type](edge.end);
-
-            // If statements in case of race conditions
-            if (source.edges !== undefined) {
-              source.isWeak = source.isWeak.filter((id) => id !== edge.id);
-              delete source.edges[edge.id];
-              updateElement(edge.source_type, source);
-            }
-            if (target.edges !== undefined) {
-              delete target.edges[edge.id];
-              updateElement(edge.target_type, target);
-            }
-
-            delete edges[edge.id];
-            break;
-          default:
+      switch (editType) {
+        case "deleteElement":
+          deleteRelationshipEdge(edge);
+          break;
+        default:
+          setEdges((prev) => {
+            let edges = { ...prev };
             edges[edge.id] = edge;
-        }
-        return edges;
-      });
+            return edges;
+          });
+          break;
+      }
     },
     [types.EDGE.HIERARCHY]: (edge, editType) => {
-      setEdges((prev) => {
-        let edges = { ...prev };
-        switch (editType) {
-          case "deleteElement":
-            delete edges[edge.id];
-            // Remove edges from its source and target's edge list
-            // Hierarchical edges can only exist from entity to entity
-            let source = elementGetters[types.ENTITY](edge.parent);
-            let target = elementGetters[types.ENTITY](edge.child);
-
-            // If statements in case of race conditions
-            if (source.edges !== undefined) {
-              delete source.edges[edge.id];
-            }
-            if (target.edges !== undefined) {
-              delete target.edges[edge.id];
-            }
-
-            // Need to remove edge from the parent's generalisation's edge list,
-            // if this is a generalisation
-            if (edge.hasOwnProperty("generalisation")) {
-              // Check before trying to access generalisation, because there
-              // could be a race condition where the generalisation is deleted
-              // before the edges can get to it.
-              if (edge.generalisation in source.generalisations) {
-                delete source.generalisations[edge.generalisation].edges[
-                  edge.id
-                ];
-                // Maybe refactor to avoid possible train wreck?
-              }
-            }
-
-            break;
-          default:
+      switch (editType) {
+        case "deleteElement":
+          deleteHierarchyEdge(edge);
+          break;
+        default:
+          setEdges((prev) => {
+            let edges = { ...prev };
             edges[edge.id] = edge;
-        }
-        return edges;
-      });
+            return edges;
+          });
+          break;
+      }
     },
   };
 
