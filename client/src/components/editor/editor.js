@@ -119,8 +119,13 @@ export default function Editor() {
       data.edges.forEach((edge) => {
         if (edge.type === types.EDGE.HIERARCHY) {
           // Hierarchical edges can only exist from entity to entity
-          delete newEntities[edge.parent].edges[edge.id];
           delete newEntities[edge.child].edges[edge.id];
+          if (edge.generalisation) {
+            delete newEntities[edge.parent].generalisations[edge.generalisation]
+              .edges[edge.id];
+          } else {
+            delete newEntities[edge.parent].edges[edge.id];
+          }
         }
       });
       // Delete this entity
@@ -186,6 +191,41 @@ export default function Editor() {
     return data;
   };
 
+  const deleteGeneralisation = (generalisation) => {
+    let data = { node: generalisation, edges: [] };
+    // Find all edges connected to the generalisation
+    for (const edgeId of Object.keys(generalisation.edges)) {
+      data.edges.push(edges[edgeId]);
+    }
+    // Deep copy of elements to delete
+    data = JSON.parse(JSON.stringify(data));
+    // Actually delete elements from state
+    setEntities((prev) => {
+      let newEntities = { ...prev };
+      // Delete edge references from nodes
+      data.edges.forEach((edge) => {
+        console.assert(edge.type === types.EDGE.HIERARCHY);
+        delete newEntities[edge.child].edges[edge.id];
+      });
+      // Delete this generalisation
+      delete newEntities[generalisation.parent.id].generalisations[
+        generalisation.id
+      ];
+      return newEntities;
+    });
+    setEdges((prev) => {
+      let newEdges = { ...prev };
+      data.edges.forEach((edge) => {
+        delete newEdges[edge.id];
+      });
+      return newEdges;
+    });
+    // Return deep copy to be saved in history for un/redo
+    console.log(`deleteGeneralisation:`);
+    console.log(data);
+    return data;
+  };
+
   // TODO:: refactor similar functions (ent, rel)
   const elementSetters = {
     [types.ENTITY]: (entity, editType) => {
@@ -233,28 +273,19 @@ export default function Editor() {
       });
     },
     [types.GENERALISATION]: (generalisation, editType) => {
-      // Parent type must be of ENTITY type
-      setEntities((prev) => {
-        let newEntities = { ...prev };
-        let parent = newEntities[generalisation.parent.id];
-        switch (editType) {
-          case "deleteElement":
-            // Delete all edges related to this generalisation
-            for (const [edgeId, edgeInfo] of Object.entries(
-              generalisation.edges
-            )) {
-              deleteElement(edgeInfo.type, initialEdges[edgeId], false);
-            }
-
-            // Warning: Potential race condition here, where the generalisation
-            // is removed from parent before deleteElement can access it
-            delete parent.generalisations[generalisation.id];
-            break;
-          default:
+      switch (editType) {
+        case "deleteElement":
+          deleteGeneralisation(generalisation);
+          break;
+        default:
+          setEntities((prev) => {
+            let newEntities = { ...prev };
+            let parent = newEntities[generalisation.parent.id];
             parent.generalisations[generalisation.id] = generalisation;
-        }
-        return newEntities;
-      });
+            return newEntities;
+          });
+          break;
+      }
     },
     [types.EDGE.RELATIONSHIP]: (edge, editType) => {
       setEdges((prev) => {
