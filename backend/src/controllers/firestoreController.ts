@@ -1,5 +1,5 @@
 import { FirebaseApp } from "firebase/app"
-import { Firestore, getFirestore } from "firebase/firestore"
+import { Firestore, getFirestore, setDoc, doc, DocumentReference } from "firebase/firestore"
 
 class FirestoreController {
 
@@ -17,6 +17,10 @@ class FirestoreController {
         return FirestoreController.instance;
     }
 
+		public createDocumentForNewUser(uid: string): void {
+				const docRef: DocumentReference = doc(this.db, `user_erds/${uid}`);
+				setDoc(docRef, {});
+		}
 }
 
 export default FirestoreController

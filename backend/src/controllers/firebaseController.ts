@@ -32,8 +32,10 @@ class FirebaseController {
         return FirebaseController.instance;
     }
 
-    public signUp(email: string, password: string): Promise<string> {
-        return this.firebaseAuthController.signUp(email, password);
+    public async signUp(email: string, password: string): Promise<string> {
+				const uid: string = await this.firebaseAuthController.signUp(email, password);
+				this.firestoreController.createDocumentForNewUser(uid);
+				return "User created";
     }
 
     public login(email: string, password: string): Promise<string> {
