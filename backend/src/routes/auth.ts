@@ -4,27 +4,35 @@ import FirebaseController from "src/controllers/firebaseController";
 
 const router = Router();
 
-router.post('/signup', async function (req, res, next) {
-    var modelAsJson = req.body;
+router.post('/signup', function (req, res) {
+    const modelAsJson = req.body;
 
-    var email: string = modelAsJson.email ?? undefined;
-    var password: string = modelAsJson.password ?? undefined;
+    const email: string = modelAsJson.email ?? undefined;
+    const password: string = modelAsJson.password ?? undefined;
 
-    var success: boolean = FirebaseController.getInstance().signUp(email, password);
-
-    return res.status(OK).json({SUCCESS: success});
+    FirebaseController.getInstance().signUp(email, password)
+				.then((message: string) =>{
+						res.status(200).send(message);
+				})
+				.catch((error) => {
+						res.status(400).send(error);
+				});
 })
 
 
-router.post('/login', async function (req, res, next) {
-    var modelAsJson = req.body;
+router.post('/login', function (req, res) {
+    const modelAsJson = req.body;
 
-    var email: string = modelAsJson.email ?? undefined;
-    var password: string = modelAsJson.password ?? undefined;
+    const email: string = modelAsJson.email ?? undefined;
+    const password: string = modelAsJson.password ?? undefined;
 
-    var success: boolean = FirebaseController.getInstance().login(email, password);
-
-    return res.status(OK).json({SUCCESS: success});
+    FirebaseController.getInstance().login(email, password)
+				.then((message: string) =>{
+						res.status(200).send(message);
+				})
+				.catch((error) => {
+						res.status(400).send(error);
+				});
 })
 
 export default router

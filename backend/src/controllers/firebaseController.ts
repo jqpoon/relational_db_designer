@@ -25,11 +25,11 @@ class FirebaseController {
         return FirebaseController.instance;
     }
 
-    public signUp(email: string, password: string): boolean {
+    public signUp(email: string, password: string): Promise<string> {
         return this.firebaseAuthController.signUp(email, password);
     }
 
-    public login(email: string, password: string): boolean {
+    public login(email: string, password: string): Promise<string> {
         return this.firebaseAuthController.login(email, password);
     }
 

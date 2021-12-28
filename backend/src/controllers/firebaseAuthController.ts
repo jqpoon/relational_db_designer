@@ -1,5 +1,11 @@
 import { FirebaseApp } from "firebase/app";
-import { Auth, UserCredential, getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { 
+	Auth, 
+	UserCredential, 
+	getAuth, 
+	createUserWithEmailAndPassword, 
+	signInWithEmailAndPassword 
+} from "firebase/auth";
 
 class FirebaseAuthController {
 
@@ -17,48 +23,29 @@ class FirebaseAuthController {
         return FirebaseAuthController.instance;
     }
 
-    private validatePassword(password: string): boolean {
-        return password.length >= 3;
+
+    public signUp(email: string, password: string): Promise<string> {
+			return createUserWithEmailAndPassword(this.auth, email, password).then(
+					() => {
+							return "User has been created";
+					})
+					.catch((error) => {
+							const errorMessage = error.message;
+							throw errorMessage;
+					});
     }
 
-    public signUp(email: string, password: string): boolean {
-        if (this.validatePassword(password)) {
-            createUserWithEmailAndPassword(this.auth, email, password).then(
-                (userCredential: UserCredential) => {
-                    // Signed in
-                    const user = userCredential.user;
-                    console.log(user);
-                    return true;
-                })
-                .catch((error) => {
-                    const errorCode = error.code;
-                    const errorMessage = error.message;
-                    // ..
-                    console.log(errorMessage);
-                    return false;
-                });
-        }
-        return false;
-    }
-
-    public login(email: string, password: string): boolean {
-        if (this.validatePassword(password)) {
-            signInWithEmailAndPassword(this.auth, email, password).then(
-                (userCredential: UserCredential) => {
-                    // Signed in
-                    const user = userCredential.user;
-                    console.log(user);
-                    return true;
-                })
-                .catch((error) => {
-                    const errorCode = error.code;
-                    const errorMessage = error.message;
-                    // ..
-                    console.log(errorMessage);
-                    return false;
-                });
-        }
-        return false;
+    public login(email: string, password: string): Promise<string> {
+			return signInWithEmailAndPassword(this.auth, email, password).then(
+					(userCredential: UserCredential) => {
+							// Signed in
+							const uid = userCredential.user.uid;
+							return uid;
+					})
+					.catch((error) => {
+							const errorMessage = error.message;
+							throw errorMessage;
+					});
     }
 
 }
