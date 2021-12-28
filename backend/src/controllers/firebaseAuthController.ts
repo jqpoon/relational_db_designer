@@ -24,9 +24,9 @@ class FirebaseAuthController {
 
     public async signUp(email: string, password: string): Promise<string> {
 			try {
-					const user: UserCredential = 
+					const userCredential: UserCredential = 
 							await createUserWithEmailAndPassword(this.auth, email, password);
-					return user.user.uid;
+					return userCredential.user.uid;
 			} catch (error: any) {
 					const errorMessage = error.message;
 					throw errorMessage;
@@ -35,9 +35,9 @@ class FirebaseAuthController {
 
     public async login(email: string, password: string): Promise<string> {
 			try {
-					const user: UserCredential = 
+					const userCredential: UserCredential = 
 							await signInWithEmailAndPassword(this.auth, email, password);
-					return user.user.uid;
+					return userCredential.user.uid;
 			} catch (error: any) {
 					const errorMessage = error.message;
 					throw errorMessage;
