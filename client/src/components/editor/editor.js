@@ -140,6 +140,52 @@ export default function Editor() {
     return data;
   };
 
+  const deleteRelationship = (relationship) => {
+    let data = { node: relationship, edges: [] };
+    // Find all edges connected to the relationship
+    for (const edgeId of Object.keys(relationship.edges)) {
+      data.edges.push(edges[edgeId]);
+    }
+    // Deep copy of elements to delete
+    data = JSON.parse(JSON.stringify(data));
+    // Actually delete elements from state
+    setEntities((prev) => {
+      let newEntities = { ...prev };
+      // Delete edge references from nodes
+      data.edges.forEach((edge) => {
+        console.assert(edge.type === types.EDGE.RELATIONSHIP);
+        if (edge.source_type === types.ENTITY) {
+          delete newEntities[edge.start].edges[edge.id];
+        }
+      });
+      return newEntities;
+    });
+    setRelationships((prev) => {
+      let newRelationships = { ...prev };
+      // Delete edge references from nodes
+      data.edges.forEach((edge) => {
+        if (edge.source_type === types.RELATIONSHIP) {
+          delete newRelationships[edge.start].edges[edge.id];
+        }
+        delete newRelationships[edge.end].edges[edge.id];
+      });
+      // Delete this relationship
+      delete newRelationships[relationship.id];
+      return newRelationships;
+    });
+    setEdges((prev) => {
+      let newEdges = { ...prev };
+      data.edges.forEach((edge) => {
+        delete newEdges[edge.id];
+      });
+      return newEdges;
+    });
+    // Return deep copy to be saved in history for un/redo
+    console.log(`deleteRelationship:`);
+    console.log(data);
+    return data;
+  };
+
   // TODO:: refactor similar functions (ent, rel)
   const elementSetters = {
     [types.ENTITY]: (entity, editType) => {
@@ -156,30 +202,20 @@ export default function Editor() {
           break;
       }
     },
-    [types.RELATIONSHIP]: (relationship, editType) =>
-      setRelationships((prev) => {
-        let relationships = { ...prev };
-        switch (editType) {
-          case "deleteElement":
-            // Delete all edges related to this relationship
-            for (const [edgeId, edgeInfo] of Object.entries(
-              relationship.edges
-            )) {
-              deleteElement(edgeInfo.type, initialEdges[edgeId], false);
-            }
-
-            // Since attributes are only stored within the relationship itself,
-            // there is no need to recursively remove attributes.
-
-            // Delete relationship itself, including its attributes
-            delete relationships[relationship.id];
-            break;
-          default:
+    [types.RELATIONSHIP]: (relationship, editType) => {
+      switch (editType) {
+        case "deleteElement":
+          deleteRelationship(relationship);
+          break;
+        default:
+          setRelationships((prev) => {
+            let relationships = { ...prev };
             relationships[relationship.id] = relationship;
-        }
-
-        return relationships;
-      }),
+            return relationships;
+          });
+          break;
+      }
+    },
     [types.ATTRIBUTE]: (attribute, editType) => {
       const setter =
         attribute.parent.type === types.ENTITY ? setEntities : setRelationships;
