@@ -139,12 +139,15 @@ export default function Node({
   // Event handlers
   const onDrag = updateXarrow;
   const onStop = (e, data) => {
-    // Save new position of node
-    let newNode = getElement(type, id, parent);
-    newNode.pos = { x: data.x, y: data.y };
-    updateElement(type, newNode);
-    // Update arrow position
-    updateXarrow(e); // TODO: check function signature of updateXarrow(E, DATA) ?
+    // Update if position of node changed
+    if (data.x !== pos.x || data.y !== pos.y) {
+      // Save new position of node
+      let newNode = getElement(type, id, parent);
+      newNode.pos = { x: data.x, y: data.y };
+      updateElement(type, newNode);
+      // Update arrow position
+      updateXarrow(e); // TODO: check function signature of updateXarrow(E, DATA) ?
+    }
     // Re-enable panning of canvas
     setPanDisabled(false);
   };
