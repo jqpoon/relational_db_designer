@@ -64,3 +64,22 @@ export const deleteEntity = (
   console.log(data);
   return data;
 };
+
+export const updateEntity = (
+  entity,
+  { entities, setEntities, relationships, setRelationships, edges, setEdges }
+) => {
+  let oldEntry = entities[entity.id];
+  let data = { node: oldEntry ? oldEntry : entity, edges: [] };
+  data = JSON.parse(JSON.stringify(data));
+
+  setEntities((prev) => {
+    let newEntities = { ...prev };
+    newEntities[entity.id] = entity;
+    return newEntities;
+  });
+
+  console.log(`updateEntity:`);
+  console.log(data);
+  return data;
+};

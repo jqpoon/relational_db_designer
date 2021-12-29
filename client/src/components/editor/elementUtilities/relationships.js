@@ -1,6 +1,5 @@
 import { types } from "../types";
 
-// TODO: change isWeak if a key edge deleted
 export const deleteRelationship = (
   relationship,
   { entities, setEntities, relationships, setRelationships, edges, setEdges }
@@ -48,6 +47,25 @@ export const deleteRelationship = (
   });
   // Return deep copy to be saved in history for un/redo
   console.log(`deleteRelationship:`);
+  console.log(data);
+  return data;
+};
+
+export const updateRelationship = (
+  relationship,
+  { entities, setEntities, relationships, setRelationships, edges, setEdges }
+) => {
+  let oldEntry = relationships[relationship.id];
+  let data = { node: oldEntry ? oldEntry : relationship, edges: [] };
+  data = JSON.parse(JSON.stringify(data));
+
+  setRelationships((prev) => {
+    let newRelationships = { ...prev };
+    newRelationships[relationship.id] = relationship;
+    return newRelationships;
+  });
+
+  console.log(`updateRelationship:`);
   console.log(data);
   return data;
 };

@@ -37,3 +37,23 @@ export const deleteGeneralisation = (
   console.log(data);
   return data;
 };
+
+export const updateGeneralisation = (
+  generalisation,
+  { entities, setEntities, relationships, setRelationships, edges, setEdges }
+) => {
+  let oldEntry =
+    entities[generalisation.parent].generalisations[generalisation.id];
+  let data = {
+    node: oldEntry ? oldEntry : generalisation,
+    edges: [],
+  };
+  data = JSON.parse(JSON.stringify(data));
+  setEntities((prev) => {
+    let newEntities = { ...prev };
+    let parent = newEntities[generalisation.parent.id];
+    parent.generalisations[generalisation.id] = generalisation;
+    return newEntities;
+  });
+  return data;
+};

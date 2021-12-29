@@ -36,26 +36,6 @@ function AddingEdge({
     if (!validate || validate(target)) {
       const edge = createEdge(selected, target);
       addElement(edge.type, edge);
-      switch (edge.type) {
-        case types.EDGE.RELATIONSHIP:
-          break;
-        case types.EDGE.HIERARCHY:
-          updateNodeWithEdge(edge.child, types.ENTITY, edge);
-          if (edge.generalisation) {
-            updateNodeWithEdge(
-              edge.generalisation,
-              types.GENERALISATION,
-              edge,
-              { id: edge.parent }
-            );
-          } else {
-            updateNodeWithEdge(edge.parent, types.ENTITY, edge);
-          }
-          break;
-        default:
-          console.log(`Invalid edge type: ${edge.type}`);
-      }
-
       reset();
     }
   };

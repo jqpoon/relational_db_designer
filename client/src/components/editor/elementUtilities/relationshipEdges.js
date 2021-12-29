@@ -39,13 +39,10 @@ export const updateRelationshipEdge = (
   edge,
   { entities, setEntities, relationships, setRelationships, edges, setEdges }
 ) => {
-  const oldEntry = edges[edge.id] ? edges[edge.id] : null;
-  console.log("debug");
-  console.log(oldEntry);
-  console.log(edge);
-  let data = { node: null, edges: [oldEntry] };
+  const oldEntry = edges[edge.id];
+  let data = { node: null, edges: [oldEntry ? oldEntry : edge] };
   data = JSON.parse(JSON.stringify(data));
-  if (oldEntry === null) {
+  if (!oldEntry) {
     // Newly added edge, update source and target
     if (edge.source_type === types.ENTITY) {
       setEntities((prev) => {
@@ -74,7 +71,7 @@ export const updateRelationshipEdge = (
       console.assert(edge.source_type === types.ENTITY);
       setEntities((prev) => {
         let newEntities = { ...prev };
-        const parent = newEntities[edge.start]
+        const parent = newEntities[edge.start];
         if (edge.isKey) {
           parent.isWeak.push(edge.id);
         } else {

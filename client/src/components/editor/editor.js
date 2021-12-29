@@ -18,15 +18,28 @@ import { ContextMenu } from "./contextMenus/contextMenu";
 import DisplayTranslation from "./right_toolbar/translationDisplay";
 // import { relationalSchema } from "./right_toolbar/relationalSchemaExample";
 import { getId } from "./idGenerator";
-import { deleteEntity } from "./stateUtilities/entities";
-import { deleteRelationship } from "./stateUtilities/relationships";
-import { deleteGeneralisation } from "./stateUtilities/generalisations";
+import { deleteEntity, updateEntity } from "./elementUtilities/entities";
+import {
+  deleteRelationship,
+  updateRelationship,
+} from "./elementUtilities/relationships";
+import {
+  deleteGeneralisation,
+  updateGeneralisation,
+} from "./elementUtilities/generalisations";
 import {
   deleteRelationshipEdge,
   updateRelationshipEdge,
-} from "./stateUtilities/relationshipEdges";
-import { deleteHierarchyEdge } from "./stateUtilities/hierarchyEdges";
-import { deleteAttribute, updateAttribute } from "./stateUtilities/attributes";
+} from "./elementUtilities/relationshipEdges";
+import {
+  deleteHierarchyEdge,
+  updateHierarchyEdge,
+} from "./elementUtilities/hierarchyEdges";
+import {
+  deleteAttribute,
+  updateAttribute,
+} from "./elementUtilities/attributes";
+import { addToUndo, undo } from "./historyUtilities/undo";
 
 // TODO: update left,right toolbar to match new data structures
 // TODO: add initial attributes to initial.js + implement position update based on parent node of the attribute
@@ -34,8 +47,6 @@ import { deleteAttribute, updateAttribute } from "./stateUtilities/attributes";
 // TODO: implement node editing by merging into actions + context
 // TODO: extract common base node in node.js
 // TODO: figure out where parentref should go and update render appropriately
-
-const STACK_LIMIT = 25;
 
 export default function Editor() {
   // Canvas states: passed to children for metadata (eg width and height of main container)
@@ -67,6 +78,13 @@ export default function Editor() {
     edges: edges,
     setEdges: setEdges,
   };
+  const historyAndSetters = {
+    undoStack: undoStack,
+    setUndoStack: setUndoStack,
+    redoStack: redoStack,
+    setRedoStack: setRedoStack,
+  };
+
   const resetClick = (e) => {
     if (e.target.classList.contains("canvas")) {
       setContext({ action: actions.NORMAL });
@@ -107,20 +125,7 @@ export default function Editor() {
         case "deleteElement":
           return deleteEntity(entity, elementAndSetters);
         default:
-          // Make copy of previous state
-          let data = {
-            node: entities[entity.id], // TODO: does this return null or undefined if id doesn't exist?
-            edges: [],
-          };
-          data = JSON.parse(JSON.stringify(data));
-          // Amend state
-          setEntities((prev) => {
-            let entities = { ...prev };
-            entities[entity.id] = entity;
-            return entities;
-          });
-          // Previous state to be saved to history
-          return data;
+          return updateEntity(entity, elementAndSetters);
       }
     },
     [types.RELATIONSHIP]: (relationship, editType) => {
@@ -128,20 +133,7 @@ export default function Editor() {
         case "deleteElement":
           return deleteRelationship(relationship, elementAndSetters);
         default:
-          // Make copy of previous state
-          let data = {
-            node: relationships[relationship.id],
-            edges: [],
-          };
-          data = JSON.parse(JSON.stringify(data));
-          // Amend state
-          setRelationships((prev) => {
-            let relationships = { ...prev };
-            relationships[relationship.id] = relationship;
-            return relationships;
-          });
-          // Previous state to be saved to history
-          return data;
+          return updateRelationship(relationship, elementAndSetters);
       }
     },
     [types.ATTRIBUTE]: (attribute, editType) => {
@@ -157,23 +149,7 @@ export default function Editor() {
         case "deleteElement":
           return deleteGeneralisation(generalisation, elementAndSetters);
         default:
-          // Make copy of previous state
-          let data = {
-            node: entities[generalisation.parent].generalisations[
-              generalisation.id
-            ],
-            edges: [],
-          };
-          data = JSON.parse(JSON.stringify(data));
-          // Amend state
-          setEntities((prev) => {
-            let newEntities = { ...prev };
-            let parent = newEntities[generalisation.parent.id];
-            parent.generalisations[generalisation.id] = generalisation;
-            return newEntities;
-          });
-          // Previous state to be saved to history
-          return data;
+          return updateGeneralisation(generalisation, elementAndSetters);
       }
     },
     [types.EDGE.RELATIONSHIP]: (edge, editType) => {
@@ -189,17 +165,7 @@ export default function Editor() {
         case "deleteElement":
           return deleteHierarchyEdge(edge, elementAndSetters);
         default:
-          // Make copy of previous state
-          let data = { node: null, edges: [edges[edge.id]] };
-          data = JSON.parse(JSON.stringify(data));
-          // Amend state
-          setEdges((prev) => {
-            let edges = { ...prev };
-            edges[edge.id] = edge;
-            return edges;
-          });
-          // Previous state to be saved to history
-          return data;
+          return updateHierarchyEdge(edge, elementAndSetters);
       }
     },
   };
@@ -215,93 +181,10 @@ export default function Editor() {
   };
   const setElement = (type, element, editType, isHistory) => {
     const data = elementSetters[type](element, editType);
-    addToUndo(editType, data);
-  };
-  /** UNDO, REDO */
-  const addToUndo = (editType, data) => {
-    setUndoStack((prev) => {
-      let newEntry = { action: editType, data: data };
-      let newStack = [...prev, newEntry];
-      if (newStack.length > STACK_LIMIT) {
-        newStack.shift();
-      }
-      return newStack;
-    });
-  };
-
-  const undo = () => {
-    if (undoStack.length === 0) return;
-    let entry = null;
-    setUndoStack((prev) => {
-      let newStack = [...prev];
-      entry = newStack.pop();
-      return newStack;
-    });
-    console.log(`Undo:`);
-    console.log(entry);
-    switch (entry.action) {
-      case "deleteElement":
-        undoDelete(entry.data);
-        break;
-      case "updateElement":
-      case "addElement":
-    }
+    addToUndo(editType, data, historyAndSetters);
   };
 
   const redo = () => {};
-
-  const undoDelete = (data) => {
-    if (data.node) {
-      elementSetters[data.node.type](data.node, "addElement");
-    }
-    setEdges((prev) => {
-      let newEdges = { ...prev };
-      data.edges.forEach((edge) => {
-        newEdges[edge.id] = edge;
-      });
-      return newEdges;
-    });
-    setEntities((prev) => {
-      let newEntities = { ...prev };
-      data.edges.forEach((edge) => {
-        if (
-          edge.type === types.EDGE.RELATIONSHIP &&
-          edge.source_type === types.ENTITY
-        ) {
-          // TODO refactor addEdge.js into addElement
-          const parent = newEntities[edge.start];
-          parent.edges[edge.id] = { type: edge.type };
-          if (edge.isKey) {
-            if (parent.isWeak.indexOf(edge.id) === -1) {
-              parent.isWeak.push(edge.id);
-            }
-          }
-        } else if (edge.type === types.EDGE.HIERARCHY) {
-          newEntities[edge.child].edges[edge.id] = { type: edge.type };
-          if (edge.generalisation) {
-            newEntities[edge.parent].generalisations[edge.generalisation].edges[
-              edge.id
-            ] = { type: edge.type };
-          } else {
-            newEntities[edge.parent].edges[edge.id] = { type: edge.type };
-          }
-        }
-      });
-      return newEntities;
-    });
-    setRelationships((prev) => {
-      let newRelationships = { ...prev };
-      data.edges.forEach((edge) => {
-        if (edge.type === types.EDGE.RELATIONSHIP) {
-          if (edge.source_type === types.RELATIONSHIP) {
-            newRelationships[edge.start].edges[edge.id] = { type: edge.type };
-          }
-          newRelationships[edge.end].edges[edge.id] = { type: edge.type };
-        }
-      });
-      return newRelationships;
-    });
-  };
 
   /** IMPORT FROM / EXPORT TO BACKEND */
   // Translates entire model state from backend JSON into client components.
@@ -449,7 +332,9 @@ export default function Editor() {
     addElement: addElement,
     updateElement: updateElement,
     deleteElement: deleteElement,
-    undo: undo,
+    undo: () => {
+      undo(historyAndSetters, elementAndSetters, elementSetters);
+    },
     setEditableId: setEditableId,
   };
 
