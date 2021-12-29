@@ -38,8 +38,6 @@ function AddingEdge({
       addElement(edge.type, edge);
       switch (edge.type) {
         case types.EDGE.RELATIONSHIP:
-          updateNodeWithEdge(edge.start, edge.source_type, edge);
-          updateNodeWithEdge(edge.end, edge.target_type, edge);
           break;
         case types.EDGE.HIERARCHY:
           updateNodeWithEdge(edge.child, types.ENTITY, edge);

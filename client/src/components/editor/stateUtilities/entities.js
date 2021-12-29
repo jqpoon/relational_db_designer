@@ -4,6 +4,7 @@ export const deleteEntity = (
   entity,
   { entities, setEntities, relationships, setRelationships, edges, setEdges }
 ) => {
+  console.log(entity);
   let data = { node: entity, edges: [] };
   // Find all edges connected directly to the entity
   for (const edgeId of Object.keys(entity.edges)) {

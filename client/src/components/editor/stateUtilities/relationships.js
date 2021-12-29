@@ -19,7 +19,9 @@ export const deleteRelationship = (
     data.edges.forEach((edge) => {
       console.assert(edge.type === types.EDGE.RELATIONSHIP);
       if (edge.source_type === types.ENTITY) {
-        delete newEntities[edge.start].edges[edge.id];
+        const parent = newEntities[edge.start];
+        parent.isWeak = parent.isWeak.filter((id) => id !== edge.id);
+        delete parent.edges[edge.id];
       }
     });
     return newEntities;

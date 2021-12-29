@@ -21,7 +21,10 @@ import { getId } from "./idGenerator";
 import { deleteEntity } from "./stateUtilities/entities";
 import { deleteRelationship } from "./stateUtilities/relationships";
 import { deleteGeneralisation } from "./stateUtilities/generalisations";
-import { deleteRelationshipEdge } from "./stateUtilities/relationshipEdges";
+import {
+  deleteRelationshipEdge,
+  updateRelationshipEdge,
+} from "./stateUtilities/relationshipEdges";
 import { deleteHierarchyEdge } from "./stateUtilities/hierarchyEdges";
 import { deleteAttribute, updateAttribute } from "./stateUtilities/attributes";
 
@@ -178,17 +181,7 @@ export default function Editor() {
         case "deleteElement":
           return deleteRelationshipEdge(edge, elementAndSetters);
         default:
-          // Make copy of previous state
-          let data = { node: null, edges: [edges[edge.id]] };
-          data = JSON.parse(JSON.stringify(data));
-          // Amend state
-          setEdges((prev) => {
-            let edges = { ...prev };
-            edges[edge.id] = edge;
-            return edges;
-          });
-          // Previous state to be saved to history
-          return data;
+          return updateRelationshipEdge(edge, elementAndSetters);
       }
     },
     [types.EDGE.HIERARCHY]: (edge, editType) => {
@@ -276,7 +269,13 @@ export default function Editor() {
           edge.source_type === types.ENTITY
         ) {
           // TODO refactor addEdge.js into addElement
-          newEntities[edge.start].edges[edge.id] = { type: edge.type };
+          const parent = newEntities[edge.start];
+          parent.edges[edge.id] = { type: edge.type };
+          if (edge.isKey) {
+            if (parent.isWeak.indexOf(edge.id) === -1) {
+              parent.isWeak.push(edge.id);
+            }
+          }
         } else if (edge.type === types.EDGE.HIERARCHY) {
           newEntities[edge.child].edges[edge.id] = { type: edge.type };
           if (edge.generalisation) {
