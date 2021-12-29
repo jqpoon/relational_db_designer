@@ -10,7 +10,7 @@ const router = Router();
 	- Get ERD
 	- We need to know which ERD (ERid) to get and if the user (Uid) has access
 */
-router.get("/erd", function (req, res) {
+router.get("/", function (req, res) {
 	res.sendStatus(200);
 });
 
@@ -19,8 +19,19 @@ router.get("/erd", function (req, res) {
 	- Create ERD
 	- We need to know which user (Uid) created it
 */
-router.post("/erd", function (req, res) {
-	res.sendStatus(200);
+router.post("/", function (req, res) {
+	if (req.query.Uid === undefined || req.body.data === undefined) {
+		return res.sendStatus(400);
+	}
+	const uid: string = req.query.Uid as string;
+	const data: string = JSON.stringify(req.body.data as string);
+	FirebaseController.getInstance().createERD(uid, data)
+		.then(() => {
+			res.status(200).send(`ERD created for ${uid}`);
+		})
+		.catch((error) => {
+			res.status(501).send(error);
+		});
 });
 
 /*
@@ -28,7 +39,7 @@ router.post("/erd", function (req, res) {
 	- Update ERD
 	- We need to know which ERD (ERid) to update and if the user (Uid) has access
 */
-router.put('/erd', function (req, res) {
+router.put('/', function (req, res) {
 	res.sendStatus(200);
 });
 
@@ -38,7 +49,7 @@ router.put('/erd', function (req, res) {
 		- ERD (ERid) can only be deleted by the owner (Uid)
 		- All Firestore collections need to be updated
 */
-router.delete('/erd', function (req, res) {
+router.delete('/', function (req, res) {
 	res.sendStatus(200);
 });
 
