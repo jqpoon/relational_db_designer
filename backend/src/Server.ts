@@ -12,6 +12,7 @@ import BaseRouter from './routes';
 import SchemaRouter from './routes/schema';
 import AuthRouter from './routes/auth';
 import ERDRouter from "./routes/erd";
+import CollabRouter from "./routes/collab"
 import logger from '@shared/Logger';
 
 import swaggerUi from 'swagger-ui-express';
@@ -44,7 +45,8 @@ if (process.env.NODE_ENV === 'production') {
 // Add APIs
 app.use('/api', BaseRouter);
 app.use('/schema', SchemaRouter);
-app.use('/erd', ERDRouter)
+app.use('/erd', ERDRouter);
+app.use('/collab', CollabRouter);
 app.use('/auth', AuthRouter);
 app.use(
     "/docs",
