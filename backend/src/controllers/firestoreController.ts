@@ -50,7 +50,7 @@ class FirestoreController {
 		public async createERD(uid: string, json: string): Promise<string> {
 				const data: ERDSchema = {
 					owner: uid,
-					data: json
+					data: JSON.parse(json)
 				}
 				const ref: CollectionReference = collection(this.db, "erds_list");
 				let docRef: DocumentReference = await addDoc(ref, data);
@@ -103,6 +103,11 @@ class FirestoreController {
 			const docRef: DocumentReference = doc(this.db, `erds_list/${erid}`);
 			const docData: DocumentSnapshot = await getDoc(docRef);
 			return JSON.stringify(docData.get("data"));
+		}
+
+		public async updateERD(erid: string, json: string): Promise<void> {
+			const docRef: DocumentReference = doc(this.db, `erds_list/${erid}`);
+			await setDoc(docRef, JSON.parse(json));
 		}
 }
 

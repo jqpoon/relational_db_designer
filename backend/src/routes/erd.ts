@@ -21,8 +21,12 @@ router.get("/", function (req, res) {
 		.then((data: string) => {
 			res.status(200).send(data);
 		})
-		.catch((error: ErrorBuilder) => {
-			res.status(error.getCode()).send(error.getMsg());
+		.catch((error) => {
+			if (error instanceof ErrorBuilder) {
+				res.status(error.getCode()).send(error.getMsg());
+			} else {
+				res.status(501).send("An error occured. Please try again later");
+			}
 		});
 });
 
@@ -41,8 +45,12 @@ router.post("/", function (req, res) {
 		.then(() => {
 			res.status(200).send(`ERD created for ${uid}`);
 		})
-		.catch(() => {
-			res.status(501).send("An error occured. Please try again later");
+		.catch((error) => {
+			if (error instanceof ErrorBuilder) {
+				res.status(error.getCode()).send(error.getMsg());
+			} else {
+				res.status(501).send("An error occured. Please try again later");
+			}
 		});
 });
 
@@ -52,7 +60,26 @@ router.post("/", function (req, res) {
 	- We need to know which ERD (ERid) to update and if the user (Uid) has access
 */
 router.put('/', function (req, res) {
-	res.sendStatus(200);
+	if (req.query.Uid === undefined || 
+		req.query.ERid === undefined || 
+		req.body.data === undefined) {
+		return res.sendStatus(400);
+	}
+	const uid: string = req.query.Uid as string;
+	const erid: string = req.query.ERid as string;
+	const data: string = JSON.stringify(req.body.data as string);
+
+	FirebaseController.getInstance().updateERD(uid, erid, data)
+		.then(() => {
+			res.status(200).send("ERD successfully updated");
+		})
+		.catch((error) => {
+			if (error instanceof ErrorBuilder) {
+				res.status(error.getCode()).send(error.getMsg());
+			} else {
+				res.status(501).send("An error occured. Please try again later");
+			}
+		});
 });
 
 /*

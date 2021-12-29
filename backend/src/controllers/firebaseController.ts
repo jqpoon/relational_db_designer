@@ -56,9 +56,17 @@ class FirebaseController {
 				const exists: boolean = await this.firestoreController.checkExist(erid);
 				if (!exists) throw new ErrorBuilder(404, "ERD does not exist");
 				const canAccess: boolean = await this.firestoreController.checkAccess(uid, erid);
-				if (!canAccess) throw new ErrorBuilder(403, "ERD cannot be accessed");
+				if (!canAccess) throw new ErrorBuilder(403, "You do not have permission to access");
 				const data: string = await this.firestoreController.getERD(erid);
 				return data;
+		}
+
+		public async updateERD(uid: string, erid: string, json: string): Promise<void> {
+				const exists: boolean = await this.firestoreController.checkExist(erid);
+				if (!exists) throw new ErrorBuilder(404, "ERD does not exist");
+				const canAccess: boolean = await this.firestoreController.checkAccess(uid, erid);
+				if (!canAccess) throw new ErrorBuilder(403, "You do not have permission to access");
+				await this.firestoreController.updateERD(erid, json);
 		}
 }
 
