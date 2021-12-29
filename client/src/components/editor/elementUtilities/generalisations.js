@@ -42,8 +42,10 @@ export const updateGeneralisation = (
   generalisation,
   { entities, setEntities, relationships, setRelationships, edges, setEdges }
 ) => {
+  console.log(generalisation);
+  console.log(entities);
   let oldEntry =
-    entities[generalisation.parent].generalisations[generalisation.id];
+    entities[generalisation.parent.id].generalisations[generalisation.id];
   let data = {
     node: oldEntry ? oldEntry : generalisation,
     edges: [],

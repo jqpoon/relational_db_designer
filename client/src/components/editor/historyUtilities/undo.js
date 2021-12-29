@@ -1,3 +1,4 @@
+import { deletes, updates } from "../elementUtilities/delete";
 import { types } from "../types";
 
 const STACK_LIMIT = 25;
@@ -13,11 +14,9 @@ export const addToUndo = (editType, data, { setUndoStack }) => {
   });
 };
 
-export const undo = (
-  { undoStack, setUndoStack },
-  elementAndSetters,
-  elementSetters
-) => {
+export const undo = ({ undoStack, setUndoStack }, elementAndSetters) => {
+  console.log(`Undo:`);
+
   if (undoStack.length === 0) return;
   let entry = null;
   setUndoStack((prev) => {
@@ -25,24 +24,32 @@ export const undo = (
     entry = newStack.pop();
     return newStack;
   });
-  console.log(`Undo:`);
+
   console.log(entry);
-  switch (entry.action) {
-    case "deleteElement":
-      undoDelete(entry.data, elementAndSetters, elementSetters);
-      break;
-    case "updateElement":
-    case "addElement":
-  }
+  undoInverses[entry.action](entry.data, elementAndSetters);
 };
 
-const undoDelete = (
-  data,
-  { entities, setEntities, relationships, setRelationships, edges, setEdges },
-  elementSetters
-) => {
+const undoUpdate = (data, elementAndSetters) => {
+  let element = data.node ? data.node : data.edges[0];
+  updates[element.type](element, elementAndSetters);
+};
+
+const undoAdd = (data, elementAndSetters) => {
+  let element = data.node ? data.node : data.edges[0];
+  deletes[element.type](element, elementAndSetters);
+};
+
+const undoDelete = (data, elementAndSetters) => {
+  let {
+    entities,
+    setEntities,
+    relationships,
+    setRelationships,
+    edges,
+    setEdges,
+  } = elementAndSetters;
   if (data.node) {
-    elementSetters[data.node.type](data.node, "addElement");
+    updates[data.node.type](data.node, elementAndSetters);
   }
   setEdges((prev) => {
     let newEdges = { ...prev };
@@ -91,4 +98,10 @@ const undoDelete = (
     });
     return newRelationships;
   });
+};
+
+const undoInverses = {
+  deleteElement: undoDelete,
+  updateElement: undoUpdate,
+  addElement: undoAdd,
 };

@@ -34,7 +34,7 @@ export const updateHierarchyEdge = (
   { entities, setEntities, relationships, setRelationships, edges, setEdges }
 ) => {
   let oldEntry = edges[edge.id];
-  let data = { node: null, edge: [oldEntry ? oldEntry : edge] };
+  let data = { node: null, edges: [oldEntry ? oldEntry : edge] };
   data = JSON.parse(JSON.stringify(data));
 
   if (!oldEntry) {

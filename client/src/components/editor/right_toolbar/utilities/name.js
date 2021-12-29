@@ -1,7 +1,7 @@
 export function Name({ id, type, parent, getElement, updateElement }) {
   const node = getElement(type, id, parent);
   const updateName = (name) => {
-    let newNode = getElement(type, id);
+    let newNode = getElement(type, id, parent);
     newNode.text = name;
     updateElement(type, newNode);
   };

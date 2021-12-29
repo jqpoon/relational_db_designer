@@ -14,6 +14,7 @@ import { getId } from "../idGenerator";
 import { Name } from "./utilities/name";
 import { Relationships } from "./utilities/relationship";
 import { MdClear } from "react-icons/md";
+import Normal from "./normal";
 
 export function Generalisation({
   generalisation,
@@ -75,6 +76,10 @@ export default function SelectEntity({
 }) {
   // For use with adding subsets under generalisations
   const [selectedGeneralisation, setGeneralisation] = useState(null);
+  if (!entity) {
+    setContext({ action: actions.NORMAL });
+    return <Normal />;
+  }
 
   const updateAction = (action) => {
     setContext((ctx) => {

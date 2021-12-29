@@ -40,6 +40,7 @@ import {
   updateAttribute,
 } from "./elementUtilities/attributes";
 import { addToUndo, undo } from "./historyUtilities/undo";
+import { deletes, updates } from "./elementUtilities/delete";
 
 // TODO: update left,right toolbar to match new data structures
 // TODO: add initial attributes to initial.js + implement position update based on parent node of the attribute
@@ -110,7 +111,7 @@ export default function Editor() {
     [types.GENERALISATION]: (id, parent) => {
       // Parent must be of ENTITY type
       const parentNode = elementGetters[types.ENTITY](parent.id);
-      return { ...parentNode.generalisations[id] };
+      return { ...parentNode?.generalisations[id] };
     },
     [types.EDGE.RELATIONSHIP]: getEdge,
     [types.EDGE.HIERARCHY]: getEdge,
@@ -170,18 +171,17 @@ export default function Editor() {
     },
   };
 
-  const deleteElement = (type, element, isHistory) => {
-    setElement(type, element, "deleteElement", isHistory);
+  const deleteElement = (type, element) => {
+    const data = deletes[type](element, elementAndSetters);
+    addToUndo("deleteElement", data, historyAndSetters);
   };
   const addElement = (type, element, isHistory) => {
-    setElement(type, element, "addElement", isHistory);
+    const data = updates[type](element, elementAndSetters);
+    addToUndo("addElement", data, historyAndSetters);
   };
   const updateElement = (type, element, isHistory) => {
-    setElement(type, element, "updateElement", isHistory);
-  };
-  const setElement = (type, element, editType, isHistory) => {
-    const data = elementSetters[type](element, editType);
-    addToUndo(editType, data, historyAndSetters);
+    const data = updates[type](element, elementAndSetters);
+    addToUndo("updateElement", data, historyAndSetters);
   };
 
   const redo = () => {};
@@ -333,7 +333,7 @@ export default function Editor() {
     updateElement: updateElement,
     deleteElement: deleteElement,
     undo: () => {
-      undo(historyAndSetters, elementAndSetters, elementSetters);
+      undo(historyAndSetters, elementAndSetters);
     },
     setEditableId: setEditableId,
   };
@@ -361,7 +361,7 @@ export default function Editor() {
         tables: schema.translatedtables.tables,
       });
     },
-    undo: undo,
+    undo: () => undo(historyAndSetters, elementAndSetters),
     redo: redo,
   };
 
