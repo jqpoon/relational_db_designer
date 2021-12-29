@@ -44,12 +44,7 @@ class FirebaseController {
     }
 
 		public async createERD(uid: string, json: string): Promise<void> {
-				// Create actual ERD
-				const erid: string = await this.firestoreController.createERD(uid, json);
-				const name: string = JSON.parse(json).name as string;
-				// Give user access to ERD and set as owner
-				this.firestoreController.addERDToUser(uid, erid, name);
-				this.firestoreController.addUserToERD(uid, erid, "OWNER");
+				await this.firestoreController.createERD(uid, json);
 		}
 
 		public async getERD(uid: string, erid: string): Promise<string> {

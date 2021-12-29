@@ -53,39 +53,37 @@ class FirestoreController {
 		setDoc(docRef, {});
 	}
 
-	// Store ERD as JSON and create doc to store list of users that can access it
-	public async createERD(uid: string, json: string): Promise<string> {
+	public async createERD(uid: string, json: string): Promise<void> {
+		// Store ERD
 		const data: ERDSchema = {
 			owner: uid,
 			data: JSON.parse(json)
 		}
 		const ref: CollectionReference = collection(this.db, "erds_list");
 		let docRef: DocumentReference = await addDoc(ref, data);
-
+		
 		const erid: string = docRef.id;
-
+		
+		// create doc to store list of users that can access it
 		docRef = doc(this.db, `erd_users/${erid}`);
 		setDoc(docRef, {});
 
-		return erid;
-	}
-
-	public addERDToUser(uid: string, erid: string, name: string): void {
-		const docRef: DocumentReference = doc(this.db, `user_erds/${uid}`);
+		// Give access to user
+		const name: string = JSON.parse(json).name as string;
+		docRef = doc(this.db, `user_erds/${uid}`);
 		updateDoc(docRef, {
 			erds: arrayUnion({
 				erid,
 				name
 			})
 		});
-	}
 
-	public addUserToERD(uid: string, erid: string, permission: string): void {
-		const docRef: DocumentReference = doc(this.db, `erd_users/${erid}`);
+		// Update user as owner on ERD
+		docRef = doc(this.db, `erd_users/${erid}`);
 		updateDoc(docRef, {
 			users: arrayUnion({
 				uid,
-				permission
+				permission: "OWNER"
 			})
 		});
 	}
