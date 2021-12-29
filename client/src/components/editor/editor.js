@@ -18,6 +18,12 @@ import { ContextMenu } from "./contextMenus/contextMenu";
 import DisplayTranslation from "./right_toolbar/translationDisplay";
 // import { relationalSchema } from "./right_toolbar/relationalSchemaExample";
 import { getId } from "./idGenerator";
+import { deleteEntity } from "./stateUtilities/entities";
+import { deleteRelationship } from "./stateUtilities/relationships";
+import { deleteGeneralisation } from "./stateUtilities/generalisations";
+import { deleteRelationshipEdge } from "./stateUtilities/relationshipEdges";
+import { deleteHierarchyEdge } from "./stateUtilities/hierarchyEdges";
+import { deleteAttribute, updateAttribute } from "./stateUtilities/attributes";
 
 // TODO: update left,right toolbar to match new data structures
 // TODO: add initial attributes to initial.js + implement position update based on parent node of the attribute
@@ -50,6 +56,14 @@ export default function Editor() {
 
   const [contextMenu, setContextMenu] = useState(null);
 
+  const elementAndSetters = {
+    entities: entities,
+    setEntities: setEntities,
+    relationships: relationships,
+    setRelationships: setRelationships,
+    edges: edges,
+    setEdges: setEdges,
+  };
   const resetClick = (e) => {
     if (e.target.classList.contains("canvas")) {
       setContext({ action: actions.NORMAL });
@@ -84,215 +98,11 @@ export default function Editor() {
     return elementGetters[type](id, parent);
   };
 
-  const deleteEntity = (entity) => {
-    let data = { node: entity, edges: [] };
-    // Find all edges connected directly to the entity
-    for (const edgeId of Object.keys(entity.edges)) {
-      data.edges.push(edges[edgeId]);
-    }
-    // Find all edges connected to the entity via a generalisation
-    for (const generalisation of Object.values(entity.generalisations)) {
-      for (const edgeId of Object.keys(generalisation.edges)) {
-        data.edges.push(edges[edgeId]);
-      }
-    }
-    // Deep copy of elements to delete
-    data = JSON.parse(JSON.stringify(data));
-    // Actually delete elements from state
-    setRelationships((prev) => {
-      let newRelationships = { ...prev };
-      // Delete edge references from nodes
-      data.edges.forEach((edge) => {
-        if (edge.type === types.EDGE.RELATIONSHIP) {
-          console.assert(
-            edge.source_type === types.ENTITY && edge.start === entity.id
-          );
-          console.assert(edge.target_type === types.RELATIONSHIP);
-          delete newRelationships[edge.end].edges[edge.id];
-        }
-      });
-      console.log(newRelationships);
-      return newRelationships;
-    });
-    setEntities((prev) => {
-      let newEntities = { ...prev };
-      // Delete edge references from nodes
-      data.edges.forEach((edge) => {
-        if (edge.type === types.EDGE.HIERARCHY) {
-          // Hierarchical edges can only exist from entity to entity
-          delete newEntities[edge.child].edges[edge.id];
-          if (edge.generalisation) {
-            delete newEntities[edge.parent].generalisations[edge.generalisation]
-              .edges[edge.id];
-          } else {
-            delete newEntities[edge.parent].edges[edge.id];
-          }
-        }
-      });
-      // Delete this entity
-      delete newEntities[entity.id];
-      console.log(newEntities);
-      return newEntities;
-    });
-    setEdges((prev) => {
-      let newEdges = { ...prev };
-      data.edges.forEach((edge) => {
-        delete newEdges[edge.id];
-      });
-      console.log(newEdges);
-      return newEdges;
-    });
-    // Return deep copy to be saved in history for un/redo
-    console.log(`deleteEntity:`);
-    console.log(data);
-    return data;
-  };
-
-  // TODO: change isWeak if a key edge deleted
-  const deleteRelationship = (relationship) => {
-    let data = { node: relationship, edges: [] };
-    // Find all edges connected to the relationship
-    for (const edgeId of Object.keys(relationship.edges)) {
-      data.edges.push(edges[edgeId]);
-    }
-    // Deep copy of elements to delete
-    data = JSON.parse(JSON.stringify(data));
-    // Actually delete elements from state
-    setEntities((prev) => {
-      let newEntities = { ...prev };
-      // Delete edge references from nodes
-      data.edges.forEach((edge) => {
-        console.assert(edge.type === types.EDGE.RELATIONSHIP);
-        if (edge.source_type === types.ENTITY) {
-          delete newEntities[edge.start].edges[edge.id];
-        }
-      });
-      return newEntities;
-    });
-    setRelationships((prev) => {
-      let newRelationships = { ...prev };
-      // Delete edge references from nodes
-      data.edges.forEach((edge) => {
-        if (edge.source_type === types.RELATIONSHIP) {
-          delete newRelationships[edge.start].edges[edge.id];
-        }
-        delete newRelationships[edge.end].edges[edge.id];
-      });
-      // Delete this relationship
-      delete newRelationships[relationship.id];
-      return newRelationships;
-    });
-    setEdges((prev) => {
-      let newEdges = { ...prev };
-      data.edges.forEach((edge) => {
-        delete newEdges[edge.id];
-      });
-      return newEdges;
-    });
-    // Return deep copy to be saved in history for un/redo
-    console.log(`deleteRelationship:`);
-    console.log(data);
-    return data;
-  };
-
-  const deleteGeneralisation = (generalisation) => {
-    let data = { node: generalisation, edges: [] };
-    // Find all edges connected to the generalisation
-    for (const edgeId of Object.keys(generalisation.edges)) {
-      data.edges.push(edges[edgeId]);
-    }
-    // Deep copy of elements to delete
-    data = JSON.parse(JSON.stringify(data));
-    // Actually delete elements from state
-    setEntities((prev) => {
-      let newEntities = { ...prev };
-      // Delete edge references from nodes
-      data.edges.forEach((edge) => {
-        console.assert(edge.type === types.EDGE.HIERARCHY);
-        delete newEntities[edge.child].edges[edge.id];
-      });
-      // Delete this generalisation
-      delete newEntities[generalisation.parent.id].generalisations[
-        generalisation.id
-      ];
-      return newEntities;
-    });
-    setEdges((prev) => {
-      let newEdges = { ...prev };
-      data.edges.forEach((edge) => {
-        delete newEdges[edge.id];
-      });
-      return newEdges;
-    });
-    // Return deep copy to be saved in history for un/redo
-    console.log(`deleteGeneralisation:`);
-    console.log(data);
-    return data;
-  };
-
-  const deleteRelationshipEdge = (edge) => {
-    let data = { node: null, edges: [edge] };
-    data = JSON.parse(JSON.stringify(data));
-    if (edge.source_type === types.ENTITY) {
-      setEntities((prev) => {
-        let newEntities = { ...prev };
-        let source = newEntities[edge.start];
-        source.isWeak = source.isWeak.filter((id) => id !== edge.id);
-        delete source.edges[edge.id];
-        return newEntities;
-      });
-    }
-    setRelationships((prev) => {
-      let newRelationships = { ...prev };
-      if (edge.source_type === types.RELATIONSHIP) {
-        delete newRelationships[edge.start].edges[edge.id];
-      }
-      delete newRelationships[edge.end].edges[edge.id];
-      return newRelationships;
-    });
-    setEdges((prev) => {
-      let newEdges = { ...prev };
-      data.edges.forEach((edge) => {
-        delete newEdges[edge.id];
-      });
-      return newEdges;
-    });
-    console.log(`deleteRelationshipEdge:`);
-    console.log(data);
-    return data;
-  };
-
-  const deleteHierarchyEdge = (edge) => {
-    let data = { node: null, edges: [edge] };
-    data = JSON.parse(JSON.stringify(data));
-    setEntities((prev) => {
-      let newEntities = { ...prev };
-      delete newEntities[edge.child].edges[edge.id];
-      if (edge.generalisation) {
-        delete newEntities[edge.parent].generalisations[edge.generalisation]
-          .edges[edge.id];
-      } else {
-        delete newEntities[edge.parent].edges[edge.id];
-      }
-      return newEntities;
-    });
-    setEdges((prev) => {
-      let newEdges = { ...prev };
-      data.edges.forEach((edge) => {
-        delete newEdges[edge.id];
-      });
-      return newEdges;
-    });
-    console.log(`deleteHierarchyEdge:`);
-    console.log(data);
-    return data;
-  };
-
   const elementSetters = {
     [types.ENTITY]: (entity, editType) => {
       switch (editType) {
         case "deleteElement":
-          return deleteEntity(entity);
+          return deleteEntity(entity, elementAndSetters);
         default:
           // Make copy of previous state
           let data = {
@@ -313,7 +123,7 @@ export default function Editor() {
     [types.RELATIONSHIP]: (relationship, editType) => {
       switch (editType) {
         case "deleteElement":
-          return deleteRelationship(relationship);
+          return deleteRelationship(relationship, elementAndSetters);
         default:
           // Make copy of previous state
           let data = {
@@ -332,25 +142,17 @@ export default function Editor() {
       }
     },
     [types.ATTRIBUTE]: (attribute, editType) => {
-      const setter =
-        attribute.parent.type === types.ENTITY ? setEntities : setRelationships;
-      setter((prev) => {
-        let newState = { ...prev };
-        let parent = newState[attribute.parent.id];
-        switch (editType) {
-          case "deleteElement":
-            delete parent.attributes[attribute.id];
-            break;
-          default:
-            parent.attributes[attribute.id] = attribute;
-        }
-        return newState;
-      });
+      switch (editType) {
+        case "deleteElement":
+          return deleteAttribute(attribute, elementAndSetters);
+        default:
+          return updateAttribute(attribute, elementAndSetters);
+      }
     },
     [types.GENERALISATION]: (generalisation, editType) => {
       switch (editType) {
         case "deleteElement":
-          return deleteGeneralisation(generalisation);
+          return deleteGeneralisation(generalisation, elementAndSetters);
         default:
           // Make copy of previous state
           let data = {
@@ -374,7 +176,7 @@ export default function Editor() {
     [types.EDGE.RELATIONSHIP]: (edge, editType) => {
       switch (editType) {
         case "deleteElement":
-          return deleteRelationshipEdge(edge);
+          return deleteRelationshipEdge(edge, elementAndSetters);
         default:
           // Make copy of previous state
           let data = { node: null, edges: [edges[edge.id]] };
@@ -392,7 +194,7 @@ export default function Editor() {
     [types.EDGE.HIERARCHY]: (edge, editType) => {
       switch (editType) {
         case "deleteElement":
-          return deleteHierarchyEdge(edge);
+          return deleteHierarchyEdge(edge, elementAndSetters);
         default:
           // Make copy of previous state
           let data = { node: null, edges: [edges[edge.id]] };
