@@ -88,8 +88,14 @@ class FirestoreController {
 		});
 	}
 
-	public async checkExist(erid: string): Promise<boolean> {
+	public async checkERDExists(erid: string): Promise<boolean> {
 		const docRef: DocumentReference = doc(this.db, `erds_list/${erid}`);
+		const docData: DocumentSnapshot = await getDoc(docRef);
+		return docData.exists();
+	}
+
+	public async checkUserExists(uid: string): Promise<boolean> {
+		const docRef: DocumentReference = doc(this.db, `user_erds/${uid}`);
 		const docData: DocumentSnapshot = await getDoc(docRef);
 		return docData.exists();
 	}
@@ -145,6 +151,20 @@ class FirestoreController {
 		deleteDoc(erdRef);
 		const dataRef: DocumentReference = doc(this.db, `erds_list/${erid}`);
 		deleteDoc(dataRef);
+	}
+
+	public async getERDAccessList(erid: string): Promise<string> {
+		const docRef: DocumentReference = doc(this.db, `erd_users/${erid}`);
+		const docData: DocumentSnapshot = await getDoc(docRef);
+		const users: UserPermission[] = docData.get("users");
+		return JSON.stringify(users);
+	}
+
+	public async getUserAccessList(uid: string): Promise<string> {
+		const docRef: DocumentReference = doc(this.db, `user_erds/${uid}`);
+		const docData: DocumentSnapshot = await getDoc(docRef);
+		const erds: ERDMeta[] = docData.get("erds");
+		return JSON.stringify(erds);
 	}
 }
 

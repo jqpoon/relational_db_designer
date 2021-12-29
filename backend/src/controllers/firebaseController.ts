@@ -44,11 +44,13 @@ class FirebaseController {
     }
 
 		public async createERD(uid: string, json: string): Promise<void> {
+				const exists: boolean = await this.firestoreController.checkUserExists(uid);
+				if (!exists) throw new ErrorBuilder(404, "User does not exist");
 				await this.firestoreController.createERD(uid, json);
 		}
 
 		public async getERD(uid: string, erid: string): Promise<string> {
-				const exists: boolean = await this.firestoreController.checkExist(erid);
+				const exists: boolean = await this.firestoreController.checkERDExists(erid);
 				if (!exists) throw new ErrorBuilder(404, "ERD does not exist");
 				const canAccess: boolean = await this.firestoreController.checkAccess(uid, erid);
 				if (!canAccess) throw new ErrorBuilder(403, "You do not have permission to access");
@@ -57,7 +59,7 @@ class FirebaseController {
 		}
 
 		public async updateERD(uid: string, erid: string, json: string): Promise<void> {
-				const exists: boolean = await this.firestoreController.checkExist(erid);
+				const exists: boolean = await this.firestoreController.checkERDExists(erid);
 				if (!exists) throw new ErrorBuilder(404, "ERD does not exist");
 				const canAccess: boolean = await this.firestoreController.checkAccess(uid, erid);
 				if (!canAccess) throw new ErrorBuilder(403, "You do not have permission to access");
@@ -65,11 +67,23 @@ class FirebaseController {
 		}
 
 		public async deleteERD(uid: string, erid: string): Promise<void> {
-				const exists: boolean = await this.firestoreController.checkExist(erid);
+				const exists: boolean = await this.firestoreController.checkERDExists(erid);
 				if (!exists) throw new ErrorBuilder(404, "ERD does not exist");
 				const isOwner: boolean = await this.firestoreController.checkOwner(uid, erid);
 				if (!isOwner) throw new ErrorBuilder(403, "Only the owner can delete");
 				await this.firestoreController.deleteERD(erid);
+		}
+
+		public async getAccessList(id: string, isUser: boolean): Promise<string> {
+			let exists: boolean;
+			if (isUser) {
+				exists = await this.firestoreController.checkUserExists(id);
+				if (!exists) throw new ErrorBuilder(404, "User does not exist");
+				return this.firestoreController.getUserAccessList(id);
+			}
+			exists = await this.firestoreController.checkERDExists(id);
+			if (!exists) throw new ErrorBuilder(404, "ERD does not exist");
+			return this.firestoreController.getERDAccessList(id);
 		}
 }
 
