@@ -1,4 +1,5 @@
 import { FirebaseApp, initializeApp } from "firebase/app"
+import ErrorBuilder from "./errorBuilder";
 import FirebaseAuthController from "./firebaseAuthController";
 import FirestoreController from "./firestoreController";
 
@@ -49,6 +50,15 @@ class FirebaseController {
 				// Give user access to ERD and set as owner
 				this.firestoreController.addERDToUser(uid, erid, name);
 				this.firestoreController.addUserToERD(uid, erid, "OWNER");
+		}
+
+		public async getERD(uid: string, erid: string): Promise<string> {
+				const exists: boolean = await this.firestoreController.checkExist(erid);
+				if (!exists) throw new ErrorBuilder(404, "ERD does not exist");
+				const canAccess: boolean = await this.firestoreController.checkAccess(uid, erid);
+				if (!canAccess) throw new ErrorBuilder(403, "ERD cannot be accessed");
+				const data: string = await this.firestoreController.getERD(erid);
+				return data;
 		}
 }
 

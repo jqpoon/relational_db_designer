@@ -9,12 +9,19 @@ import {
 	CollectionReference,
 	addDoc,
 	updateDoc,
-	arrayUnion
+	arrayUnion,
+	getDoc,
+	DocumentSnapshot,
 } from "firebase/firestore"
 
 interface ERDSchema {
 	owner: string;
 	data: string;
+}
+
+interface ERDMeta {
+		name: string;
+		erid: string;
 }
 
 class FirestoreController {
@@ -74,6 +81,28 @@ class FirestoreController {
 					permission
 				})
 			});
+		}
+
+		public async checkExist(erid: string): Promise<boolean> {
+			const docRef: DocumentReference = doc(this.db, `erds_list/${erid}`);
+			const docData: DocumentSnapshot = await getDoc(docRef);
+			return docData.exists();
+		}
+
+		public async checkAccess(uid: string, erid: string): Promise<boolean> {
+			const docRef: DocumentReference = doc(this.db, `user_erds/${uid}`);
+			const docData: DocumentSnapshot = await getDoc(docRef);
+			const users: ERDMeta[] = docData.get("erds");
+			for (const x of users) {
+				if (x.erid === erid) return true;
+			}
+			return false;
+		}
+
+		public async getERD(erid: string): Promise<string> {
+			const docRef: DocumentReference = doc(this.db, `erds_list/${erid}`);
+			const docData: DocumentSnapshot = await getDoc(docRef);
+			return JSON.stringify(docData.get("data"));
 		}
 }
 

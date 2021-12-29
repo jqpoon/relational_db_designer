@@ -1,4 +1,5 @@
 import {Router} from "express";
+import ErrorBuilder from "src/controllers/errorBuilder";
 import FirebaseController from "src/controllers/firebaseController";
 
 const router = Router();
@@ -11,7 +12,18 @@ const router = Router();
 	- We need to know which ERD (ERid) to get and if the user (Uid) has access
 */
 router.get("/", function (req, res) {
-	res.sendStatus(200);
+	if (req.query.Uid === undefined || req.query.ERid === undefined) {
+		return res.sendStatus(400);
+	}
+	const uid: string = req.query.Uid as string;
+	const erid: string = req.query.ERid as string;
+	FirebaseController.getInstance().getERD(uid, erid)
+		.then((data: string) => {
+			res.status(200).send(data);
+		})
+		.catch((error: ErrorBuilder) => {
+			res.status(error.getCode()).send(error.getMsg());
+		});
 });
 
 /*
@@ -29,8 +41,8 @@ router.post("/", function (req, res) {
 		.then(() => {
 			res.status(200).send(`ERD created for ${uid}`);
 		})
-		.catch((error) => {
-			res.status(501).send(error);
+		.catch(() => {
+			res.status(501).send("An error occured. Please try again later");
 		});
 });
 
