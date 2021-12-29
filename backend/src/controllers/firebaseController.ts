@@ -68,6 +68,14 @@ class FirebaseController {
 				if (!canAccess) throw new ErrorBuilder(403, "You do not have permission to access");
 				await this.firestoreController.updateERD(erid, json);
 		}
+
+		public async deleteERD(uid: string, erid: string): Promise<void> {
+				const exists: boolean = await this.firestoreController.checkExist(erid);
+				if (!exists) throw new ErrorBuilder(404, "ERD does not exist");
+				const isOwner: boolean = await this.firestoreController.checkOwner(uid, erid);
+				if (!isOwner) throw new ErrorBuilder(403, "Only the owner can delete");
+				await this.firestoreController.deleteERD(erid);
+		}
 }
 
 export default FirebaseController

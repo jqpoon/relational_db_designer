@@ -89,7 +89,22 @@ router.put('/', function (req, res) {
 		- All Firestore collections need to be updated
 */
 router.delete('/', function (req, res) {
-	res.sendStatus(200);
+	if (req.query.Uid === undefined || req.query.ERid === undefined) {
+		return res.sendStatus(400);
+	}
+	const uid: string = req.query.Uid as string;
+	const erid: string = req.query.ERid as string;
+	FirebaseController.getInstance().deleteERD(uid, erid)
+		.then(() => {
+			res.status(200).send("ERD successfully deleted");
+		})
+		.catch((error) => {
+			if (error instanceof ErrorBuilder) {
+				res.status(error.getCode()).send(error.getMsg());
+			} else {
+				res.status(501).send("An error occured. Please try again later");
+			}
+		});
 });
 
 export default router
