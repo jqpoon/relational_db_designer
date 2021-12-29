@@ -4,6 +4,7 @@ import {useRef} from "react";
 import {types} from "./types";
 import {getId} from "./idGenerator";
 import "./stylesheets/toolbar.css";
+import UploadTool from "./utilities/uploadTool";
 
 export default function Toolbar({
                                   addEdgeToRelationship,
@@ -125,10 +126,7 @@ export default function Toolbar({
           Translate
         </div>
         <div className="tool">Validate</div>
-        <div className="tool">
-          <input type="file" onChange={uploadStateFromObject}>
-          </input>
-        </div>
+        <UploadTool text="Import JSON file" handleFile={uploadStateFromObject} />
         <div className="tool" onClick={downloadStateAsObject}>
           Export JSON file
         </div>

@@ -246,6 +246,15 @@ export default function Editor() {
     },
   };
 
+  // Resets the state of the whiteboard and deletes the current schema.
+  const resetState = () => {
+    setEntities({});
+    setRelationships({});
+    setEdges({});
+    setUndoStack([]);
+    setRedoStack([]);
+  }
+
   const nodeFunctionsOpposite = {
     updateElement: "updateElement",
     addElement: "deleteElement",
@@ -475,12 +484,12 @@ export default function Editor() {
     return state;
   };
 
-  const uploadStateFromObject = e => {
+  const uploadStateFromObject = file => {
     const fileReader = new FileReader();
-    fileReader.readAsText(e.target.files[0], "UTF-8");
+    fileReader.readAsText(file, "UTF-8");
     fileReader.onload = e => {
-      // TODO: Clear existing nodes from whiteboard first.
       const state = JSON.parse(e.target.result);
+      resetState();
       importStateFromObject(state);
     };
   };
