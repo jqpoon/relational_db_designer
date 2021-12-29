@@ -246,6 +246,15 @@ export default function Editor() {
     },
   };
 
+  // Resets the state of the whiteboard and deletes the current schema.
+  const resetState = () => {
+    setEntities({});
+    setRelationships({});
+    setEdges({});
+    setUndoStack([]);
+    setRedoStack([]);
+  }
+
   const nodeFunctionsOpposite = {
     updateElement: "updateElement",
     addElement: "deleteElement",
@@ -475,6 +484,31 @@ export default function Editor() {
     return state;
   };
 
+  const uploadStateFromObject = file => {
+    const fileReader = new FileReader();
+    fileReader.readAsText(file, "UTF-8");
+    fileReader.onload = e => {
+      const state = JSON.parse(e.target.result);
+      resetState();
+      importStateFromObject(state);
+    };
+  };
+
+  const downloadStateAsObject = () => {
+    const fileName = "schema.json";
+    const blob = new Blob([JSON.stringify(exportStateToObject())], { type: "text/json" });
+    const a = document.createElement("a");
+    a.download = fileName;
+    a.href = window.URL.createObjectURL(blob);
+    const mouseEvent = new MouseEvent('click', {
+      view: window,
+      bubbles: true,
+      cancelable: true,
+    });
+    a.dispatchEvent(mouseEvent);
+    a.remove();
+  };
+
   const elementFunctions = {
     getElement: getElement,
     addElement: addElement,
@@ -499,8 +533,10 @@ export default function Editor() {
         target: null,
       });
     },
-    exportStateToObject,
-    importStateFromObject,
+    importStateFromObject: importStateFromObject,
+    exportStateToObject: exportStateToObject,
+    uploadStateFromObject: uploadStateFromObject,
+    downloadStateAsObject: downloadStateAsObject,
     translate: (schema) => {
       setContext({
         action: actions.TRANSLATE,
