@@ -3,28 +3,32 @@ import { types } from "../types";
 
 const STACK_LIMIT = 25;
 
-export const addToUndo = (editType, data, { setUndoStack }) => {
-  setUndoStack((prev) => {
+export const addToUndo = (editType, data, { history, setHistory }) => {
+  setHistory((prev) => {
     let newEntry = { action: editType, data: data };
-    let newStack = [...prev, newEntry];
-    if (newStack.length > STACK_LIMIT) {
-      newStack.shift();
-    }
-    return newStack;
+    let storeStart = prev.store.length > STACK_LIMIT ? 1 : 0;
+    let storeEnd = Math.min(prev.position + 1, prev.store.length);
+
+    let newHistory = {};
+    newHistory.store = prev.store.slice(storeStart, storeEnd);
+    newHistory.position = newHistory.store.length;
+    newHistory.store.push(newEntry);
+
+    return newHistory;
   });
 };
 
-export const undo = ({ undoStack, setUndoStack }, elementsAndSetter) => {
-  console.log(`Undo:`);
+export const undo = ({ history, setHistory }, elementsAndSetter) => {
+  if (history.position < 0) return;
 
-  if (undoStack.length === 0) return;
   let entry = null;
-  setUndoStack((prev) => {
-    let newStack = [...prev];
-    entry = newStack.pop();
-    return newStack;
+  setHistory((prev) => {
+    let newHistory = {...prev};
+    entry = newHistory.store[newHistory.position--];
+    return newHistory;
   });
 
+  console.log(`Undo:`);
   console.log(entry);
   undoInverses[entry.action](entry.data, elementsAndSetter);
 };
@@ -50,7 +54,7 @@ const undoDelete = (data, elementsAndSetter) => {
     data.edges.forEach((edge) => {
       edges[edge.id] = edge;
       if (edge.type === types.EDGE.RELATIONSHIP) {
-        if (edge.source_type === types.RELATIONSHIP) {
+        if (edge.source_type === types.ENTITY) {
           const parent = entities[edge.start];
           parent.edges[edge.id] = { type: edge.type };
           if (edge.isKey) {

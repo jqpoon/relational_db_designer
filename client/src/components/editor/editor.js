@@ -33,8 +33,13 @@ export default function Editor() {
     edges: initialEdges,
   });
 
-  const [undoStack, setUndoStack] = useState([]);
-  const [redoStack, setRedoStack] = useState([]);
+  const elementsAndSetter = { elements: elements, setElements: setElements };
+
+  const [history, setHistory] = useState({ store: [], position: -1 });
+  const historyAndSetter = {
+    history: history,
+    setHistory: setHistory,
+  };
 
   const [context, setContext] = useState({ action: actions.NORMAL });
 
@@ -42,15 +47,6 @@ export default function Editor() {
   const forceRerender = () => setRerender((rerender) => !rerender);
 
   const [contextMenu, setContextMenu] = useState(null);
-
-  const elementsAndSetter = { elements: elements, setElements: setElements };
-
-  const historyAndSetters = {
-    undoStack: undoStack,
-    setUndoStack: setUndoStack,
-    redoStack: redoStack,
-    setRedoStack: setRedoStack,
-  };
 
   const resetClick = (e) => {
     if (e.target.classList.contains("canvas")) {
@@ -70,15 +66,15 @@ export default function Editor() {
 
   const deleteElement = (type, element) => {
     const data = deletes[type](elementsAndSetter, element);
-    addToUndo("deleteElement", data, historyAndSetters);
+    addToUndo("deleteElement", data, historyAndSetter);
   };
   const addElement = (type, element) => {
     const data = updates[type](elementsAndSetter, element);
-    addToUndo("addElement", data, historyAndSetters);
+    addToUndo("addElement", data, historyAndSetter);
   };
   const updateElement = (type, element) => {
     const data = updates[type](elementsAndSetter, element);
-    addToUndo("updateElement", data, historyAndSetters);
+    addToUndo("updateElement", data, historyAndSetter);
   };
 
   const redo = () => {
@@ -91,7 +87,7 @@ export default function Editor() {
     updateElement: updateElement,
     deleteElement: deleteElement,
     undo: () => {
-      undo(historyAndSetters, elementsAndSetter);
+      undo(historyAndSetter, elementsAndSetter);
     },
   };
 
@@ -118,7 +114,7 @@ export default function Editor() {
         tables: schema.translatedtables.tables,
       });
     },
-    undo: () => undo(historyAndSetters, elementsAndSetter),
+    undo: () => undo(historyAndSetter, elementsAndSetter),
     redo: redo,
   };
 
@@ -174,7 +170,10 @@ export default function Editor() {
           case types.RELATIONSHIP:
             return (
               <SelectRelationship
-                relationship={getElement(types.RELATIONSHIP, context.selected.id)}
+                relationship={getElement(
+                  types.RELATIONSHIP,
+                  context.selected.id
+                )}
                 {...elementFunctions}
                 {...generalFunctions}
               />
@@ -182,7 +181,11 @@ export default function Editor() {
           case types.GENERALISATION:
             return (
               <SelectGeneralisation
-                generalisation={getElement(types.ENTITY, context.selected.id, context.selected.parent)}
+                generalisation={getElement(
+                  types.ENTITY,
+                  context.selected.id,
+                  context.selected.parent
+                )}
                 {...elementFunctions}
                 {...generalFunctions}
               />
