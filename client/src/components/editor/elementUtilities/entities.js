@@ -1,82 +1,68 @@
 import { types } from "../types";
 
-export const deleteEntity = (
-  entity,
-  { entities, setEntities, relationships, setRelationships, edges, setEdges }
-) => {
-  console.log(entity);
+export const getEntity = ({ entities }, id) => {
+  return { ...entities[id] };
+};
+
+export const deleteEntity = ({ elements, setElements }, entity) => {
   let data = { node: entity, edges: [] };
   // Find all edges connected directly to the entity
   for (const edgeId of Object.keys(entity.edges)) {
-    data.edges.push(edges[edgeId]);
+    data.edges.push(elements.edges[edgeId]);
   }
   // Find all edges connected to the entity via a generalisation
   for (const generalisation of Object.values(entity.generalisations)) {
     for (const edgeId of Object.keys(generalisation.edges)) {
-      data.edges.push(edges[edgeId]);
+      data.edges.push(elements.edges[edgeId]);
     }
   }
   // Deep copy of elements to delete
   data = JSON.parse(JSON.stringify(data));
+
   // Actually delete elements from state
-  setRelationships((prev) => {
-    let newRelationships = { ...prev };
-    // Delete edge references from nodes
+  setElements((prev) => {
+    let newElements = { ...prev };
+    const { entities, relationships, edges } = newElements;
+    // Delete edge references from nodes and edges themselves
     data.edges.forEach((edge) => {
       if (edge.type === types.EDGE.RELATIONSHIP) {
         console.assert(
           edge.source_type === types.ENTITY && edge.start === entity.id
         );
         console.assert(edge.target_type === types.RELATIONSHIP);
-        delete newRelationships[edge.end].edges[edge.id];
-      }
-    });
-    return newRelationships;
-  });
-  setEntities((prev) => {
-    let newEntities = { ...prev };
-    // Delete edge references from nodes
-    data.edges.forEach((edge) => {
-      if (edge.type === types.EDGE.HIERARCHY) {
+        delete entities[edge.start].edges[edge.id];
+        delete relationships[edge.end].edges[edge.id];
+      } else if (edge.type === types.EDGE.HIERARCHY) {
         // Hierarchical edges can only exist from entity to entity
-        delete newEntities[edge.child].edges[edge.id];
+        delete entities[edge.child].edges[edge.id];
         if (edge.generalisation) {
-          delete newEntities[edge.parent].generalisations[edge.generalisation]
+          delete entities[edge.parent].generalisations[edge.generalisation]
             .edges[edge.id];
         } else {
-          delete newEntities[edge.parent].edges[edge.id];
+          delete entities[edge.parent].edges[edge.id];
         }
       }
+      delete edges[edge.id];
     });
     // Delete this entity
-    delete newEntities[entity.id];
-    return newEntities;
+    delete entities[entity.id];
+    return newElements;
   });
-  setEdges((prev) => {
-    let newEdges = { ...prev };
-    data.edges.forEach((edge) => {
-      delete newEdges[edge.id];
-    });
-    return newEdges;
-  });
-  // Return deep copy to be saved in history for un/redo
+  // Return deep copy to be saved in history
   console.log(`deleteEntity:`);
   console.log(data);
   return data;
 };
 
-export const updateEntity = (
-  entity,
-  { entities, setEntities, relationships, setRelationships, edges, setEdges }
-) => {
-  let oldEntry = entities[entity.id];
+export const updateEntity = ({ elements, setElements }, entity) => {
+  let oldEntry = elements.entities[entity.id];
   let data = { node: oldEntry ? oldEntry : entity, edges: [] };
   data = JSON.parse(JSON.stringify(data));
 
-  setEntities((prev) => {
-    let newEntities = { ...prev };
-    newEntities[entity.id] = entity;
-    return newEntities;
+  setElements((prev) => {
+    let newElements = { ...prev };
+    newElements.entities[entity.id] = entity;
+    return newElements;
   });
 
   console.log(`updateEntity:`);

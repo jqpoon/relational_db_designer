@@ -1,91 +1,73 @@
 import { types } from "../types";
 
-export const deleteRelationshipEdge = (
-  edge,
-  { entities, setEntities, relationships, setRelationships, edges, setEdges }
-) => {
+export const getRelationshipEdge = ({ edges }, id) => {
+  return { ...edges[id] };
+};
+
+export const deleteRelationshipEdge = ({ elements, setElements }, edge) => {
   let data = { node: null, edges: [edge] };
   data = JSON.parse(JSON.stringify(data));
-  if (edge.source_type === types.ENTITY) {
-    setEntities((prev) => {
-      let newEntities = { ...prev };
-      let source = newEntities[edge.start];
+
+  setElements((prev) => {
+    let newElements = { ...prev };
+    const { entities, relationships, edges } = newElements;
+    // Delete references to edge in nodes
+    if (edge.source_type === types.ENTITY) {
+      let source = entities[edge.start];
       source.isWeak = source.isWeak.filter((id) => id !== edge.id);
       delete source.edges[edge.id];
-      return newEntities;
-    });
-  }
-  setRelationships((prev) => {
-    let newRelationships = { ...prev };
-    if (edge.source_type === types.RELATIONSHIP) {
-      delete newRelationships[edge.start].edges[edge.id];
+    } else if (edge.source_type === types.RELATIONSHIP) {
+      delete relationships[edge.start].edges[edge.id];
     }
-    delete newRelationships[edge.end].edges[edge.id];
-    return newRelationships;
+    delete relationships[edge.end].edges[edge.id];
+    // Delete edge
+    delete edges[edge.id];
+    return newElements;
   });
-  setEdges((prev) => {
-    let newEdges = { ...prev };
-    data.edges.forEach((edge) => {
-      delete newEdges[edge.id];
-    });
-    return newEdges;
-  });
+
   console.log(`deleteRelationshipEdge:`);
   console.log(data);
   return data;
 };
 
-export const updateRelationshipEdge = (
-  edge,
-  { entities, setEntities, relationships, setRelationships, edges, setEdges }
-) => {
-  const oldEntry = edges[edge.id];
+export const updateRelationshipEdge = ({ elements, setElements }, edge) => {
+  const oldEntry = elements.edges[edge.id];
   let data = { node: null, edges: [oldEntry ? oldEntry : edge] };
   data = JSON.parse(JSON.stringify(data));
-  if (!oldEntry) {
-    // Newly added edge, update source and target
-    if (edge.source_type === types.ENTITY) {
-      setEntities((prev) => {
-        let newEntities = { ...prev };
-        newEntities[edge.start].edges[edge.id] = {
+
+  setElements((prev) => {
+    let newElements = { ...prev };
+    const { entities, relationships, edges } = newElements;
+    edges[edge.id] = edge;
+    if (!oldEntry) {
+      // Newly added edge, update source and target
+      if (edge.source_type === types.ENTITY) {
+        entities[edge.start].edges[edge.id] = {
           type: types.EDGE.RELATIONSHIP,
         };
-        return newEntities;
-      });
-    }
-    setRelationships((prev) => {
-      let newRelationships = { ...prev };
-      if (edge.source_type === types.RELATIONSHIP) {
-        newRelationships[edge.start].edges[edge.id] = {
+      } else if (edge.source_type === types.RELATIONSHIP) {
+        relationships[edge.start].edges[edge.id] = {
           type: types.EDGE.RELATIONSHIP,
         };
       }
       console.assert(edge.target_type === types.RELATIONSHIP);
-      newRelationships[edge.end].edges[edge.id] = {
+      relationships[edge.end].edges[edge.id] = {
         type: types.EDGE.RELATIONSHIP,
       };
-      return newRelationships;
-    });
-  } else {
-    if (edge.isKey !== oldEntry.isKey) {
-      console.assert(edge.source_type === types.ENTITY);
-      setEntities((prev) => {
-        let newEntities = { ...prev };
-        const parent = newEntities[edge.start];
+    } else {
+      if (edge.isKey !== oldEntry.isKey) {
+        console.assert(edge.source_type === types.ENTITY);
+        const parent = entities[edge.start];
         if (edge.isKey) {
           parent.isWeak.push(edge.id);
         } else {
           parent.isWeak = parent.isWeak.filter((id) => id !== edge.id);
         }
-        return newEntities;
-      });
+      }
     }
-  }
-  setEdges((prev) => {
-    let newEdges = { ...prev };
-    newEdges[edge.id] = edge;
-    return newEdges;
+    return newElements;
   });
+
   console.log(`updateRelationshipEdge:`);
   console.log(data);
   return data;

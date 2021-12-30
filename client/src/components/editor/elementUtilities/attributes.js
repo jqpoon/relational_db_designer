@@ -1,18 +1,23 @@
 import { types } from "../types";
 
-export const deleteAttribute = (
-  attribute,
-  { entities, setEntities, relationships, setRelationships, edges, setEdges }
-) => {
+export const getAttribute = ({ entities, relationships }, id, parent) => {
+  console.assert([types.ENTITY, types.RELATIONSHIP].includes(parent.type));
+  const state = parent.type === types.ENTITY ? entities : relationships;
+  return { ...state[parent.id].attributes[id] };
+};
+
+export const deleteAttribute = ({ setElements }, attribute) => {
   let data = { node: attribute, edges: [] };
   data = JSON.parse(JSON.stringify(data));
 
   const pType = attribute.parent.type;
   console.assert(pType === types.ENTITY || pType === types.RELATIONSHIP);
-  const setState = pType === types.ENTITY ? setEntities : setRelationships;
-  setState((prev) => {
+
+  setElements((prev) => {
     let newState = { ...prev };
-    delete newState[attribute.parent.id].attributes[attribute.id];
+    const pNodes =
+      pType === types.ENTITY ? newState.entities : newState.relationships;
+    delete pNodes[attribute.parent.id].attributes[attribute.id];
     return newState;
   });
 
@@ -21,25 +26,23 @@ export const deleteAttribute = (
   return data;
 };
 
-export const updateAttribute = (
-  attribute,
-  { entities, setEntities, relationships, setRelationships, edges, setEdges }
-) => {
+export const updateAttribute = ({ elements, setElements }, attribute) => {
   const pType = attribute.parent.type;
   console.assert(pType === types.ENTITY || pType === types.RELATIONSHIP);
-  const state = pType === types.ENTITY ? entities : relationships;
-  const setState = pType === types.ENTITY ? setEntities : setRelationships;
+  const state =
+    pType === types.ENTITY ? elements.entities : elements.relationships;
 
   let oldEntry = state[attribute.parent.id].attributes[attribute.id];
   let data = { node: oldEntry ? oldEntry : attribute, edges: [] };
   data = JSON.parse(JSON.stringify(data));
 
-  setState((prev) => {
-    let newState = {...prev};
-    const parent = newState[attribute.parent.id];
-    parent.attributes[attribute.id] = attribute;
-    return newState;
-  })
+  setElements((prev) => {
+    let newElements = { ...prev };
+    const pNodes =
+      pType === types.ENTITY ? newElements.entities : newElements.relationships;
+    pNodes[attribute.parent.id].attributes[attribute.id] = attribute;
+    return newElements;
+  });
 
   console.log(`updateAttribute:`);
   console.log(data);

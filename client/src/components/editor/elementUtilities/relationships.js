@@ -1,68 +1,56 @@
 import { types } from "../types";
 
-export const deleteRelationship = (
-  relationship,
-  { entities, setEntities, relationships, setRelationships, edges, setEdges }
-) => {
+export const getRelationship = ({ relationships }, id) => {
+  return { ...relationships[id] };
+};
+
+export const deleteRelationship = ({ elements, setElements }, relationship) => {
   let data = { node: relationship, edges: [] };
   // Find all edges connected to the relationship
   for (const edgeId of Object.keys(relationship.edges)) {
-    data.edges.push(edges[edgeId]);
+    data.edges.push(elements.edges[edgeId]);
   }
   // Deep copy of elements to delete
   data = JSON.parse(JSON.stringify(data));
+
   // Actually delete elements from state
-  setEntities((prev) => {
-    let newEntities = { ...prev };
-    // Delete edge references from nodes
+  setElements((prev) => {
+    let newElements = { ...prev };
+    const { entities, relationships, edges } = newElements;
     data.edges.forEach((edge) => {
       console.assert(edge.type === types.EDGE.RELATIONSHIP);
+      // Delete edge references from nodes
       if (edge.source_type === types.ENTITY) {
-        const parent = newEntities[edge.start];
+        const parent = entities[edge.start];
         parent.isWeak = parent.isWeak.filter((id) => id !== edge.id);
         delete parent.edges[edge.id];
+      } else if (edge.source_type === types.RELATIONSHIP) {
+        delete relationships[edge.start].edges[edge.id];
       }
-    });
-    return newEntities;
-  });
-  setRelationships((prev) => {
-    let newRelationships = { ...prev };
-    // Delete edge references from nodes
-    data.edges.forEach((edge) => {
-      if (edge.source_type === types.RELATIONSHIP) {
-        delete newRelationships[edge.start].edges[edge.id];
-      }
-      delete newRelationships[edge.end].edges[edge.id];
+      delete relationships[edge.end].edges[edge.id];
+      // Delete edge
+      delete edges[edge.id];
     });
     // Delete this relationship
-    delete newRelationships[relationship.id];
-    return newRelationships;
+    delete relationships[relationship.id];
+    return newElements;
   });
-  setEdges((prev) => {
-    let newEdges = { ...prev };
-    data.edges.forEach((edge) => {
-      delete newEdges[edge.id];
-    });
-    return newEdges;
-  });
+
   // Return deep copy to be saved in history for un/redo
   console.log(`deleteRelationship:`);
   console.log(data);
   return data;
 };
 
-export const updateRelationship = (
-  relationship,
-  { entities, setEntities, relationships, setRelationships, edges, setEdges }
-) => {
-  let oldEntry = relationships[relationship.id];
+export const updateRelationship = ({ elements, setElements }, relationship) => {
+  let oldEntry = elements.relationships[relationship.id];
   let data = { node: oldEntry ? oldEntry : relationship, edges: [] };
   data = JSON.parse(JSON.stringify(data));
 
-  setRelationships((prev) => {
-    let newRelationships = { ...prev };
-    newRelationships[relationship.id] = relationship;
-    return newRelationships;
+  setElements((prev) => {
+    let newElements = { ...prev };
+    newElements.relationships[relationship.id] = relationship;
+    return newElements;
   });
 
   console.log(`updateRelationship:`);

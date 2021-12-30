@@ -1,64 +1,57 @@
 import { types } from "../types";
 
-export const deleteHierarchyEdge = (
-  edge,
-  { entities, setEntities, relationships, setRelationships, edges, setEdges }
-) => {
+export const getHierarchyEdge = ({ edges }, id) => {
+  return { ...edges[id] };
+};
+
+export const deleteHierarchyEdge = ({ elements, setElements }, edge) => {
   let data = { node: null, edges: [edge] };
   data = JSON.parse(JSON.stringify(data));
-  setEntities((prev) => {
-    let newEntities = { ...prev };
-    delete newEntities[edge.child].edges[edge.id];
+
+  setElements((prev) => {
+    let newElements = { ...prev };
+    const { entities, edges } = newElements;
+    // Delete references to edge in nodes
+    delete entities[edge.child].edges[edge.id];
     if (edge.generalisation) {
-      delete newEntities[edge.parent].generalisations[edge.generalisation]
-        .edges[edge.id];
+      delete entities[edge.parent].generalisations[edge.generalisation].edges[
+        edge.id
+      ];
     } else {
-      delete newEntities[edge.parent].edges[edge.id];
+      delete entities[edge.parent].edges[edge.id];
     }
-    return newEntities;
-  });
-  setEdges((prev) => {
-    let newEdges = { ...prev };
-    data.edges.forEach((edge) => {
-      delete newEdges[edge.id];
-    });
-    return newEdges;
+    // Delete edge
+    delete edges[edge.id];
+    return newElements;
   });
   console.log(`deleteHierarchyEdge:`);
   console.log(data);
   return data;
 };
 
-export const updateHierarchyEdge = (
-  edge,
-  { entities, setEntities, relationships, setRelationships, edges, setEdges }
-) => {
-  let oldEntry = edges[edge.id];
+export const updateHierarchyEdge = ({ elements, setElements }, edge) => {
+  let oldEntry = elements.edges[edge.id];
   let data = { node: null, edges: [oldEntry ? oldEntry : edge] };
   data = JSON.parse(JSON.stringify(data));
 
-  if (!oldEntry) {
-    // Newly added edge, update source and target
-    setEntities((prev) => {
-      let newEntities = { ...prev };
-      newEntities[edge.child].edges[edge.id] = { type: types.EDGE.HIERARCHY };
+  setElements((prev) => {
+    let newElements = { ...prev };
+    const { entities, relationships, edges } = newElements;
+    edges[edge.id] = edge;
+    if (!oldEntry) {
+      // Newly added edge, update source and target
+      entities[edge.child].edges[edge.id] = { type: types.EDGE.HIERARCHY };
       if (edge.generalisation) {
-        newEntities[edge.parent].generalisations[edge.generalisation].edges[
+        entities[edge.parent].generalisations[edge.generalisation].edges[
           edge.id
         ] = { type: types.EDGE.HIERARCHY };
       } else {
-        newEntities[edge.parent].edges[edge.id] = {
+        entities[edge.parent].edges[edge.id] = {
           type: types.EDGE.HIERARCHY,
         };
       }
-      return newEntities;
-    });
-  }
-
-  setEdges((prev) => {
-    let edges = { ...prev };
-    edges[edge.id] = edge;
-    return edges;
+    }
+    return newElements;
   });
 
   console.log(`updateHierarchyEdge`);

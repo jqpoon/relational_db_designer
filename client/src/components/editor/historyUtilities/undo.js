@@ -1,4 +1,4 @@
-import { deletes, updates } from "../elementUtilities/delete";
+import { deletes, updates } from "../elementUtilities/elementFunctions";
 import { types } from "../types";
 
 const STACK_LIMIT = 25;
@@ -14,7 +14,7 @@ export const addToUndo = (editType, data, { setUndoStack }) => {
   });
 };
 
-export const undo = ({ undoStack, setUndoStack }, elementAndSetters) => {
+export const undo = ({ undoStack, setUndoStack }, elementsAndSetter) => {
   console.log(`Undo:`);
 
   if (undoStack.length === 0) return;
@@ -26,77 +26,54 @@ export const undo = ({ undoStack, setUndoStack }, elementAndSetters) => {
   });
 
   console.log(entry);
-  undoInverses[entry.action](entry.data, elementAndSetters);
+  undoInverses[entry.action](entry.data, elementsAndSetter);
 };
 
-const undoUpdate = (data, elementAndSetters) => {
+const undoUpdate = (data, elementsAndSetter) => {
   let element = data.node ? data.node : data.edges[0];
-  updates[element.type](element, elementAndSetters);
+  updates[element.type](elementsAndSetter, element);
 };
 
-const undoAdd = (data, elementAndSetters) => {
+const undoAdd = (data, elementsAndSetter) => {
   let element = data.node ? data.node : data.edges[0];
-  deletes[element.type](element, elementAndSetters);
+  deletes[element.type](elementsAndSetter, element);
 };
 
-const undoDelete = (data, elementAndSetters) => {
-  let {
-    entities,
-    setEntities,
-    relationships,
-    setRelationships,
-    edges,
-    setEdges,
-  } = elementAndSetters;
+const undoDelete = (data, elementsAndSetter) => {
+  const { elements, setElements } = elementsAndSetter;
   if (data.node) {
-    updates[data.node.type](data.node, elementAndSetters);
+    updates[data.node.type](elementsAndSetter, data.node);
   }
-  setEdges((prev) => {
-    let newEdges = { ...prev };
+  setElements((prev) => {
+    let newElements = { ...prev };
+    const { entities, relationships, edges } = newElements;
     data.edges.forEach((edge) => {
-      newEdges[edge.id] = edge;
-    });
-    return newEdges;
-  });
-  setEntities((prev) => {
-    let newEntities = { ...prev };
-    data.edges.forEach((edge) => {
-      if (
-        edge.type === types.EDGE.RELATIONSHIP &&
-        edge.source_type === types.ENTITY
-      ) {
-        // TODO refactor addEdge.js into addElement
-        const parent = newEntities[edge.start];
-        parent.edges[edge.id] = { type: edge.type };
-        if (edge.isKey) {
-          if (parent.isWeak.indexOf(edge.id) === -1) {
-            parent.isWeak.push(edge.id);
+      edges[edge.id] = edge;
+      if (edge.type === types.EDGE.RELATIONSHIP) {
+        if (edge.source_type === types.RELATIONSHIP) {
+          const parent = entities[edge.start];
+          parent.edges[edge.id] = { type: edge.type };
+          if (edge.isKey) {
+            if (parent.isWeak.indexOf(edge.id) === -1) {
+              parent.isWeak.push(edge.id);
+            }
           }
+        } else if (edge.source_type === types.RELATIONSHIP) {
+          relationships[edge.start].edges[edge.id] = { type: edge.type };
         }
+        relationships[edge.end].edges[edge.id] = { type: edge.type };
       } else if (edge.type === types.EDGE.HIERARCHY) {
-        newEntities[edge.child].edges[edge.id] = { type: edge.type };
+        entities[edge.child].edges[edge.id] = { type: edge.type };
         if (edge.generalisation) {
-          newEntities[edge.parent].generalisations[edge.generalisation].edges[
+          entities[edge.parent].generalisations[edge.generalisation].edges[
             edge.id
           ] = { type: edge.type };
         } else {
-          newEntities[edge.parent].edges[edge.id] = { type: edge.type };
+          entities[edge.parent].edges[edge.id] = { type: edge.type };
         }
       }
     });
-    return newEntities;
-  });
-  setRelationships((prev) => {
-    let newRelationships = { ...prev };
-    data.edges.forEach((edge) => {
-      if (edge.type === types.EDGE.RELATIONSHIP) {
-        if (edge.source_type === types.RELATIONSHIP) {
-          newRelationships[edge.start].edges[edge.id] = { type: edge.type };
-        }
-        newRelationships[edge.end].edges[edge.id] = { type: edge.type };
-      }
-    });
-    return newRelationships;
+    return newElements;
   });
 };
 

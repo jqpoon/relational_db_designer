@@ -1,36 +1,35 @@
 import { types } from "../types";
 
+export const getGeneralisation = ({ entities }, id, parent) => {
+  return { ...entities[parent.id]?.generalisations[id] };
+};
+
 export const deleteGeneralisation = (
-  generalisation,
-  { entities, setEntities, relationships, setRelationships, edges, setEdges }
+  { elements, setElements },
+  generalisation
 ) => {
   let data = { node: generalisation, edges: [] };
   // Find all edges connected to the generalisation
   for (const edgeId of Object.keys(generalisation.edges)) {
-    data.edges.push(edges[edgeId]);
+    data.edges.push(elements.edges[edgeId]);
   }
   // Deep copy of elements to delete
   data = JSON.parse(JSON.stringify(data));
   // Actually delete elements from state
-  setEntities((prev) => {
-    let newEntities = { ...prev };
-    // Delete edge references from nodes
+  setElements((prev) => {
+    let newElements = { ...prev };
+    const { entities, relationships, edges } = newElements;
+    // Delete edge references from nodes and edges themselves
     data.edges.forEach((edge) => {
       console.assert(edge.type === types.EDGE.HIERARCHY);
-      delete newEntities[edge.child].edges[edge.id];
+      delete entities[edge.child].edges[edge.id];
+      delete edges[edge.id];
     });
     // Delete this generalisation
-    delete newEntities[generalisation.parent.id].generalisations[
+    delete entities[generalisation.parent.id].generalisations[
       generalisation.id
     ];
-    return newEntities;
-  });
-  setEdges((prev) => {
-    let newEdges = { ...prev };
-    data.edges.forEach((edge) => {
-      delete newEdges[edge.id];
-    });
-    return newEdges;
+    return newElements;
   });
   // Return deep copy to be saved in history for un/redo
   console.log(`deleteGeneralisation:`);
@@ -39,23 +38,25 @@ export const deleteGeneralisation = (
 };
 
 export const updateGeneralisation = (
-  generalisation,
-  { entities, setEntities, relationships, setRelationships, edges, setEdges }
+  { elements, setElements },
+  generalisation
 ) => {
-  console.log(generalisation);
-  console.log(entities);
   let oldEntry =
-    entities[generalisation.parent.id].generalisations[generalisation.id];
+    elements.entities[generalisation.parent.id].generalisations[
+      generalisation.id
+    ];
   let data = {
     node: oldEntry ? oldEntry : generalisation,
     edges: [],
   };
   data = JSON.parse(JSON.stringify(data));
-  setEntities((prev) => {
-    let newEntities = { ...prev };
-    let parent = newEntities[generalisation.parent.id];
+  setElements((prev) => {
+    let newElements = { ...prev };
+    let parent = newElements.entities[generalisation.parent.id];
     parent.generalisations[generalisation.id] = generalisation;
-    return newEntities;
+    return newElements;
   });
+  console.log(`updateGeneralisation:`);
+  console.log(data);
   return data;
 };
