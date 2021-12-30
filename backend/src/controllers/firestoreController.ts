@@ -99,12 +99,22 @@ class FirestoreController {
 		return docData.exists();
 	}
 
-	public async checkAccess(uid: string, erid: string): Promise<boolean> {
+	public async canRead(uid: string, erid: string): Promise<boolean> {
 		const docRef: DocumentReference = doc(this.db, `user_erds/${uid}`);
 		const docData: DocumentSnapshot = await getDoc(docRef);
 		const erds: string[] = docData.get("erds");
 		for (const x of erds) {
 			if (x === erid) return true;
+		}
+		return false;
+	}
+
+	public async canWrite(uid: string, erid: string): Promise<boolean> {
+		const docRef: DocumentReference = doc(this.db, `erd_users/${erid}`);
+		const docData: DocumentSnapshot = await getDoc(docRef);
+		const users: UserPermission[] = docData.get("users");
+		for (const x of users) {
+			if (x.uid === uid) return x.permission === "OWNER" || x.permission === "READ-WRITE";
 		}
 		return false;
 	}
@@ -128,6 +138,8 @@ class FirestoreController {
 	public async updateERD(erid: string, json: string): Promise<void> {
 		const docRef: DocumentReference = doc(this.db, `erds_list/${erid}`);
 		await setDoc(docRef, JSON.parse(json));
+
+		// TODO: concurrent update?
 	}
 
 	public async deleteERD(erid: string): Promise<void> {
@@ -194,6 +206,16 @@ class FirestoreController {
 				permission
 			})
 		});
+	}
+
+	public async createDuplicate(uid: string, erid: string): Promise<string> {
+		const erdRef: DocumentReference = doc(this.db, `erds_list/${erid}`);
+		const erdData: DocumentSnapshot = await getDoc(erdRef);
+		const data = erdData.get("data");
+		const name = erdData.get("name");
+		const result = JSON.stringify({name, data});
+		await this.createERD(uid, result);
+		return result;
 	}
 }
 

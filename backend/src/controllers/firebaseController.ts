@@ -54,23 +54,29 @@ class FirebaseController {
 		}
 
 		public async getERD(uid: string, erid: string): Promise<string> {
-				const exists: boolean = await this.firestoreController.checkERDExists(erid);
-				if (!exists) throw new ErrorBuilder(404, "ERD does not exist");
-				const canAccess: boolean = await this.firestoreController.checkAccess(uid, erid);
-				if (!canAccess) throw new ErrorBuilder(403, "You do not have permission to access");
+				const userExists: boolean = await this.firestoreController.checkUserExists(uid);
+				if (!userExists) throw new ErrorBuilder(404, "User does not exist");
+				const erdExists: boolean = await this.firestoreController.checkERDExists(erid);
+				if (!erdExists) throw new ErrorBuilder(404, "ERD does not exist");
+				const canRead: boolean = await this.firestoreController.canRead(uid, erid);
+				if (!canRead) throw new ErrorBuilder(403, "You do not have permission to access");
 				const data: string = await this.firestoreController.getERD(erid);
 				return data;
 		}
 
 		public async updateERD(uid: string, erid: string, json: string): Promise<void> {
-				const exists: boolean = await this.firestoreController.checkERDExists(erid);
-				if (!exists) throw new ErrorBuilder(404, "ERD does not exist");
-				const canAccess: boolean = await this.firestoreController.checkAccess(uid, erid);
-				if (!canAccess) throw new ErrorBuilder(403, "You do not have permission to access");
+				const userExists: boolean = await this.firestoreController.checkUserExists(uid);
+				if (!userExists) throw new ErrorBuilder(404, "User does not exist");
+				const erdExists: boolean = await this.firestoreController.checkERDExists(erid);
+				if (!erdExists) throw new ErrorBuilder(404, "ERD does not exist");
+				const canWrite: boolean = await this.firestoreController.canWrite(uid, erid);
+				if (!canWrite) throw new ErrorBuilder(403, "You do not have permission to access");
 				await this.firestoreController.updateERD(erid, json);
 		}
 
 		public async deleteERD(uid: string, erid: string): Promise<void> {
+				const userExists: boolean = await this.firestoreController.checkUserExists(uid);
+				if (!userExists) throw new ErrorBuilder(404, "User does not exist");
 				const exists: boolean = await this.firestoreController.checkERDExists(erid);
 				if (!exists) throw new ErrorBuilder(404, "ERD does not exist");
 				const isOwner: boolean = await this.firestoreController.checkOwner(uid, erid);
@@ -101,6 +107,16 @@ class FirebaseController {
 				const isOwner: boolean = await this.firestoreController.checkOwner(uid, erid);
 				if (isOwner) throw new ErrorBuilder(400, "Cannot change ownership");
 				return this.firestoreController.updateAccess(uid, erid, permission);
+		}
+
+		public async createDuplicate(uid: string, erid: string): Promise<string> {
+				const userExists: boolean = await this.firestoreController.checkUserExists(uid);
+				if (!userExists) throw new ErrorBuilder(404, "User does not exist");
+				const erdExists: boolean = await this.firestoreController.checkERDExists(erid);
+				if (!erdExists) throw new ErrorBuilder(404, "ERD does not exist");
+				const canRead: boolean = await this.firestoreController.canRead(uid, erid);
+				if (!canRead) throw new ErrorBuilder(403, "You do not have permission to access");
+				return this.firestoreController.createDuplicate(uid, erid);
 		}
 }
 

@@ -5,11 +5,6 @@ import FirebaseController from "src/controllers/firebaseController";
 const router = Router();
 
 /*
-	- POST /duplicate?ERid&Uid
-		- Create a duplicate of an ERD (ERid) for a user (Uid)
-*/
-
-/*
 	/collab?Uid
 	- Gets the list of ERD that a user (Uid) has access to
 	/collab?ERid
@@ -67,7 +62,22 @@ router.put('/', function (req, res) {
 	- Create a duplicate of an ERD (ERid) for a user (Uid)
 */
 router.post("/create-duplicate", function (req, res) {
-	res.sendStatus(200);
+	if (req.query.Uid === undefined || req.query.ERid === undefined) {
+		return res.sendStatus(400);
+	}
+	const uid: string = req.query.Uid as string;
+	const erid: string = req.query.ERid as string;
+	FirebaseController.getInstance().createDuplicate(uid, erid)
+		.then((data: string) => {
+			res.status(200).send(data);
+		})
+		.catch((error) => {
+			if (error instanceof ErrorBuilder) {
+				res.status(error.getCode()).send(error.getMsg());
+			} else {
+				res.status(501).send("An error occured. Please try again later");
+			}
+		});
 });
 
 export default router;
