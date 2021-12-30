@@ -1,7 +1,7 @@
 import { types } from "../types";
 
 export const getHierarchyEdge = ({ edges }, id) => {
-  return { ...edges[id] };
+  return edges[id] ? { ...edges[id] } : null;
 };
 
 export const deleteHierarchyEdge = ({ elements, setElements }, edge) => {

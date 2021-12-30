@@ -3,7 +3,8 @@ import { types } from "../types";
 export const getAttribute = ({ entities, relationships }, id, parent) => {
   console.assert([types.ENTITY, types.RELATIONSHIP].includes(parent.type));
   const state = parent.type === types.ENTITY ? entities : relationships;
-  return { ...state[parent.id].attributes[id] };
+  const attr = state[parent.id]?.attributes[id];
+  return attr ? { ...attr } : null;
 };
 
 export const deleteAttribute = ({ setElements }, attribute) => {

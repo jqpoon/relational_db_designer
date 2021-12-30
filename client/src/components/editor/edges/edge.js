@@ -3,7 +3,6 @@ import { cardinality as cardinality_all, types } from "../types";
 import "./stylesheets/attribute.css";
 
 function RelationshipEdge({ start, end, cardinality, isKey }) {
-  console.log("Start:" + start + ", End: " + end);
   const style = {
     backgroundColor: "white",
     padding: "2.5px",

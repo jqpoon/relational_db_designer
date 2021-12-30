@@ -1,7 +1,8 @@
 import { types } from "../types";
 
 export const getGeneralisation = ({ entities }, id, parent) => {
-  return { ...entities[parent.id]?.generalisations[id] };
+  const gen = entities[parent.id]?.generalisations[id];
+  return gen ? { ...gen } : null;
 };
 
 export const deleteGeneralisation = (

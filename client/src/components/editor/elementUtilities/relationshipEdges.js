@@ -1,7 +1,7 @@
 import { types } from "../types";
 
 export const getRelationshipEdge = ({ edges }, id) => {
-  return { ...edges[id] };
+  return edges[id] ? { ...edges[id] } : null;
 };
 
 export const deleteRelationshipEdge = ({ elements, setElements }, edge) => {

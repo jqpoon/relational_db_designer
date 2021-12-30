@@ -76,6 +76,7 @@ export default function SelectEntity({
 }) {
   // For use with adding subsets under generalisations
   const [selectedGeneralisation, setGeneralisation] = useState(null);
+
   if (!entity) {
     setContext({ action: actions.NORMAL });
     return <Normal />;

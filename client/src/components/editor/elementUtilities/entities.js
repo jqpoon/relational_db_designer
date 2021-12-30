@@ -1,7 +1,7 @@
 import { types } from "../types";
 
 export const getEntity = ({ entities }, id) => {
-  return { ...entities[id] };
+  return entities[id] ? { ...entities[id] } : null;
 };
 
 export const deleteEntity = ({ elements, setElements }, entity) => {

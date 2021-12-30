@@ -3,9 +3,9 @@ import { types } from "../types";
 
 const STACK_LIMIT = 25;
 
-export const addToUndo = (editType, data, { history, setHistory }) => {
+export const addToUndo = (editType, arg, data, { history, setHistory }) => {
   setHistory((prev) => {
-    let newEntry = { action: editType, data: data };
+    let newEntry = { action: editType, arg: arg, data: data };
     let storeStart = prev.store.length > STACK_LIMIT ? 1 : 0;
     let storeEnd = Math.min(prev.position + 1, prev.store.length);
 
@@ -18,19 +18,40 @@ export const addToUndo = (editType, data, { history, setHistory }) => {
   });
 };
 
-export const undo = ({ history, setHistory }, elementsAndSetter) => {
-  if (history.position < 0) return;
+const redoActions = {
+  deleteElement: deletes,
+  addElement: updates,
+  updateElement: updates,
+};
 
-  let entry = null;
+export const redo = ({ history, setHistory }, elementsAndSetter) => {
+  if (history.position >= history.store.length - 1) return;
+
+  const entry = history.store[history.position + 1];
+  console.log(`Redo`);
+  console.log(entry);
+  redoActions[entry.action][entry.arg.type](elementsAndSetter, entry.arg);
   setHistory((prev) => {
-    let newHistory = {...prev};
-    entry = newHistory.store[newHistory.position--];
+    let newHistory = { ...prev };
+    newHistory.position++;
     return newHistory;
   });
 
+};
+
+export const undo = ({ history, setHistory }, elementsAndSetter) => {
+  if (history.position < 0) return;
+
+  const entry = history.store[history.position];
   console.log(`Undo:`);
   console.log(entry);
-  undoInverses[entry.action](entry.data, elementsAndSetter);
+  undoActions[entry.action](entry.data, elementsAndSetter);
+  setHistory((prev) => {
+    let newHistory = { ...prev };
+    newHistory.position--;
+    return newHistory;
+  });
+  
 };
 
 const undoUpdate = (data, elementsAndSetter) => {
@@ -45,12 +66,30 @@ const undoAdd = (data, elementsAndSetter) => {
 
 const undoDelete = (data, elementsAndSetter) => {
   const { elements, setElements } = elementsAndSetter;
-  if (data.node) {
-    updates[data.node.type](elementsAndSetter, data.node);
-  }
+  console.log(elements);
+
   setElements((prev) => {
     let newElements = { ...prev };
     const { entities, relationships, edges } = newElements;
+    if (data.node) {
+      switch (data.node.type) {
+        case types.ENTITY:
+          entities[data.node.id] = data.node;
+          break;
+        case types.RELATIONSHIP:
+          relationships[data.node.id] = data.node;
+          break;
+        case types.ATTRIBUTE:
+          const state =
+            data.node.parent.type === types.ENTITY ? entities : relationships;
+          state[data.node.parent.id].attributes[data.node.id] = data.node;
+          break;
+        case types.GENERALISATION:
+          entities[data.node.parent.id].generalisations[data.node.id] =
+            data.node;
+          break;
+      }
+    }
     data.edges.forEach((edge) => {
       edges[edge.id] = edge;
       if (edge.type === types.EDGE.RELATIONSHIP) {
@@ -77,11 +116,12 @@ const undoDelete = (data, elementsAndSetter) => {
         }
       }
     });
+    console.log(newElements);
     return newElements;
   });
 };
 
-const undoInverses = {
+const undoActions = {
   deleteElement: undoDelete,
   updateElement: undoUpdate,
   addElement: undoAdd,

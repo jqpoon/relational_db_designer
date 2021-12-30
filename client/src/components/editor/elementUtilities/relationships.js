@@ -1,10 +1,11 @@
 import { types } from "../types";
 
 export const getRelationship = ({ relationships }, id) => {
-  return { ...relationships[id] };
+  return relationships[id] ? { ...relationships[id] } : null;
 };
 
 export const deleteRelationship = ({ elements, setElements }, relationship) => {
+  console.log(elements);
   let data = { node: relationship, edges: [] };
   // Find all edges connected to the relationship
   for (const edgeId of Object.keys(relationship.edges)) {
@@ -39,6 +40,7 @@ export const deleteRelationship = ({ elements, setElements }, relationship) => {
   // Return deep copy to be saved in history for un/redo
   console.log(`deleteRelationship:`);
   console.log(data);
+  console.log(elements);
   return data;
 };
 
@@ -55,5 +57,6 @@ export const updateRelationship = ({ elements, setElements }, relationship) => {
 
   console.log(`updateRelationship:`);
   console.log(data);
+  console.log(elements);
   return data;
 };

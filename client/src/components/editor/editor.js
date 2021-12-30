@@ -16,7 +16,7 @@ import EdgeToRelationship from "./right_toolbar/edgeRelationship";
 import SelectGeneralisation from "./right_toolbar/selectGeneralisation";
 import { ContextMenu } from "./contextMenus/contextMenu";
 import DisplayTranslation from "./right_toolbar/translationDisplay";
-import { addToUndo, undo } from "./historyUtilities/undo";
+import { addToUndo, redo, undo } from "./historyUtilities/history";
 import { deletes, gets, updates } from "./elementUtilities/elementFunctions";
 
 export default function Editor() {
@@ -65,20 +65,19 @@ export default function Editor() {
   };
 
   const deleteElement = (type, element) => {
+    const arg = JSON.parse(JSON.stringify(element));
     const data = deletes[type](elementsAndSetter, element);
-    addToUndo("deleteElement", data, historyAndSetter);
+    addToUndo("deleteElement", arg, data, historyAndSetter);
   };
   const addElement = (type, element) => {
+    const arg = JSON.parse(JSON.stringify(element));
     const data = updates[type](elementsAndSetter, element);
-    addToUndo("addElement", data, historyAndSetter);
+    addToUndo("addElement", arg, data, historyAndSetter);
   };
   const updateElement = (type, element) => {
+    const arg = JSON.parse(JSON.stringify(element));
     const data = updates[type](elementsAndSetter, element);
-    addToUndo("updateElement", data, historyAndSetter);
-  };
-
-  const redo = () => {
-    /** TODO */
+    addToUndo("updateElement", arg, data, historyAndSetter);
   };
 
   const elementFunctions = {
@@ -115,7 +114,7 @@ export default function Editor() {
       });
     },
     undo: () => undo(historyAndSetter, elementsAndSetter),
-    redo: redo,
+    redo: () => redo(historyAndSetter, elementsAndSetter),
   };
 
   const rightToolBarActions = {
@@ -182,7 +181,7 @@ export default function Editor() {
             return (
               <SelectGeneralisation
                 generalisation={getElement(
-                  types.ENTITY,
+                  types.GENERALISATION,
                   context.selected.id,
                   context.selected.parent
                 )}
