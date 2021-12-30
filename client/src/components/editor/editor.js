@@ -42,20 +42,12 @@ import {
 import { addToUndo, undo } from "./historyUtilities/undo";
 import { deletes, updates } from "./elementUtilities/delete";
 
-// TODO: update left,right toolbar to match new data structures
-// TODO: add initial attributes to initial.js + implement position update based on parent node of the attribute
-// TODO: migrate remaining functions from index.js
-// TODO: implement node editing by merging into actions + context
-// TODO: extract common base node in node.js
-// TODO: figure out where parentref should go and update render appropriately
-
 export default function Editor() {
   // Canvas states: passed to children for metadata (eg width and height of main container)
   const parentRef = useRef(null);
   const [render, setRender] = useState(false);
   const [scale, setScale] = useState(1);
   const [panDisabled, setPanDisabled] = useState(false);
-  const [editableId, setEditableId] = useState(0);
 
   // List of components that will be rendered
   const [entities, setEntities] = useState(initialEntities);
@@ -335,7 +327,6 @@ export default function Editor() {
     undo: () => {
       undo(historyAndSetters, elementAndSetters);
     },
-    setEditableId: setEditableId,
   };
 
   const generalFunctions = {
