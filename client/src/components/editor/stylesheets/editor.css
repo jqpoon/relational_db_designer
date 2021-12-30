@@ -3,16 +3,26 @@
 }
 
 .canvas {
-	width: 180vw;
+	left: 10vw;
+	width: 140vw;
 	height: 200vh;
+	overflow: hidden;
+
 	/* Grid background */
-	background-image: radial-gradient(
+	background: radial-gradient(
 		circle at 1px 1px,
 		black 1px,
 		transparent 0
 	);
 	--size: calc(100% / 25);
 	--offset: calc(var(--size) / 2);
-	background-size: var(--size) var(--size);
-	background-position: var(--offset) var(--offset);
+	background-size: 30px 30px;
+}
+
+.canvas-wrapper {
+	left: 10vw;
+	width: 140vw;
+	height: 200vh;
+	overflow: hidden;
+
 }

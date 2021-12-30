@@ -530,8 +530,11 @@ export default function Editor() {
     alignmentAnimation: { animationTime: 0 },
     onAlignBound: forceRerender,
     doubleClick: { disabled: true },
-    minScale: 0.25,
-    limitToBounds: false,
+    initialScale: 5,
+    minScale: 1,
+    // initialPositionX: -1000,
+    // initialPositionY: -1000,
+    //limitToBounds: false,
   };
 
   const nodeConfig = {

@@ -8,9 +8,9 @@
 
 .entity,
 .weak-entity {
+  background-color: lightblue;
   width: 150px;
   height: 75px;
-  border: 1px solid black;
   z-index: 15;
   justify-content: center;
   align-items: center;
@@ -18,11 +18,13 @@
 }
 
 .entity {
-  background-color: lightblue;
+  border: 1px solid black;
 }
 
 .weak-entity {
-  background-color: palegreen;
+  border-width: 8px;
+  border-style: double ;
+  border-color: black;
 }
 
 .entity-input,
@@ -75,13 +77,47 @@
 
 /* TODO: change generalisation formatting (hexagon) */
 .generalisation {
-  width: 150px;
+  width: 120px;
   height: 75px;
-  border: 1px solid black;
   background-color: lightcoral;
+
   z-index: 15;
   display: table;
+  position: relative;
 }
+.generalisation:before, .generalisation:after{
+  content:"";
+  display: flex;
+  width:0;
+  border-top: 37.5px solid transparent;
+  border-bottom: 37.5px solid transparent;
+  position: absolute;
+}
+
+.generalisation:before {
+  left: -20px;
+  border-right: 20px solid lightcoral;
+}
+.generalisation:after {
+  right: -20px;
+  border-left: 20px solid lightcoral;
+}
+
+/* .generalisation-top{
+  width: 0;
+  border-top: 37.5px solid transparent;
+  border-right: 20px solid lightcoral;
+  border-bottom: 37.5px solid transparent;
+}
+
+.generalisation-bottom{
+
+  width: 0;
+  border-top: 37.5px solid transparent;
+  border-left: 20px solid lightcoral;
+  border-bottom: 37.5px solid transparent;
+
+} */
 
 .generalisation-input {
   display: flex;
