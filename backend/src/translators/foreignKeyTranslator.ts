@@ -56,7 +56,7 @@ class ForeignKeyTranslator implements Translator {
                 var table: Table = translatedTable.tables.get(relationship.text)!
                 relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: string) => {
                     const key: string = getPrimaryKey(this.entities.get(entityID)!).text;
-                    const foreignTable = this.entities.get(entityID)!.text
+                    const foreignTable = this.entities.get(entityID)!.text;
                     const foreignKey: ForeignKey = {
                         keyName: relationship.text + " " + foreignTable,
                         foreignTable: foreignTable,
@@ -65,6 +65,23 @@ class ForeignKeyTranslator implements Translator {
                     table.foreignKeys.push(foreignKey);
                 });
                 translatedTable.tables.set(relationship.text, table);
+            }
+        });
+
+        this.entities.forEach((entity: Entity) => {
+            if (entity.subsets !== undefined) {
+                var table: Table = translatedTable.tables.get(entity.text)!
+                const key: string = getPrimaryKey(entity).text;
+                entity.subsets.map((s: Entity) => {
+                    const foreignTable = s.text;
+                    const foreignKey: ForeignKey = {
+                        keyName: entity.text + " " + foreignTable,
+                        foreignTable: foreignTable,
+                        columns: [key]
+                    }
+                    table.foreignKeys.push(foreignKey);
+                });
+                translatedTable.tables.set(entity.text, table);
             }
         });
         return translatedTable
