@@ -43,10 +43,14 @@ class FirebaseController {
         return this.firebaseAuthController.login(email, password);
     }
 
-		public async createERD(uid: string, json: string): Promise<void> {
+		public async createERD(uid: string, data: string): Promise<void> {
 				const exists: boolean = await this.firestoreController.checkUserExists(uid);
 				if (!exists) throw new ErrorBuilder(404, "User does not exist");
-				await this.firestoreController.createERD(uid, json);
+				const json: any = JSON.parse(data);
+				if (json.name === undefined || json.data === undefined) {
+					throw new ErrorBuilder(400, "Name and data have to be defined");
+				}
+				await this.firestoreController.createERD(uid, data);
 		}
 
 		public async getERD(uid: string, erid: string): Promise<string> {
@@ -75,15 +79,28 @@ class FirebaseController {
 		}
 
 		public async getAccessList(id: string, isUser: boolean): Promise<string> {
-			let exists: boolean;
-			if (isUser) {
-				exists = await this.firestoreController.checkUserExists(id);
-				if (!exists) throw new ErrorBuilder(404, "User does not exist");
-				return this.firestoreController.getUserAccessList(id);
-			}
-			exists = await this.firestoreController.checkERDExists(id);
-			if (!exists) throw new ErrorBuilder(404, "ERD does not exist");
-			return this.firestoreController.getERDAccessList(id);
+				let exists: boolean;
+				if (isUser) {
+						exists = await this.firestoreController.checkUserExists(id);
+						if (!exists) throw new ErrorBuilder(404, "User does not exist");
+						return this.firestoreController.getUserAccessList(id);
+				}
+				exists = await this.firestoreController.checkERDExists(id);
+				if (!exists) throw new ErrorBuilder(404, "ERD does not exist");
+				return this.firestoreController.getERDAccessList(id);
+		}
+
+		public async updateAccess(uid: string, erid: string, permission: string): Promise<void> {
+				if (!this.firestoreController.isValidPermission(permission)) {
+						throw new ErrorBuilder(400, "Permission should be READ or READ-WRITE");
+				}
+				const userExists: boolean = await this.firestoreController.checkUserExists(uid);
+				if (!userExists) throw new ErrorBuilder(404, "User does not exist");
+				const erdExists: boolean = await this.firestoreController.checkERDExists(erid);
+				if (!erdExists) throw new ErrorBuilder(404, "ERD does not exist");
+				const isOwner: boolean = await this.firestoreController.checkOwner(uid, erid);
+				if (isOwner) throw new ErrorBuilder(400, "Cannot change ownership");
+				return this.firestoreController.updateAccess(uid, erid, permission);
 		}
 }
 

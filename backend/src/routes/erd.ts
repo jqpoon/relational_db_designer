@@ -40,7 +40,7 @@ router.post("/", function (req, res) {
 		return res.sendStatus(400);
 	}
 	const uid: string = req.query.Uid as string;
-	const data: string = JSON.stringify(req.body.data as string);
+	const data: string = JSON.stringify(req.body as string);
 	FirebaseController.getInstance().createERD(uid, data)
 		.then(() => {
 			res.status(200).send(`ERD created for ${uid}`);

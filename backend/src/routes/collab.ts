@@ -41,7 +41,25 @@ router.get("/", function (req, res) {
 	- Update user (Uid) access (permission) to ERD (ERid)
 */
 router.put('/', function (req, res) {
-	res.sendStatus(200);
+	if (req.query.Uid === undefined || 
+		req.query.ERid === undefined ||
+		req.query.permission === undefined) {
+		return res.sendStatus(400);
+	}
+	const uid: string = req.query.Uid as string;
+	const erid: string = req.query.ERid as string;
+	const permission: string = req.query.permission as string;
+	FirebaseController.getInstance().updateAccess(uid, erid, permission)
+		.then(() => {
+			res.status(200).send("Permission updated");
+		})
+		.catch((error) => {
+			if (error instanceof ErrorBuilder) {
+				res.status(error.getCode()).send(error.getMsg());
+			} else {
+				res.status(501).send("An error occured. Please try again later");
+			}
+		});
 });
 
 /*
