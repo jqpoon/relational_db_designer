@@ -79,11 +79,10 @@
 .generalisation {
   width: 120px;
   height: 75px;
-  background-color: lightcoral;
-
-  z-index: 15;
+  background-color:lightblue;
   display: table;
   position: relative;
+  z-index: 15;
 }
 .generalisation:before, .generalisation:after{
   content:"";
@@ -91,16 +90,36 @@
   width:0;
   border-top: 37.5px solid transparent;
   border-bottom: 37.5px solid transparent;
-  position: absolute;
+  position: fixed;
 }
 
 .generalisation:before {
   left: -20px;
-  border-right: 20px solid lightcoral;
+  border-right: 20px solid lightblue;
 }
 .generalisation:after {
+  top: 0px;
+  bottom: 0px;
   right: -20px;
-  border-left: 20px solid lightcoral;
+  border-left: 20px solid lightblue;
+}
+
+.generalisation.inner {
+  background-color: lightblue;
+  -webkit-transform: scale(0.9, 0.9);
+  -moz-transform: scale(0.9, 0.9);
+  transform: scale(0.9, 0.9);
+  position: absolute;
+
+}
+.generalisation.inner:before {
+  left: -20px;
+  border-right: 20px solid lightblue;
+}
+.generalisation.inner:after {
+  top: 0px;
+  right: -20px;
+  border-left: 20px solid lightblue;
 }
 
 /* .generalisation-top{

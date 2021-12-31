@@ -293,6 +293,18 @@ export default function Node({
       )}
     </div>
   );
+
+  const generalisation = (
+    <div className={className} style={highlightStyle(className)}>
+      <div className="generalisation inner">
+      {editable ? (
+        editingMode()
+      ) : (
+        <div className={className + "-label"}>{text}</div>
+      )}
+      </div>
+    </div>
+  );
   // TODO:conditional rendering
 
   return (
