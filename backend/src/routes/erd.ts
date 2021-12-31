@@ -1,6 +1,6 @@
 import {Router} from "express";
-import ErrorBuilder from "src/controllers/errorBuilder";
-import FirebaseController from "src/controllers/firebaseController";
+import ErrorBuilder from "../controllers/errorBuilder";
+import FirebaseController from "../controllers/firebaseController";
 
 const router = Router();
 

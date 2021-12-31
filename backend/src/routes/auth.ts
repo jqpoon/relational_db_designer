@@ -1,5 +1,5 @@
 import {Router} from "express";
-import FirebaseController from "src/controllers/firebaseController";
+import FirebaseController from "../controllers/firebaseController";
 
 const router = Router();
 

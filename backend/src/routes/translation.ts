@@ -1,9 +1,9 @@
 import {OK} from "http-status-codes";
 import {Router} from "express";
-import Entity from "src/models/entity";
-import Relationship, {LHConstraint} from "src/models/relationship";
-import FullTranslator from "src/translators/fullTranslator";
-import TranslatedTable from "src/translators/models/translatedTable";
+import Entity from "../models/entity";
+import Relationship, {LHConstraint} from "../models/relationship";
+import FullTranslator from "../translators/fullTranslator";
+import TranslatedTable from "../translators/models/translatedTable";
 
 const router = Router();
 
