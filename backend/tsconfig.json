@@ -68,7 +68,6 @@
 
     /* JSON */
     "resolveJsonModule": true,
-    "esModuleInterop": true,
 
     "paths": {
       "@daos/*": [

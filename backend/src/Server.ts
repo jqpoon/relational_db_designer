@@ -6,9 +6,13 @@ import helmet from 'helmet';
 import express, { NextFunction, Request, Response } from 'express';
 import StatusCodes from 'http-status-codes';
 import 'express-async-errors';
+import dotenv from "dotenv";
 
 import BaseRouter from './routes';
 import SchemaRouter from './routes/schema';
+import AuthRouter from './routes/auth';
+import ERDRouter from "./routes/erd";
+import CollabRouter from "./routes/collab"
 import TranslationRouter from './routes/translation'
 import logger from '@shared/Logger';
 
@@ -24,6 +28,7 @@ const { BAD_REQUEST } = StatusCodes;
 /************************************************************************************
  *                              Set basic express settings
  ***********************************************************************************/
+dotenv.config();
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
@@ -42,6 +47,9 @@ if (process.env.NODE_ENV === 'production') {
 // Add APIs
 app.use('/api', BaseRouter);
 app.use('/schema', SchemaRouter);
+app.use('/erd', ERDRouter);
+app.use('/collab', CollabRouter);
+app.use('/auth', AuthRouter);
 app.use('/translation', TranslationRouter);
 app.use(
     "/docs",
