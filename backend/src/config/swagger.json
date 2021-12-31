@@ -230,6 +230,67 @@
           "type": "string"
         }
       }
+    },
+    "TranslatedTable": {
+      "type": "object",
+      "properties": {
+        "tables": {
+          "type": "object",
+          "properties": {
+              "table name": {
+                "type": "string"
+              },
+              "table": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "source": {
+                      "type": "number"
+                    },
+                    "columns": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "columnName": {
+                            "type": "string"
+                          },
+                          "isPrimaryKey": {
+                            "type": "boolean"
+                          },
+                          "isOptional": {
+                            "type": "boolean"
+                          }
+                        }
+                      }
+                    },
+                    "foreignKeys": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "keyName": {
+                            "type": "string"
+                          },
+                          "foreignTable": {
+                            "type": "string"
+                          },
+                          "columns": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                } 
+              }
+          }
+        }
+      }
     }
   },
   "tags": [
@@ -248,6 +309,10 @@
     {
       "name": "General",
       "description": "ER Schema General Functions"
+    },
+    {
+      "name": "Translation",
+      "description": "Translating from diagram to relational model"
     }
   ],
   "consumes": [
@@ -595,6 +660,118 @@
             "description": "Failed operation",
             "schema": {
               "$ref": "#/definitions/InvalidResponse"
+            }
+          }
+        }
+      }
+    },
+    "/translation/translate": {
+      "post": {
+        "tags": [
+          "Translation"
+        ],
+        "description": "Returns translation of diagram to relational model",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "entities": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Entity"
+                  },
+                  "example": [
+                    {
+                      "identifier": 1,
+                      "positionX": 1,
+                      "positionY": 2,
+                      "shapeWidth": 4,
+                      "shapeHeight": 4,
+                      "name": "Mock Entity 1",
+                      "isWeak": true,
+                      "attributes": [
+                        {
+                          "identifier": 1,
+                          "positionX": 2,
+                          "positionY": 4,
+                          "shapeWidth": 4,
+                          "shapeHeight": 4,
+                          "name": "Mock Attribute 1",
+                          "isPrimaryKey": true,
+                          "isOptional": false
+                        }
+                      ]
+                    },
+                    {
+                      "identifier": 2,
+                      "positionX": 1,
+                      "positionY": 2,
+                      "shapeWidth": 4,
+                      "shapeHeight": 4,
+                      "name": "Mock Entity 2",
+                      "isWeak": true,
+                      "attributes": [
+                        {
+                          "identifier": 2,
+                          "positionX": 2,
+                          "positionY": 4,
+                          "shapeWidth": 4,
+                          "shapeHeight": 4,
+                          "name": "Mock Attribute 2",
+                          "isPrimaryKey": true,
+                          "isOptional": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "relationships": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Relationship"
+                  },
+                  "example": [
+                    {
+                      "identifier": 1,
+                      "positionX": 1,
+                      "positionY": 2,
+                      "shapeWidth": 4,
+                      "shapeHeight": 4,
+                      "name": "Mock Relationship",
+                      "attributes": [
+                        {
+                          "identifier": 3,
+                          "positionX": 2,
+                          "positionY": 4,
+                          "shapeWidth": 4,
+                          "shapeHeight": 4,
+                          "name": "Mock Attribute Relationship",
+                          "isPrimaryKey": true,
+                          "isOptional": false
+                        }
+                      ],
+                      "lHConstraints": {
+                        "1": "ONE_TO_MANY",
+                        "2": "ONE_TO_MANY"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/TranslatedTable"
+              }
             }
           }
         }

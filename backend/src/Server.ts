@@ -13,10 +13,12 @@ import SchemaRouter from './routes/schema';
 import AuthRouter from './routes/auth';
 import ERDRouter from "./routes/erd";
 import CollabRouter from "./routes/collab"
+import TranslationRouter from './routes/translation'
 import logger from '@shared/Logger';
 
 import swaggerUi from 'swagger-ui-express';
 import * as swaggerDocument from './config/swagger.json';
+import { parse } from 'querystring';
 
 const app = express();
 const { BAD_REQUEST } = StatusCodes;
@@ -48,6 +50,7 @@ app.use('/schema', SchemaRouter);
 app.use('/erd', ERDRouter);
 app.use('/collab', CollabRouter);
 app.use('/auth', AuthRouter);
+app.use('/translation', TranslationRouter);
 app.use(
     "/docs",
     swaggerUi.serve,

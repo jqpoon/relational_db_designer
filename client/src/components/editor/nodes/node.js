@@ -1,19 +1,29 @@
 import { useCallback, useState, useRef, useEffect } from "react";
 import Draggable from "react-draggable";
 import { useXarrow } from "react-xarrows";
-import Attribute from "../edges/attribute";
+import Attribute, { addAttributeToNode } from "../edges/attribute";
 import { actions, types } from "../types";
 import { EntityContextMenu } from "../contextMenus/entityContextMenu";
 import "./stylesheets/node.css";
 import { HierarchyEdge } from "../edges/edge";
 
-export function TestRelationship(props) {
-  return <Node {...props} />;
+export function TestRelationship({ relationship, general }) {
+  const attributes = Object.values(relationship.attributes).map((attribute) => {
+    return <Attribute attribute={attribute} {...general} />;
+  });
+  return (
+    <Node
+      {...relationship}
+      {...general}
+      children={attributes}
+      className="relationship"
+    />
+  );
 }
 
 export function TestEntity({ entity, general }) {
   const attributes = Object.values(entity.attributes).map((attribute) => {
-    return <Attribute {...attribute} {...general} />;
+    return <Attribute attribute={attribute} {...general} />;
   });
   const generalisations = Object.values(entity.generalisations).map(
     (generalisation) => {
@@ -30,18 +40,19 @@ export function TestEntity({ entity, general }) {
       {generalisations}
     </>
   );
-  return <Node {...entity} {...general} children={children} />;
+  return (
+    <Node
+      {...entity}
+      {...general}
+      children={children}
+      className={entity.isWeak.length === 0 ? "entity" : "weak-entity"}
+    />
+  );
 }
 
 export function Generalisation(props) {
-  return <Node {...props} />;
+  return <Node {...props} className="generalisation" />;
 }
-
-const classFromNodeType = {
-  [types.ENTITY]: "entity",
-  [types.RELATIONSHIP]: "relationship",
-  [types.GENERALISATION]: "generalisation",
-};
 
 // General draggable, editable node
 export default function Node({
@@ -57,10 +68,11 @@ export default function Node({
   setPanDisabled,
   context,
   setContext,
+  setContextMenu,
   children,
   parent,
+  className,
 }) {
-   console.log(`Rendering node (id: ${id})`);
   // Reference to self allows info about self to be propagated
   const nodeRef = useRef(null);
   // Name of node which will be displayed
@@ -69,20 +81,41 @@ export default function Node({
   // To set bounds of draggable
   const [dimensions, setDimensions] = useState({});
 
-  const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
-  const [show, setShow] = useState(false);
   const [editable, setEditable] = useState(false);
 
-  const handleContextMenu = useCallback((event) => {
-    event.preventDefault();
-    setAnchorPoint({ x: 0, y: 0 }); // TODO: figure out how to fix anchor point
-    setShow(true);
-  }, []);
+  const contextMenuActions = {
+    "Edit Label": () => setEditable(true),
+  };
+
+  switch (type) {
+    case types.ENTITY:
+    case types.RELATIONSHIP:
+      contextMenuActions["Add Attribute"] = () =>
+        addAttributeToNode({
+          addElement: addElement,
+          getElement: getElement,
+          parentId: id,
+          parentType: type,
+        });
+      break;
+    default:
+  }
 
   // Hides the context menu if we left click again
-  const handleClick = useCallback((e) => {
-    setShow(false);
-  }, [show]);
+  const handleClick = useCallback(() => {
+    setContextMenu(null); //TODO: check
+  }, [setContextMenu]);
+
+  const handleContextMenu = useCallback(
+    (event) => {
+      event.preventDefault();
+      setContextMenu({
+        actions: contextMenuActions,
+        anchor: { x: event.pageX, y: event.pageY },
+      });
+    },
+    [setContextMenu]
+  );
 
   // Set dimensions on mount
   useEffect(() => {
@@ -127,7 +160,12 @@ export default function Node({
       case actions.SELECT.ADD_RELATIONSHIP:
         setContext((prev) => {
           let newCtx = { ...prev };
-          newCtx.target = { type: type, id: id, cardinality: "" };
+          newCtx.target = {
+            type: type,
+            id: id,
+            parent: parent,
+            cardinality: "",
+          };
           return newCtx;
         });
         break;
@@ -135,7 +173,7 @@ export default function Node({
       case actions.SELECT.ADD_SUBSET:
         setContext((prev) => {
           let newCtx = { ...prev };
-          newCtx.target = { type: type, id: id };
+          newCtx.target = { type: type, id: id, parent: parent };
           return newCtx;
         });
         break;
@@ -161,11 +199,11 @@ export default function Node({
     position: pos,
     scale: scale,
     bounds: {
-      // ?
-      left: 5,
-      top: 5,
-      right: parentRef.current.clientWidth - dimensions.width - 5,
-      bottom: parentRef.current.clientHeight - dimensions.height - 5,
+      // Uncomment below to limit nodes to only be dragged within the canvas
+      // left: 5,
+      // top: 5,
+      // right: parentRef.current.clientWidth - dimensions.width - 5,
+      // bottom: parentRef.current.clientHeight - dimensions.height - 5,
     },
     onDrag: onDrag,
     onStop: onStop,
@@ -182,7 +220,7 @@ export default function Node({
   // Contents displayed in node
   const editingMode = () => {
     return (
-      <div className={classFromNodeType[type] + "-input"}>
+      <div className={className + "-input"}>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -202,33 +240,57 @@ export default function Node({
   };
 
   const highlightStyle = () => {
-    if (context.action === actions.SELECT.NORMAL && id === context.selected.id ){
-      return { border: "2px solid orange" }
-     } else if(context.action === actions.SELECT.ADD_RELATIONSHIP && id === context.selected.id){
-      return { border: "2px solid orange" }
-     }  else if(context.action === actions.SELECT.ADD_RELATIONSHIP && context.target !== null && id === context.target.id){
-      return { border: "2px solid orange" }
-     } else if((context.action === actions.RELATIONSHIP_ADD.SELECT_SOURCES || context.action === actions.RELATIONSHIP_ADD.SELECT_TARGET) && context.sources != null && idIsInSelectedRelationship(Object.keys(context.sources))) {
-      return { border: "2px solid orange" }
-     } else if((context.action === actions.RELATIONSHIP_ADD.SELECT_SOURCES || context.action === actions.RELATIONSHIP_ADD.SELECT_TARGET) && context.target!= null && id === context.target.id) {
-      return { border: "2px solid orange" }
-     } else{
-       return null
-     }
-  }
+    if (
+      context.action === actions.SELECT.NORMAL &&
+      id === context.selected.id
+    ) {
+      return { border: "2px solid orange" };
+    } else if (
+      context.action === actions.SELECT.ADD_RELATIONSHIP &&
+      id === context.selected.id
+    ) {
+      return { border: "2px solid orange" };
+    } else if (
+      context.action === actions.SELECT.ADD_RELATIONSHIP &&
+      context.target !== null &&
+      id === context.target.id
+    ) {
+      return { border: "2px solid orange" };
+    } else if (
+      (context.action === actions.RELATIONSHIP_ADD.SELECT_SOURCES ||
+        context.action === actions.RELATIONSHIP_ADD.SELECT_TARGET) &&
+      context.sources != null &&
+      idIsInSelectedRelationship(Object.keys(context.sources))
+    ) {
+      return { border: "2px solid orange" };
+    } else if (
+      (context.action === actions.RELATIONSHIP_ADD.SELECT_SOURCES ||
+        context.action === actions.RELATIONSHIP_ADD.SELECT_TARGET) &&
+      context.target != null &&
+      id === context.target.id
+    ) {
+      return { border: "2px solid orange" };
+    } else {
+      return null;
+    }
+  };
 
   const idIsInSelectedRelationship = (sources) => {
     for (const x of sources) {
-      if(parseInt(x,10) === id){
+      if (x === id) {
         return true;
       }
     }
     return false;
-  }
+  };
 
   const normalMode = (
-    <div style={highlightStyle()} className={classFromNodeType[type]}>
-      {editable ? editingMode() : <div className={classFromNodeType[type]+'-label'}>{text}</div>}
+    <div style={highlightStyle()} className={className}>
+      {editable ? (
+        editingMode()
+      ) : (
+        <div className={className + "-label"}>{text}</div>
+      )}
     </div>
   );
   // TODO:conditional rendering
@@ -239,18 +301,7 @@ export default function Node({
         style={{ width: "150px", height: "75px" }}
         {...draggableConfig}
       >
-        <div {...contentsConfig}>
-          <EntityContextMenu
-            anchorPoint={anchorPoint}
-            show={show}
-            setEditable={setEditable}
-            id={id}
-            getElement={getElement}
-            addElement={addElement}
-            updateElement={updateElement}
-          />
-          {normalMode}
-        </div>
+        <div {...contentsConfig}>{normalMode}</div>
       </Draggable>
       {children}
     </>

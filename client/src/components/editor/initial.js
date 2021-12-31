@@ -1,11 +1,24 @@
 import { types } from "./types";
 
 export const initialEntities = {
+  ESwipeCard: {
+    id: "ESwipeCard",
+    text: "Swipe Card",
+    pos: { x: 550, y: 100 },
+    type: types.ENTITY,
+    isWeak: ["ESwipeCardR0"],
+    edges: {
+      ESwipeCardR0: { type: types.EDGE.RELATIONSHIP },
+    },
+    attributes: {},
+    generalisations: {},
+  },
   E0: {
     id: "E0",
     text: "Person",
     pos: { x: 300, y: 250 },
     type: types.ENTITY,
+    isWeak: [],
     edges: {
       E0R0: { type: types.EDGE.RELATIONSHIP },
       E1E0: { type: types.EDGE.HIERARCHY },
@@ -30,8 +43,8 @@ export const initialEntities = {
         text: "Messages",
         pos: { x: 300, y: 400 },
         edges: {
-          E3E0G0: {},
-          E4E0G0: {},
+          E3E0G0: { type: types.EDGE.HIERARCHY },
+          E4E0G0: { type: types.EDGE.HIERARCHY },
         },
       },
     },
@@ -41,6 +54,7 @@ export const initialEntities = {
     text: "Manager",
     pos: { x: 100, y: 250 },
     type: types.ENTITY,
+    isWeak: [],
     edges: {
       E1E0: { type: types.EDGE.HIERARCHY },
     },
@@ -52,6 +66,7 @@ export const initialEntities = {
     text: "Department",
     pos: { x: 750, y: 250 },
     type: types.ENTITY,
+    isWeak: [],
     edges: {
       E2R0: { type: types.EDGE.RELATIONSHIP },
     },
@@ -63,6 +78,7 @@ export const initialEntities = {
     text: "Email Users",
     pos: { x: 100, y: 500 },
     type: types.ENTITY,
+    isWeak: [],
     edges: {
       E3E0G0: { type: types.EDGE.HIERARCHY },
     },
@@ -74,6 +90,7 @@ export const initialEntities = {
     text: "Non-email Users",
     pos: { x: 550, y: 500 },
     type: types.ENTITY,
+    isWeak: [],
     edges: {
       E4E0G0: { type: types.EDGE.HIERARCHY },
     },
@@ -97,6 +114,16 @@ export const initialRelationships = {
 };
 
 export const initialEdges = {
+  ESwipeCardR0: {
+    start: "ESwipeCard",
+    end: "R0",
+    id: "ESwipeCardR0",
+    cardinality: "ONE_TO_ONE",
+    type: types.EDGE.RELATIONSHIP,
+    source_type: types.ENTITY,
+    target_type: types.RELATIONSHIP,
+    isKey: true,
+  },
   E0R0: {
     start: "E0",
     end: "R0",
@@ -105,6 +132,7 @@ export const initialEdges = {
     type: types.EDGE.RELATIONSHIP,
     source_type: types.ENTITY,
     target_type: types.RELATIONSHIP,
+    isKey: false,
   },
   E2R0: {
     start: "E2",
@@ -114,6 +142,7 @@ export const initialEdges = {
     type: types.EDGE.RELATIONSHIP,
     source_type: types.ENTITY,
     target_type: types.RELATIONSHIP,
+    isKey: false,
   },
   E1E0: {
     id: "E1E0",

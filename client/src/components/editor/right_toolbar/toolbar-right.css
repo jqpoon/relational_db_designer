@@ -41,7 +41,7 @@
 
 .selected-element {
   margin: 0;
-  padding: 7px;
+  padding: 0;
   /* display: flex;
   justify-content:space-between; */
 }
@@ -72,4 +72,32 @@
   color: gray;
   margin: 5px 0;
   padding: 0;
+}
+
+input[type=text] {
+  padding: 5px 5px 2px 5px;
+  margin: 0;
+  background-color: transparent;
+  border: 0;
+}
+
+input[type=text]:focus {
+  padding: 5px 5px 2px 5px;
+  margin: 0;
+  background-color: white;
+  border: 0;
+  outline: none;
+}
+
+input[type=text]:hover {
+  padding: 5px 5px 2px 5px;
+  margin: 0;
+  background-color: white;
+  border: 0;
+  outline: none;
+}
+
+.translation{
+  display: inline-block;
+  font-size: 12px
 }

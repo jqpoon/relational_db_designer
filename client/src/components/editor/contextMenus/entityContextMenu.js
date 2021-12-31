@@ -1,13 +1,14 @@
-import "./stylesheets/contextMenu.css"
+import "./stylesheets/contextMenu.css";
 import { addAttributeToNode } from "../edges/attribute";
+import { types } from "../types";
 
 export function EntityContextMenu({
-  id, 
-  setEditable, 
-  anchorPoint, 
+  id,
+  setEditable,
+  anchorPoint,
   show,
   getElement,
-  addElement, 
+  addElement,
   updateElement,
 }) {
   // For context menu: anchorPoint contains position of contextMenu and show controls when contextMenu will be shown
@@ -27,7 +28,12 @@ export function EntityContextMenu({
           <hr />
           <li
             onClick={() =>
-              addAttributeToNode(updateElement, addElement, getElement, "Attribute", id)
+              addAttributeToNode({
+                addElement: addElement,
+                getElement: getElement,
+                parentId: id,
+                parentType: types.ENTITY,
+              })
             }
           >
             Add Attribute

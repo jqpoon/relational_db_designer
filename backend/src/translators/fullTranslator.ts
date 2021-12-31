@@ -2,40 +2,38 @@ import Entity from "../models/entity";
 import Relationship from "../models/relationship";
 import EntityTranslator from "./entityTranslator";
 import ForeignKeyTranslator from "./foreignKeyTranslator";
-import TranslatedSchema, { AttributesSchema } from "./models/translatedSchema";
+import TranslatedTable, { Table } from "./models/translatedTable";
 import RelationshipTranslator from "./relationshipTranslator";
 
 class FullTranslator {
 
-    entities: Map<Number, Entity>;
-    relationships: Map<Number, Relationship>;
+    entities: Map<string, Entity>;
+    relationships: Map<string, Relationship>;
 
-    constructor(entities: Map<Number, Entity>, relationships: Map<Number, Relationship>) {
+    constructor(entities: Map<string, Entity>, relationships: Map<string, Relationship>) {
         this.entities = entities;
         this.relationships = relationships
     }
     
-    translateFromDiagramToSchema(): TranslatedSchema {
-        var translatedSchema: TranslatedSchema = {
-            entities: new Map<string, Array<AttributesSchema>>(), 
-            relationships: new Map<string, Array<AttributesSchema>>(), 
-            foreignKey: new Map<string, Array<string>>()
+    translateFromDiagramToSchema(): TranslatedTable {
+        var translatedTable: TranslatedTable = {
+            tables: new Map<string, Table>()
         }
 
         this.entities.forEach((entity: Entity) => { 
             const eTranslator:EntityTranslator = new EntityTranslator(entity);
-            eTranslator.translateFromDiagramToSchema(translatedSchema);
+            eTranslator.translateFromDiagramToTable(translatedTable);
         });
 
         this.relationships.forEach((relationship: Relationship) => { 
-            const rsTranslator:RelationshipTranslator = new RelationshipTranslator(relationship);
-            rsTranslator.translateFromDiagramToSchema(translatedSchema);
+            const rsTranslator:RelationshipTranslator = new RelationshipTranslator(this.entities, relationship);
+            rsTranslator.translateFromDiagramToTable(translatedTable);
         });
 
         const fkTranslator:ForeignKeyTranslator = new ForeignKeyTranslator(this.entities, this.relationships);
-        fkTranslator.translateFromDiagramToSchema(translatedSchema);
+        fkTranslator.translateFromDiagramToTable(translatedTable);
 
-        return translatedSchema;
+        return translatedTable;
     }
 }
 

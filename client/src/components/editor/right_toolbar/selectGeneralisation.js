@@ -1,6 +1,7 @@
 import { actions, types } from "../types";
 import { AddingSubsetViaGeneralisation } from "./utilities/addEdge";
 import { DisplaySubsets } from "./utilities/listDisplay";
+import { Name } from "./utilities/name";
 
 export default function SelectGeneralisation({
   generalisation,
@@ -9,7 +10,9 @@ export default function SelectGeneralisation({
   getElement,
   addElement,
   updateElement,
+  deleteElement,
 }) {
+  console.log(generalisation);
   const updateAction = (action) => {
     setContext((ctx) => {
       let newCtx = { ...ctx };
@@ -22,8 +25,25 @@ export default function SelectGeneralisation({
   const parent = getElement(types.ENTITY, generalisation.parent.id);
   return (
     <div className="toolbar-right">
-      <div className="toolbar-header">
-        Generalisation: {generalisation.text}
+      <div className="toolbar-header">Generalisation</div>
+      <div className="section">
+        <div
+          className="section-header"
+          onClick={() => {
+            deleteElement(types.GENERALISATION, generalisation);
+            setContext({ action: actions.NORMAL });
+          }}
+        >
+          Delete
+        </div>
+      </div>
+      <div className="section">
+        <div className="section-header">Name:</div>
+        <Name
+          {...generalisation}
+          getElement={getElement}
+          updateElement={updateElement}
+        />
       </div>
       <div className="section">
         <div className="section-header">Parent</div>
@@ -34,6 +54,7 @@ export default function SelectGeneralisation({
         <DisplaySubsets
           children={Object.keys(generalisation.edges)}
           getElement={getElement}
+          deleteElement={deleteElement}
         />
         {context.action === actions.SELECT.ADD_SUBSET ? (
           <AddingSubsetViaGeneralisation

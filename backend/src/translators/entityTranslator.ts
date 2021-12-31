@@ -1,6 +1,6 @@
 import Attribute from "../models/attribute";
 import Entity from "../models/entity";
-import TranslatedSchema, { AttributesSchema } from "./models/translatedSchema";
+import TranslatedTable, { Table, TableSource, Column, ForeignKey } from "./models/translatedTable";
 import Translator from "./translator";
 
 class EntityTranslator implements Translator {
@@ -11,20 +11,26 @@ class EntityTranslator implements Translator {
         this.entity = entity;
     }
 
-    translateFromDiagramToSchema(translatedSchema: TranslatedSchema): TranslatedSchema {
-        var relationshipAttributeSchema: Array<AttributesSchema> = new Array();
+    translateFromDiagramToTable(translatedTable: TranslatedTable): TranslatedTable {
+        var columns: Array<Column> = new Array();
         if (this.entity.attributes !== undefined) {
-            relationshipAttributeSchema =
+            columns =
                 this.entity.attributes!.map((a: Attribute) => {
                 return {
-                    name: a.name,
+                    columnName: a.text,
                     isPrimaryKey: a.isPrimaryKey,
-                    isOptional: a.isOptional
+                    isOptional: a.isOptional,
+                    isMultiValued: a.isMultiValued
                     }
                 })
         }
-        translatedSchema.entities.set(this.entity.name, relationshipAttributeSchema)
-        return translatedSchema
+        var entityTable: Table = {
+            source: TableSource.ENTITY,
+            columns: columns,
+            foreignKeys: new Array<ForeignKey>()
+        }
+        translatedTable.tables.set(this.entity.text, entityTable)
+        return translatedTable
     }
 }
 

@@ -56,8 +56,7 @@ router.post('/all', async function (req, res, next) {
             return res.status(400).json({SUCCESS: false, message: 'Generalisation and relationships need entities first'});
         }
     }
-
-    return res.status(OK).json({SUCCESS: true});
+	return res.status(200).json({SUCCESS: true})
 })
 
 router.get('/all/:graphID', async function (req, res, next) {

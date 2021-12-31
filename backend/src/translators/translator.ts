@@ -1,8 +1,8 @@
-import TranslatedSchema from "./models/translatedSchema";
+import TranslatedTable from "./models/translatedTable";
 
 interface Translator {
 
-    translateFromDiagramToSchema(translatedSchema: TranslatedSchema): TranslatedSchema
+    translateFromDiagramToTable(translatedTable: TranslatedTable): TranslatedTable
 }
 
 export default Translator
