@@ -42,8 +42,8 @@ router.post("/", function (req, res) {
 	const uid: string = req.query.Uid as string;
 	const data: string = JSON.stringify(req.body as string);
 	FirebaseController.getInstance().createERD(uid, data)
-		.then(() => {
-			res.status(200).send(`ERD created for ${uid}`);
+		.then((erid: string) => {
+			res.status(200).send(erid);
 		})
 		.catch((error) => {
 			if (error instanceof ErrorBuilder) {

@@ -43,14 +43,14 @@ class FirebaseController {
         return this.firebaseAuthController.login(email, password);
     }
 
-		public async createERD(uid: string, data: string): Promise<void> {
+		public async createERD(uid: string, data: string): Promise<string> {
 				const exists: boolean = await this.firestoreController.checkUserExists(uid);
 				if (!exists) throw new ErrorBuilder(404, "User does not exist");
 				const json: any = JSON.parse(data);
 				if (json.name === undefined || json.data === undefined) {
 					throw new ErrorBuilder(400, "Name and data have to be defined");
 				}
-				await this.firestoreController.createERD(uid, data);
+				return this.firestoreController.createERD(uid, data);
 		}
 
 		public async getERD(uid: string, erid: string): Promise<string> {

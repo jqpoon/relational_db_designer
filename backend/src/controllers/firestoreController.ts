@@ -54,7 +54,7 @@ class FirestoreController {
 		setDoc(docRef, {});
 	}
 
-	public async createERD(uid: string, json: string): Promise<void> {
+	public async createERD(uid: string, json: string): Promise<string> {
 		// Store ERD
 		const parsedJson = JSON.parse(json);
 		const data: ERDSchema = {
@@ -69,22 +69,24 @@ class FirestoreController {
 		
 		// create doc to store list of users that can access it
 		docRef = doc(this.db, `erd_users/${erid}`);
-		setDoc(docRef, {});
+		await setDoc(docRef, {});
 
 		// Give access to user
 		docRef = doc(this.db, `user_erds/${uid}`);
-		updateDoc(docRef, {
+		await updateDoc(docRef, {
 			erds: arrayUnion(erid)
 		});
 
 		// Update user as owner on ERD
 		docRef = doc(this.db, `erd_users/${erid}`);
-		updateDoc(docRef, {
+		await updateDoc(docRef, {
 			users: arrayUnion({
 				uid,
 				permission: "OWNER"
 			})
 		});
+
+		return erid;
 	}
 
 	public async checkERDExists(erid: string): Promise<boolean> {
