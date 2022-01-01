@@ -12,6 +12,10 @@ const someData = {
 		"some": "stuff"
 	}
 };
+const read = "READ";
+const readWrite = "READ-WRITE";
+const remove = "REMOVE";
+const badPermission = "badpermission";
 
 export default {
 	email,
@@ -22,5 +26,9 @@ export default {
 	badUid,
 	testErid,
 	badErid,
-	someData
+	someData,
+	read,
+	readWrite,
+	remove,
+	badPermission
 }
