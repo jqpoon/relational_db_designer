@@ -1,19 +1,18 @@
 import { Router } from 'express';
-import { getAllUsers, addOneUser, updateOneUser, deleteOneUser } from './Users';
-import dotenv from 'dotenv';
+import AuthRouter from './auth';
+import ERDRouter from "./erd";
+import CollabRouter from "./collab"
+import TranslationRouter from './translation'
 
-dotenv.config();
+import swaggerUi from 'swagger-ui-express';
+import * as swaggerDocument from '../config/swagger.json';
 
+const apiRouter = Router();
 
-// User-route
-const userRouter = Router();
-userRouter.get('/all', getAllUsers);
-userRouter.post('/add', addOneUser);
-userRouter.put('/update', updateOneUser);
-userRouter.delete('/delete/:id', deleteOneUser);
+apiRouter.use('/erd', ERDRouter);
+apiRouter.use('/collab', CollabRouter);
+apiRouter.use('/auth', AuthRouter);
+apiRouter.use('/translation', TranslationRouter);
+apiRouter.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-
-// Export the base-router
-const baseRouter = Router();
-baseRouter.use('/users', userRouter);
-export default baseRouter;
+export default apiRouter;

@@ -225,9 +225,9 @@ export function addAttributeToNode({
     id: attributeId,
     text: "Attribute",
     relativePos: relativePos,
-		isPrimaryKey: false,
-		isMultiValued: false,
-		isOptional: false,
+    isPrimaryKey: false,
+    isMultiValued: false,
+    isOptional: false,
     type: types.ATTRIBUTE,
   };
   console.log(attributeEntry);
