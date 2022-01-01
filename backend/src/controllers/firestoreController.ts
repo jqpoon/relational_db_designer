@@ -134,7 +134,9 @@ class FirestoreController {
 	public async getERD(erid: string): Promise<string> {
 		const docRef: DocumentReference = doc(this.db, `erds_list/${erid}`);
 		const docData: DocumentSnapshot = await getDoc(docRef);
-		return JSON.stringify(docData.get("data"));
+		const name = (await docData.get("name")) as string;
+		const data = (await docData.get("data")) as string;
+		return JSON.stringify({name, data});
 	}
 
 	public async updateERD(erid: string, json: string): Promise<void> {
@@ -150,13 +152,13 @@ class FirestoreController {
 		const users: UserPermission[] = erdData.get("users");
 		for (const x of users) {
 			const usersRef: DocumentReference = doc(this.db, `user_erds/${x.uid}`);
-			updateDoc(usersRef, {
+			await updateDoc(usersRef, {
 				erds: arrayRemove(erid)
 			});
 		}
-		deleteDoc(erdRef);
+		await deleteDoc(erdRef);
 		const dataRef: DocumentReference = doc(this.db, `erds_list/${erid}`);
-		deleteDoc(dataRef);
+		await deleteDoc(dataRef);
 	}
 
 	public async getERDAccessList(erid: string): Promise<string> {
