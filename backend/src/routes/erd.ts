@@ -36,7 +36,9 @@ router.get("/", function (req, res) {
 	- We need to know which user (Uid) created it
 */
 router.post("/", function (req, res) {
-	if (req.query.Uid === undefined || req.body.data === undefined) {
+	if (req.query.Uid === undefined 
+		|| req.body.data === undefined
+		|| req.body.name === undefined) {
 		return res.sendStatus(400);
 	}
 	const uid: string = req.query.Uid as string;
@@ -62,12 +64,13 @@ router.post("/", function (req, res) {
 router.put('/', function (req, res) {
 	if (req.query.Uid === undefined || 
 		req.query.ERid === undefined || 
-		req.body.data === undefined) {
+		req.body.data === undefined ||
+		req.body.name === undefined) {
 		return res.sendStatus(400);
 	}
 	const uid: string = req.query.Uid as string;
 	const erid: string = req.query.ERid as string;
-	const data: string = JSON.stringify(req.body.data as string);
+	const data: string = JSON.stringify(req.body as string);
 
 	FirebaseController.getInstance().updateERD(uid, erid, data)
 		.then(() => {
