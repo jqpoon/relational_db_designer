@@ -16,7 +16,6 @@ import EdgeToRelationship from "./right_toolbar/edgeRelationship";
 import SelectGeneralisation from "./right_toolbar/selectGeneralisation";
 import { ContextMenu } from "./contextMenus/contextMenu";
 import DisplayTranslation from "./right_toolbar/translationDisplay";
-// import { relationalSchema } from "./right_toolbar/relationalSchemaExample";
 import { getId } from "./idGenerator";
 
 // TODO: update left,right toolbar to match new data structures

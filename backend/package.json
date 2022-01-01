@@ -76,7 +76,8 @@
     "neo4j-driver": "^4.3.4",
     "swagger-jsdoc": "^6.1.0",
     "swagger-ui-express": "^4.1.6",
-    "tsoa": "^3.14.0"
+    "tsoa": "^3.14.0",
+    "yallist": "^4.0.0"
   },
   "devDependencies": {
     "@types/command-line-args": "^5.2.0",
