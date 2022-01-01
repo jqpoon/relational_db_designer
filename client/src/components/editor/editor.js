@@ -345,89 +345,27 @@ export default function Editor() {
 
   // Translates entire model state from backend JSON into client components.
   const importStateFromObject = (state) => {
-    let entitiesToAdd = {};
-    let edgesToAdd = [];
-
-    state.entities.forEach((e) => {
-      // Set type
-      e.type = types.ENTITY;
-
-      // Add json for edges
-      e.edges = {};
-
-      // Turn attributes into json
-      let attributesMap = {};
-      e.attributes.forEach((a) => {
-        a.parent = {
-          id: e.id,
-          type: types.ENTITY,
-        };
-        a.type = types.ATTRIBUTE;
-        attributesMap[a.id] = a;
-      });
-      e.attributes = attributesMap;
-
-      // rename subsets to generalisations
-      e.generalisations = e.subsets;
-      delete e.subsets;
-
-      entitiesToAdd[e.id] = e;
-    });
-
-    state.relationships.forEach((r) => {
-      // Set type
-      r.type = types.RELATIONSHIP;
-
-      // Add json for edges
-      r.edges = {};
-      for (let key of Object.keys(r["lHConstraints"])) {
-        let edge = {};
-        edge["start"] = key;
-        edge["end"] = r.id;
-        edge["id"] = key + r.id;
-        edge["cardinality"] = r["lHConstraints"][key];
-        edge["type"] = types.EDGE.RELATIONSHIP;
-        r.edges[edge["id"]] = { type: types.EDGE.RELATIONSHIP };
-        entitiesToAdd[key].edges[edge["id"]] = {
-          type: types.EDGE.RELATIONSHIP,
-        };
-        // TODO: Can source be other types?
-        edge["source_type"] = types.ENTITY;
-        edge["target_type"] = types.RELATIONSHIP;
-        edgesToAdd.push(edge);
-      }
-
-      // Turn attributes into json
-      let attributesMap = {};
-      r.attributes.forEach((a) => {
-        a.parent = {
-          id: r.id,
-          type: types.RELATIONSHIP,
-        };
-        a.type = types.ATTRIBUTE;
-        attributesMap[a.id] = a;
-      });
-      r.attributes = attributesMap;
-
-      delete r["lHConstraints"];
-
-      addElement(types.RELATIONSHIP, r);
-    });
-
-    for (let e of Object.values(entitiesToAdd)) {
-      addElement(types.ENTITY, e);
-    }
-    for (let e of edgesToAdd) {
-      addElement(types.EDGE.RELATIONSHIP, e);
-    }
+    setEntities(state.entities);
+    setRelationships(state.relationships);
+    setEdges(state.edges);
   };
 
-  // Translates entire model state into a JSON object for backend.
+  // Translates entire schema state into a single JSON object.
   const exportStateToObject = () => {
+    return {
+      entities: entities,
+      relationships: relationships,
+      edges: edges
+    };
+  };
+
+  // Translates entire schema state into a JSON object that fits backend format.
+  // TODO: Move this function to backend after working out Firebase stuff.
+  const translateStateToBackend = () => {
     let state = {
       entities: [],
       relationships: [],
-      disjoints: [],
+      disjoints: [], // TODO
     };
 
     let entitiesClone = { ...entities };
@@ -481,7 +419,7 @@ export default function Editor() {
     });
 
     return state;
-  };
+  }
 
   const uploadStateFromObject = file => {
     const fileReader = new FileReader();
