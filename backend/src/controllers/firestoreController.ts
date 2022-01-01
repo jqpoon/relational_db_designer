@@ -182,15 +182,23 @@ class FirestoreController {
 	}
 
 	public isValidPermission(permission: string): boolean {
-		return permission === "READ" || permission === "READ-WRITE";		
+		return permission === "REMOVE" || 
+			permission === "READ" || 
+			permission === "READ-WRITE";		
 	}
 
 	public async updateAccess(uid: string, erid: string, permission: string): Promise<void> {
-		// Give access to user
+		// Update user access
 		const userRef: DocumentReference = doc(this.db, `user_erds/${uid}`);
-		await updateDoc(userRef, {
-			erds: arrayUnion(erid)
-		});
+		if (permission !== "REMOVE") {
+			await updateDoc(userRef, {
+				erds: arrayUnion(erid)
+			});
+		} else {
+			await updateDoc(userRef, {
+				erds: arrayRemove(erid)
+			});
+		}
 
 		// Update permission of user
 		const erdRef: DocumentReference = doc(this.db, `erd_users/${erid}`);
@@ -204,12 +212,14 @@ class FirestoreController {
 				break;
 			}
 		}
-		await updateDoc(erdRef, {
-			users: arrayUnion({
-				uid,
-				permission
-			})
-		});
+		if (permission !== "REMOVE") {
+			await updateDoc(erdRef, {
+				users: arrayUnion({
+					uid,
+					permission
+				})
+			});
+		}
 	}
 
 	public async createDuplicate(uid: string, erid: string): Promise<string> {
@@ -218,8 +228,7 @@ class FirestoreController {
 		const data = erdData.get("data");
 		const name = erdData.get("name");
 		const result = JSON.stringify({name, data});
-		await this.createERD(uid, result);
-		return result;
+		return await this.createERD(uid, result);
 	}
 }
 
