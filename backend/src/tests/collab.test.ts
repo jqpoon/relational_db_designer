@@ -177,7 +177,7 @@ describe("Collab", () => {
 			// verify
 			const readRes = await chai.request(server)
 				.get(`/api/erd?Uid=${params.otherUid}&ERid=${duplicateRes.text}`);
-			expect(JSON.parse(readRes.text)).to.be.deep.equal(example);
+			expect(JSON.parse(readRes.text)).to.be.deep.equal({...example, counter: 1});
 			// remove permission
 			const removeRes = await chai.request(server)
 				.put(`/api/collab?Uid=${params.otherUid}&ERid=${params.testErid}&permission=${params.remove}`);
