@@ -16,7 +16,6 @@ import EdgeToRelationship from "./right_toolbar/edgeRelationship";
 import SelectGeneralisation from "./right_toolbar/selectGeneralisation";
 import { ContextMenu } from "./contextMenus/contextMenu";
 import DisplayTranslation from "./right_toolbar/translationDisplay";
-// import { relationalSchema } from "./right_toolbar/relationalSchemaExample";
 import { getId } from "./idGenerator";
 
 // TODO: update left,right toolbar to match new data structures
@@ -346,89 +345,27 @@ export default function Editor() {
 
   // Translates entire model state from backend JSON into client components.
   const importStateFromObject = (state) => {
-    let entitiesToAdd = {};
-    let edgesToAdd = [];
-
-    state.entities.forEach((e) => {
-      // Set type
-      e.type = types.ENTITY;
-
-      // Add json for edges
-      e.edges = {};
-
-      // Turn attributes into json
-      let attributesMap = {};
-      e.attributes.forEach((a) => {
-        a.parent = {
-          id: e.id,
-          type: types.ENTITY,
-        };
-        a.type = types.ATTRIBUTE;
-        attributesMap[a.id] = a;
-      });
-      e.attributes = attributesMap;
-
-      // rename subsets to generalisations
-      e.generalisations = e.subsets;
-      delete e.subsets;
-
-      entitiesToAdd[e.id] = e;
-    });
-
-    state.relationships.forEach((r) => {
-      // Set type
-      r.type = types.RELATIONSHIP;
-
-      // Add json for edges
-      r.edges = {};
-      for (let key of Object.keys(r["lHConstraints"])) {
-        let edge = {};
-        edge["start"] = key;
-        edge["end"] = r.id;
-        edge["id"] = key + r.id;
-        edge["cardinality"] = r["lHConstraints"][key];
-        edge["type"] = types.EDGE.RELATIONSHIP;
-        r.edges[edge["id"]] = { type: types.EDGE.RELATIONSHIP };
-        entitiesToAdd[key].edges[edge["id"]] = {
-          type: types.EDGE.RELATIONSHIP,
-        };
-        // TODO: Can source be other types?
-        edge["source_type"] = types.ENTITY;
-        edge["target_type"] = types.RELATIONSHIP;
-        edgesToAdd.push(edge);
-      }
-
-      // Turn attributes into json
-      let attributesMap = {};
-      r.attributes.forEach((a) => {
-        a.parent = {
-          id: r.id,
-          type: types.RELATIONSHIP,
-        };
-        a.type = types.ATTRIBUTE;
-        attributesMap[a.id] = a;
-      });
-      r.attributes = attributesMap;
-
-      delete r["lHConstraints"];
-
-      addElement(types.RELATIONSHIP, r);
-    });
-
-    for (let e of Object.values(entitiesToAdd)) {
-      addElement(types.ENTITY, e);
-    }
-    for (let e of edgesToAdd) {
-      addElement(types.EDGE.RELATIONSHIP, e);
-    }
+    setEntities(state.entities);
+    setRelationships(state.relationships);
+    setEdges(state.edges);
   };
 
-  // Translates entire model state into a JSON object for backend.
+  // Translates entire schema state into a single JSON object.
   const exportStateToObject = () => {
+    return {
+      entities: entities,
+      relationships: relationships,
+      edges: edges
+    };
+  };
+
+  // Translates entire schema state into a JSON object that fits backend format.
+  // TODO: Move this function to backend after working out Firebase stuff.
+  const translateStateToBackend = () => {
     let state = {
       entities: [],
       relationships: [],
-      disjoints: [],
+      generalisations: [],
     };
 
     let entitiesClone = { ...entities };
@@ -441,16 +378,31 @@ export default function Editor() {
         id: entity.id,
         text: entity.text,
         pos: entity.pos,
-        isWeak: false,
+        isWeak: entity.isWeak.length !== 0,
         attributes: [],
-        subsets: [], // TODO
+        subsets: [],
       };
 
+      // Attributes associated with entity.
       Object.values(entity.attributes).forEach(({ parent, type, ...attr }) => {
         entityState.attributes.push(attr);
       });
 
       state.entities.push(entityState);
+    });
+
+    // Populate subsets array for each entity.
+    state.entities.forEach((entityState) => {
+      let entity = entitiesClone[entityState.id];
+      for (const [edgeID, edgeData] of Object.entries(entity.edges)) {
+        // Ensure is a subset edge.
+        if (edgeData.type !== types.EDGE.HIERARCHY) continue;
+        // Find corresponding child entity object and add to the subsets array.
+        const childEntityState = state.entities.filter((e) => {
+          return e.id === edgesClone[edgeID].child;
+        })[0];
+        entityState.subsets.push(childEntityState);
+      }
     });
 
     // Relationships and linking with entities.
@@ -463,26 +415,49 @@ export default function Editor() {
         lHConstraints: {},
       };
 
+      // Attributes associated with relationship.
       Object.values(relationship.attributes).forEach(
         ({ parent, type, ...attr }) => {
           relationshipState.attributes.push(attr);
         }
       );
 
+      // Populate lHConstraints mapping.
       let links = Object.values(edgesClone).filter(
         (edge) => edge.start === relationship.id || edge.end === relationship.id
       );
-      for (let i in links) {
-        let link = links[i];
-        let entityID = link.start === relationship.id ? link.end : link.start;
+      for (const i in links) {
+        const link = links[i];
+        const entityID = link.start === relationship.id ? link.end : link.start;
         relationshipState.lHConstraints[entityID] = link.cardinality;
       }
 
       state.relationships.push(relationshipState);
     });
 
+    // Generalisations.
+    Object.values(entitiesClone).forEach((entity) => {
+      Object.values(entity.generalisations).forEach((gen) => {
+        let genState = {
+          id: gen.id,
+          text: gen.text,
+          pos: gen.pos,
+          parent: state.entities.filter((e) => { return e.id === gen.parent.id })[0],
+          entities: Object.keys(gen.edges).map((edgeID) => {
+            const edge = edgesClone[edgeID];
+            // Find the corresponding child entity object by its ID.
+            const childEntity = state.entities.filter((e) => { return e.id === edge.child })[0];
+            // Add the child to the list of subsets of the parent.
+            state.entities.filter((e) => { return e.id === edge.parent })[0].subsets.push(childEntity);
+            return childEntity;
+          })
+        };
+        state.generalisations.push(genState);
+      });
+    });
+
     return state;
-  };
+  }
 
   const uploadStateFromObject = file => {
     const fileReader = new FileReader();
@@ -566,7 +541,7 @@ export default function Editor() {
     alignmentAnimation: { animationTime: 0 },
     onAlignBound: forceRerender,
     doubleClick: { disabled: true },
-    minScale: 0.25,
+    minScale: 0.3,
     limitToBounds: false,
   };
 
