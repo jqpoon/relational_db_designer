@@ -18,6 +18,7 @@ import { ContextMenu } from "./contextMenus/contextMenu";
 import DisplayTranslation from "./right_toolbar/translationDisplay";
 import { addToUndo, redo, undo } from "./historyUtilities/history";
 import { deletes, gets, updates } from "./elementUtilities/elementFunctions";
+import { getId } from "./idGenerator";
 
 export default function Editor() {
   // Canvas states: passed to children for metadata (eg width and height of main container)
@@ -59,6 +60,12 @@ export default function Editor() {
     document?.addEventListener("click", resetClick);
   }, []);
 
+  // Resets the state of the whiteboard and deletes the current schema.
+  const resetState = () => {
+    setElements({ entities: {}, relationships: {}, edges: {} });
+    setHistory({ store: [], position: -1 });
+  };
+
   // Returns a copy of the element
   const getElement = (type, id, parent) => {
     return gets[type](elements, id, parent);
@@ -78,6 +85,150 @@ export default function Editor() {
     const arg = JSON.parse(JSON.stringify(element));
     const data = updates[type](elementsAndSetter, element);
     addToUndo("updateElement", arg, data, historyAndSetter);
+  };
+  // Translates entire model state from backend JSON into client components.
+  const importStateFromObject = (state) => {
+    setElements(state);
+  };
+
+  // Translates entire schema state into a single JSON object.
+  const exportStateToObject = () => {
+    return elements;
+  };
+
+  // Translates entire schema state into a JSON object that fits backend format.
+  // TODO: Move this function to backend after working out Firebase stuff.
+  const translateStateToBackend = () => {
+    let state = {
+      entities: [],
+      relationships: [],
+      generalisations: [],
+    };
+
+    let entitiesClone = { ...elements.entities };
+    let relationshipsClone = { ...elements.relationships };
+    let edgesClone = { ...elements.edges };
+
+    // Entities.
+    Object.values(entitiesClone).forEach((entity) => {
+      let entityState = {
+        id: entity.id,
+        text: entity.text,
+        pos: entity.pos,
+        isWeak: entity.isWeak.length !== 0,
+        attributes: [],
+        subsets: [],
+      };
+
+      // Attributes associated with entity.
+      Object.values(entity.attributes).forEach(({ parent, type, ...attr }) => {
+        entityState.attributes.push(attr);
+      });
+
+      state.entities.push(entityState);
+    });
+
+    // Populate subsets array for each entity.
+    state.entities.forEach((entityState) => {
+      let entity = entitiesClone[entityState.id];
+      for (const [edgeID, edgeData] of Object.entries(entity.edges)) {
+        // Ensure is a subset edge.
+        if (edgeData.type !== types.EDGE.HIERARCHY) continue;
+        // Find corresponding child entity object and add to the subsets array.
+        const childEntityState = state.entities.filter((e) => {
+          return e.id === edgesClone[edgeID].child;
+        })[0];
+        entityState.subsets.push(childEntityState);
+      }
+    });
+
+    // Relationships and linking with entities.
+    Object.values(relationshipsClone).forEach((relationship) => {
+      let relationshipState = {
+        id: relationship.id,
+        text: relationship.text,
+        pos: relationship.pos,
+        attributes: [],
+        lHConstraints: {},
+      };
+
+      // Attributes associated with relationship.
+      Object.values(relationship.attributes).forEach(
+        ({ parent, type, ...attr }) => {
+          relationshipState.attributes.push(attr);
+        }
+      );
+
+      // Populate lHConstraints mapping.
+      let links = Object.values(edgesClone).filter(
+        (edge) => edge.start === relationship.id || edge.end === relationship.id
+      );
+      for (const i in links) {
+        const link = links[i];
+        const entityID = link.start === relationship.id ? link.end : link.start;
+        relationshipState.lHConstraints[entityID] = link.cardinality;
+      }
+
+      state.relationships.push(relationshipState);
+    });
+
+    // Generalisations.
+    Object.values(entitiesClone).forEach((entity) => {
+      Object.values(entity.generalisations).forEach((gen) => {
+        let genState = {
+          id: gen.id,
+          text: gen.text,
+          pos: gen.pos,
+          parent: state.entities.filter((e) => {
+            return e.id === gen.parent.id;
+          })[0],
+          entities: Object.keys(gen.edges).map((edgeID) => {
+            const edge = edgesClone[edgeID];
+            // Find the corresponding child entity object by its ID.
+            const childEntity = state.entities.filter((e) => {
+              return e.id === edge.child;
+            })[0];
+            // Add the child to the list of subsets of the parent.
+            state.entities
+              .filter((e) => {
+                return e.id === edge.parent;
+              })[0]
+              .subsets.push(childEntity);
+            return childEntity;
+          }),
+        };
+        state.generalisations.push(genState);
+      });
+    });
+
+    return state;
+  };
+
+  const uploadStateFromObject = (file) => {
+    const fileReader = new FileReader();
+    fileReader.readAsText(file, "UTF-8");
+    fileReader.onload = (e) => {
+      const state = JSON.parse(e.target.result);
+      resetState();
+      importStateFromObject(state);
+    };
+  };
+
+  const downloadStateAsObject = () => {
+    const fileName = "schema.json";
+    const blob = new Blob([JSON.stringify(exportStateToObject())], {
+      type: "text/json",
+    });
+    const a = document.createElement("a");
+    a.download = fileName;
+    a.href = window.URL.createObjectURL(blob);
+    const mouseEvent = new MouseEvent("click", {
+      view: window,
+      bubbles: true,
+      cancelable: true,
+    });
+    a.dispatchEvent(mouseEvent);
+    a.remove();
   };
 
   const elementFunctions = {
@@ -105,8 +256,10 @@ export default function Editor() {
         target: null,
       });
     },
-    exportStateToObject: () => {},
-    importStateFromObject: () => {},
+    importStateFromObject: importStateFromObject,
+    exportStateToObject: exportStateToObject,
+    uploadStateFromObject: uploadStateFromObject,
+    downloadStateAsObject: downloadStateAsObject,
     translate: (schema) => {
       setContext({
         action: actions.TRANSLATE,
@@ -136,7 +289,7 @@ export default function Editor() {
     alignmentAnimation: { animationTime: 0 },
     onAlignBound: forceRerender,
     doubleClick: { disabled: true },
-    minScale: 0.25,
+    minScale: 0.3,
     limitToBounds: false,
   };
 

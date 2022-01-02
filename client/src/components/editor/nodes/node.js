@@ -242,37 +242,37 @@ export default function Node({
     );
   };
 
-  const highlightStyle = () => {
+  const highlightStyle = (className) => {
     if (
       context.action === actions.SELECT.NORMAL &&
       id === context.selected.id
     ) {
-      return { border: "2px solid orange" };
+      return className === "weak-entity" ? { borderColor: "orange"} : { border: "2px solid orange" };
     } else if (
       context.action === actions.SELECT.ADD_RELATIONSHIP &&
       id === context.selected.id
     ) {
-      return { border: "2px solid orange" };
+      return className === "weak-entity" ? { borderColor: "orange"} : { border: "2px solid orange" };
     } else if (
       context.action === actions.SELECT.ADD_RELATIONSHIP &&
       context.target !== null &&
       id === context.target.id
     ) {
-      return { border: "2px solid orange" };
+      return className === "weak-entity" ? { borderColor: "orange"} : { border: "2px solid orange" };
     } else if (
       (context.action === actions.RELATIONSHIP_ADD.SELECT_SOURCES ||
         context.action === actions.RELATIONSHIP_ADD.SELECT_TARGET) &&
       context.sources != null &&
       idIsInSelectedRelationship(Object.keys(context.sources))
     ) {
-      return { border: "2px solid orange" };
+      return className === "weak-entity" ? { borderColor: "orange"} : { border: "2px solid orange" };
     } else if (
       (context.action === actions.RELATIONSHIP_ADD.SELECT_SOURCES ||
         context.action === actions.RELATIONSHIP_ADD.SELECT_TARGET) &&
       context.target != null &&
       id === context.target.id
     ) {
-      return { border: "2px solid orange" };
+      return className === "weak-entity" ? { borderColor: "orange"} : { border: "2px solid orange" };
     } else {
       return null;
     }
@@ -288,12 +288,24 @@ export default function Node({
   };
 
   const normalMode = (
-    <div style={highlightStyle()} className={className}>
+    <div className={className} style={highlightStyle(className)}>
       {editable ? (
         editingMode()
       ) : (
         <div className={className + "-label"}>{text}</div>
       )}
+    </div>
+  );
+
+  const generalisation = (
+    <div className={className} style={highlightStyle(className)}>
+      <div className="generalisation inner">
+      {editable ? (
+        editingMode()
+      ) : (
+        <div className={className + "-label"}>{text}</div>
+      )}
+      </div>
     </div>
   );
   // TODO:conditional rendering
