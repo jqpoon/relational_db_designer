@@ -365,7 +365,7 @@ export default function Editor() {
     let state = {
       entities: [],
       relationships: [],
-      disjoints: [], // TODO
+      generalisations: [],
     };
 
     let entitiesClone = { ...entities };
@@ -378,16 +378,31 @@ export default function Editor() {
         id: entity.id,
         text: entity.text,
         pos: entity.pos,
-        isWeak: false,
+        isWeak: entity.isWeak.length !== 0,
         attributes: [],
-        subsets: [], // TODO
+        subsets: [],
       };
 
+      // Attributes associated with entity.
       Object.values(entity.attributes).forEach(({ parent, type, ...attr }) => {
         entityState.attributes.push(attr);
       });
 
       state.entities.push(entityState);
+    });
+
+    // Populate subsets array for each entity.
+    state.entities.forEach((entityState) => {
+      let entity = entitiesClone[entityState.id];
+      for (const [edgeID, edgeData] of Object.entries(entity.edges)) {
+        // Ensure is a subset edge.
+        if (edgeData.type !== types.EDGE.HIERARCHY) continue;
+        // Find corresponding child entity object and add to the subsets array.
+        const childEntityState = state.entities.filter((e) => {
+          return e.id === edgesClone[edgeID].child;
+        })[0];
+        entityState.subsets.push(childEntityState);
+      }
     });
 
     // Relationships and linking with entities.
@@ -400,22 +415,45 @@ export default function Editor() {
         lHConstraints: {},
       };
 
+      // Attributes associated with relationship.
       Object.values(relationship.attributes).forEach(
         ({ parent, type, ...attr }) => {
           relationshipState.attributes.push(attr);
         }
       );
 
+      // Populate lHConstraints mapping.
       let links = Object.values(edgesClone).filter(
         (edge) => edge.start === relationship.id || edge.end === relationship.id
       );
-      for (let i in links) {
-        let link = links[i];
-        let entityID = link.start === relationship.id ? link.end : link.start;
+      for (const i in links) {
+        const link = links[i];
+        const entityID = link.start === relationship.id ? link.end : link.start;
         relationshipState.lHConstraints[entityID] = link.cardinality;
       }
 
       state.relationships.push(relationshipState);
+    });
+
+    // Generalisations.
+    Object.values(entitiesClone).forEach((entity) => {
+      Object.values(entity.generalisations).forEach((gen) => {
+        let genState = {
+          id: gen.id,
+          text: gen.text,
+          pos: gen.pos,
+          parent: state.entities.filter((e) => { return e.id === gen.parent.id })[0],
+          entities: Object.keys(gen.edges).map((edgeID) => {
+            const edge = edgesClone[edgeID];
+            // Find the corresponding child entity object by its ID.
+            const childEntity = state.entities.filter((e) => { return e.id === edge.child })[0];
+            // Add the child to the list of subsets of the parent.
+            state.entities.filter((e) => { return e.id === edge.parent })[0].subsets.push(childEntity);
+            return childEntity;
+          })
+        };
+        state.generalisations.push(genState);
+      });
     });
 
     return state;
