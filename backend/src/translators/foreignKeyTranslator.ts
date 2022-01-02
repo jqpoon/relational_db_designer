@@ -28,21 +28,20 @@ class ForeignKeyTranslator implements Translator {
         this.relationships.forEach((relationship: Relationship) => {
             var oneMany:boolean = false;
             var oneManySource:string = "-1";
-            Object.keys(relationship.lHConstraints).forEach((entityId: string) => {
-                let lhConstraint: LHConstraint = relationship.lHConstraints.get(entityId)!
+            relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: string) => {
                 if (lhConstraint === LHConstraint.ONE_TO_ONE) {
                     oneMany = true;
-                    oneManySource = entityId;
+                    oneManySource = entityID;
                 }
             })
 
             if (oneMany) {
                 const sourceEntity: Entity = this.entities.get(oneManySource)!
                 var table: Table = translatedTable.tables.get(sourceEntity.text)!
-                const key: string = getPrimaryKey(sourceEntity).text
                 relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: string) => {
                     if (lhConstraint != LHConstraint.ONE_TO_ONE) {
                         const foreignTable = this.entities.get(entityID)!.text
+                        const key: string = getPrimaryKey(this.entities.get(entityID)!).text
                         const foreignKey: ForeignKey = {
                             keyName: sourceEntity.text + " " + foreignTable,
                             foreignTable: foreignTable,

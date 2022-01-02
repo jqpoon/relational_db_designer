@@ -16,41 +16,53 @@ class RelationshipTranslator implements Translator {
     }
 
     translateFromDiagramToTable(translatedTable: TranslatedTable): TranslatedTable {
-        Object.keys(this.relationship.lHConstraints).forEach((entityId: string) => {
-            let lhConstraint: LHConstraint = this.relationship.lHConstraints.get(entityId)!
-            if (lhConstraint === LHConstraint.ONE_TO_ONE) {
-                //one-many relationships should not have tables
-                return translatedTable;
-            }
-        })
-        var columns: Array<Column> = new Array();
+        var oneMany:boolean = false;
         this.relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: string) => {
-            const attribute: Attribute = getPrimaryKey(this.entities.get(entityID)!);
-            const column: Column = {
-                columnName: attribute.text,
-                isPrimaryKey: attribute.isPrimaryKey,
-                isOptional: attribute.isOptional,
-                isMultiValued: attribute.isMultiValued
+            if (lhConstraint == LHConstraint.ONE_TO_ONE) {
+                oneMany = true;
+                var otherEntity: Entity = {
+                    id: "",
+                    text: "",
+                    pos: {x: -1, y: -1}
+                };
+                this.relationship.lHConstraints.forEach((lhC: LHConstraint, e: string) => {
+                    if (lhC != LHConstraint.ONE_TO_ONE) {
+                        otherEntity = this.entities.get(e)!;
+                    }
+                });
+                const otherKey: Attribute = getPrimaryKey(otherEntity);
+                const thisEntity: Entity = this.entities.get(entityID)!;
+                const entityTable: Table = translatedTable.tables.get(thisEntity.text)!;
+                entityTable.columns.push({
+                    columnName: otherKey.text,
+                    isPrimaryKey: this.entities.get(entityID)!.isWeak || false,
+                    isOptional: otherKey.isOptional,
+                    isMultiValued: otherKey.isMultiValued
+                })
+                translatedTable.tables.set(thisEntity.text, entityTable);
             }
-            columns.push(column);
         });
-        // if (this.relationship.attributes !== undefined) {
-        //     columns =
-        //         this.relationship.attributes!.map((a: Attribute) => {
-        //         return {
-        //             columnName: a.text,
-        //             isPrimaryKey: a.isPrimaryKey,
-        //             isOptional: a.isOptional,
-        //             isMultiValued: a.isMultiValued
-        //             }
-        //         })
-        // }
-        var rsTable: Table = { 
-            source: TableSource.RELATIONSHIP,
-            columns: columns,
-            foreignKeys: new Array<ForeignKey>()
+        if (!oneMany) {
+            //one-many relationships should not have tables
+            console.log("hello")
+            var columns: Array<Column> = new Array();
+            this.relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: string) => {
+                const attribute: Attribute = getPrimaryKey(this.entities.get(entityID)!);
+                const column: Column = {
+                    columnName: attribute.text,
+                    isPrimaryKey: attribute.isPrimaryKey,
+                    isOptional: attribute.isOptional,
+                    isMultiValued: attribute.isMultiValued
+                }
+                columns.push(column);
+            });
+            var rsTable: Table = { 
+                source: TableSource.RELATIONSHIP,
+                columns: columns,
+                foreignKeys: new Array<ForeignKey>()
+            }
+            translatedTable.tables.set(this.relationship.text, rsTable)
         }
-        translatedTable.tables.set(this.relationship.text, rsTable)
         return translatedTable
     }
 
