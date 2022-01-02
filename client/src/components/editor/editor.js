@@ -503,7 +503,7 @@ export default function Editor() {
     alignmentAnimation: { animationTime: 0 },
     onAlignBound: forceRerender,
     doubleClick: { disabled: true },
-    minScale: 0.25,
+    minScale: 0.3,
     limitToBounds: false,
   };
 

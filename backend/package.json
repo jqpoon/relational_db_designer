@@ -9,7 +9,7 @@
     "swagger": "tsoa spec",
     "test": "nodemon --config ./spec/nodemon.json",
     "test:no-reloading": "./node_modules/.bin/ts-node -r tsconfig-paths/register ./spec",
-		"test:api": "mocha -r ts-node/register 'src/tests/*.test.ts'"
+    "test:api": "mocha --exit -timeout 10000 -r ts-node/register 'src/tests/*.test.ts'"
   },
   "nodemonConfig": {
     "watch": [
@@ -62,6 +62,7 @@
     "build.ts"
   ],
   "dependencies": {
+    "@types/mocha": "^9.0.0",
     "chai": "^4.3.4",
     "chai-http": "^4.3.0",
     "command-line-args": "^5.2.0",

@@ -1,19 +1,20 @@
 import chai, {expect} from "chai";
 import chaiHttp from "chai-http";
 import server from "../Server";
+import params from "./testparams";
 
 chai.use(chaiHttp);
-//Our parent block
+
 describe('Auth', () => {
 	it("Cannot signup with an email that is already is use", (done) => {
 		chai.request(server)
 			.post('/api/auth/signup')
 			.send({
-				"email": "smtg123@gmail.com",
-				"password": "123456"
+				"email": params.email,
+				"password": params.password
 			})
 			.end((_, res) => {
-				expect(res.status).equal(400);
+				expect(res.status).to.be.equal(400);
 				done();
 			});
 	});
@@ -22,11 +23,11 @@ describe('Auth', () => {
 		chai.request(server)
 			.post('/api/auth/signup')
 			.send({
-				"email": "smtg123@gmail.com",
-				"password": "123"
+				"email": params.email,
+				"password": params.badPassword
 			})
 			.end((_, res) => {
-				expect(res.status).equal(400);
+				expect(res.status).to.be.equal(400);
 				done();
 			});
 	});
@@ -35,11 +36,11 @@ describe('Auth', () => {
 		chai.request(server)
 			.post('/api/auth/login')
 			.send({
-				"email": "smtg123@gmail.com",
-				"password": "123456"
+				"email": params.email,
+				"password": params.password
 			})
 			.end((_, res) => {
-				expect(res.status).equal(200);
+				expect(res.status).to.be.equal(200);
 				done();
 			});
 	});
@@ -48,11 +49,11 @@ describe('Auth', () => {
 		chai.request(server)
 			.post('/api/auth/login')
 			.send({
-				"email": "smtg123@gmail.com",
-				"password": "123"
+				"email": params.email,
+				"password": params.badPassword
 			})
 			.end((_, res) => {
-				expect(res.status).equal(403);
+				expect(res.status).to.be.equal(403);
 				done();
 			});
 	});

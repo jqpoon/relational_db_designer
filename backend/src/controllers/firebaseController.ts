@@ -43,14 +43,10 @@ class FirebaseController {
         return this.firebaseAuthController.login(email, password);
     }
 
-		public async createERD(uid: string, data: string): Promise<void> {
+		public async createERD(uid: string, data: string): Promise<string> {
 				const exists: boolean = await this.firestoreController.checkUserExists(uid);
 				if (!exists) throw new ErrorBuilder(404, "User does not exist");
-				const json: any = JSON.parse(data);
-				if (json.name === undefined || json.data === undefined) {
-					throw new ErrorBuilder(400, "Name and data have to be defined");
-				}
-				await this.firestoreController.createERD(uid, data);
+				return this.firestoreController.createERD(uid, data);
 		}
 
 		public async getERD(uid: string, erid: string): Promise<string> {
@@ -64,14 +60,18 @@ class FirebaseController {
 				return data;
 		}
 
-		public async updateERD(uid: string, erid: string, json: string): Promise<void> {
+		public async updateERD(uid: string, erid: string, data: string): Promise<void> {
+				const json: any = JSON.parse(data);		
+				if (json.name === undefined || json.data === undefined) {
+					throw new ErrorBuilder(400, "Name and data have to be defined");
+				}
 				const userExists: boolean = await this.firestoreController.checkUserExists(uid);
 				if (!userExists) throw new ErrorBuilder(404, "User does not exist");
 				const erdExists: boolean = await this.firestoreController.checkERDExists(erid);
 				if (!erdExists) throw new ErrorBuilder(404, "ERD does not exist");
 				const canWrite: boolean = await this.firestoreController.canWrite(uid, erid);
 				if (!canWrite) throw new ErrorBuilder(403, "You do not have permission to access");
-				await this.firestoreController.updateERD(erid, json);
+				await this.firestoreController.updateERD(erid, data);
 		}
 
 		public async deleteERD(uid: string, erid: string): Promise<void> {
