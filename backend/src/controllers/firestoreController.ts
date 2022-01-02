@@ -16,6 +16,7 @@ import {
 	deleteDoc,
 	increment,
 } from "firebase/firestore"
+import asyncLock from "async-lock";
 
 interface ERDSchema {
 	counter: number;
@@ -37,9 +38,11 @@ class FirestoreController {
 
   private static instance: FirestoreController;
   private db: Firestore;
+	private lock: asyncLock;
 
   private constructor(firebaseApp: FirebaseApp) {
     this.db = getFirestore(firebaseApp);
+		this.lock = new asyncLock();
   }
 
   public static getInstance(firebaseApp: FirebaseApp): FirestoreController {
@@ -132,16 +135,29 @@ class FirestoreController {
 		return false;
 	}
 
-	public async getERD(erid: string): Promise<string> {
+	public getERD(erid: string): Promise<string> {
 		const docRef: DocumentReference = doc(this.db, `erds_list/${erid}`);
-		const docData: DocumentSnapshot = await getDoc(docRef);
-		return JSON.stringify(docData.data());
+		return this.lock.acquire(erid, () => {
+			return getDoc(docRef)
+		}, {}).then((res) => {
+			return JSON.stringify(res.data());
+		}) as Promise<string>;
 	}
 
-	public async updateERD(erid: string, json: string): Promise<void> {
+	public canUpdateERD(erid: string, counter: number): Promise<boolean> {
 		const docRef: DocumentReference = doc(this.db, `erds_list/${erid}`);
-		await updateDoc(docRef, {...JSON.parse(json), counter: increment(1)});		
-		// TODO: concurrent update?
+		return this.lock.acquire(erid, () => {
+			return getDoc(docRef)
+		}, {}).then((res) => {
+			return counter === res.get("counter");
+		}) as Promise<boolean>;
+	}
+
+	public updateERD(erid: string, json: string): Promise<void> {
+		const docRef: DocumentReference = doc(this.db, `erds_list/${erid}`);
+		return this.lock.acquire(erid, () => {
+			updateDoc(docRef, {...JSON.parse(json), counter: increment(1)});
+		}, {}) as Promise<void>;
 	}
 
 	public async deleteERD(erid: string): Promise<void> {
