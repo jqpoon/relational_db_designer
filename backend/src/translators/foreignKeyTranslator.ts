@@ -5,7 +5,6 @@ import TranslatedTable, { Table, TableSource, Column, ForeignKey } from "./model
 import Translator from "./translator";
 
 export const getPrimaryKey = (entity: Entity): Attribute => {
-
     for (var attribute of entity.attributes ?? []) {
         if (attribute.isPrimaryKey) {
             return attribute;
@@ -13,6 +12,15 @@ export const getPrimaryKey = (entity: Entity): Attribute => {
     }
     throw new Error("no primary key found!");
 };
+
+const getPrimaryKeyTranslated = (cols: Array<Column>): string => {
+    for (var col of cols) {
+        if (col.isPrimaryKey) {
+            return col.columnName;
+        }
+    }
+    throw new Error("no primary key found!");
+}
 
 class ForeignKeyTranslator implements Translator {
 
@@ -28,21 +36,20 @@ class ForeignKeyTranslator implements Translator {
         this.relationships.forEach((relationship: Relationship) => {
             var oneMany:boolean = false;
             var oneManySource:string = "-1";
-            Object.keys(relationship.lHConstraints).forEach((entityId: string) => {
-                let lhConstraint: LHConstraint = relationship.lHConstraints.get(entityId)!
+            relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: string) => {
                 if (lhConstraint === LHConstraint.ONE_TO_ONE) {
                     oneMany = true;
-                    oneManySource = entityId;
+                    oneManySource = entityID;
                 }
             })
 
             if (oneMany) {
                 const sourceEntity: Entity = this.entities.get(oneManySource)!
                 var table: Table = translatedTable.tables.get(sourceEntity.text)!
-                const key: string = getPrimaryKey(sourceEntity).text
                 relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: string) => {
                     if (lhConstraint != LHConstraint.ONE_TO_ONE) {
                         const foreignTable = this.entities.get(entityID)!.text
+                        const key: string = getPrimaryKey(this.entities.get(entityID)!).text
                         const foreignKey: ForeignKey = {
                             keyName: sourceEntity.text + " " + foreignTable,
                             foreignTable: foreignTable,
@@ -56,7 +63,7 @@ class ForeignKeyTranslator implements Translator {
                 var table: Table = translatedTable.tables.get(relationship.text)!
                 relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: string) => {
                     const key: string = getPrimaryKey(this.entities.get(entityID)!).text;
-                    const foreignTable = this.entities.get(entityID)!.text
+                    const foreignTable = this.entities.get(entityID)!.text;
                     const foreignKey: ForeignKey = {
                         keyName: relationship.text + " " + foreignTable,
                         foreignTable: foreignTable,
@@ -65,6 +72,23 @@ class ForeignKeyTranslator implements Translator {
                     table.foreignKeys.push(foreignKey);
                 });
                 translatedTable.tables.set(relationship.text, table);
+            }
+        });
+
+        this.entities.forEach((entity: Entity) => {
+            if (entity.subsets !== undefined) {
+                var table: Table = translatedTable.tables.get(entity.text)!
+                const key: string = getPrimaryKeyTranslated(table.columns);
+                entity.subsets.map((s: Entity) => {
+                    const foreignTable = s.text;
+                    const foreignKey: ForeignKey = {
+                        keyName: entity.text + " " + foreignTable,
+                        foreignTable: foreignTable,
+                        columns: [key]
+                    }
+                    table.foreignKeys.push(foreignKey);
+                });
+                translatedTable.tables.set(entity.text, table);
             }
         });
         return translatedTable
