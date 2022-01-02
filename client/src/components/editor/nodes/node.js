@@ -142,6 +142,8 @@ export default function Node({
     // Save new position of node
     let newNode = getElement(type, id, parent);
     newNode.pos = { x: data.x, y: data.y };
+    console.log("dragx:" + data.x);
+    console.log("dragy:" + data.y);
     updateElement(type, newNode);
     // Update arrow position
     updateXarrow(e); // TODO: check function signature of updateXarrow(E, DATA) ?
@@ -239,39 +241,46 @@ export default function Node({
     );
   };
 
+  const getReadableStyle = (className) => {
+    if(className === "relationship"){
+      return  {backgroundColor: "rgb(216, 216, 194)"};
+    }
+    return (className === "generalisation") ? { "--generalisation-color-var": "rgb(111,163,179)"} : {backgroundColor: "rgb(111,163,179)"};
+  }
+
   const highlightStyle = (className) => {
     if (
       context.action === actions.SELECT.NORMAL &&
       id === context.selected.id
     ) {
-      return className === "weak-entity" ? { borderColor: "orange"} : { border: "2px solid orange" };
+      return getReadableStyle(className);
     } else if (
       context.action === actions.SELECT.ADD_RELATIONSHIP &&
       id === context.selected.id
     ) {
-      return className === "weak-entity" ? { borderColor: "orange"} : { border: "2px solid orange" };
+      return getReadableStyle(className);
     } else if (
       context.action === actions.SELECT.ADD_RELATIONSHIP &&
       context.target !== null &&
       id === context.target.id
     ) {
-      return className === "weak-entity" ? { borderColor: "orange"} : { border: "2px solid orange" };
+      return getReadableStyle(className);
     } else if (
       (context.action === actions.RELATIONSHIP_ADD.SELECT_SOURCES ||
         context.action === actions.RELATIONSHIP_ADD.SELECT_TARGET) &&
       context.sources != null &&
       idIsInSelectedRelationship(Object.keys(context.sources))
     ) {
-      return className === "weak-entity" ? { borderColor: "orange"} : { border: "2px solid orange" };
+      return getReadableStyle(className);
     } else if (
       (context.action === actions.RELATIONSHIP_ADD.SELECT_SOURCES ||
         context.action === actions.RELATIONSHIP_ADD.SELECT_TARGET) &&
       context.target != null &&
       id === context.target.id
     ) {
-      return className === "weak-entity" ? { borderColor: "orange"} : { border: "2px solid orange" };
+      return getReadableStyle(className);
     } else {
-      return null;
+      return { "--generalisation-color-var": "lightblue"};
     }
   };
 

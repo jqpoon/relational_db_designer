@@ -672,8 +672,6 @@ export default function Editor() {
         {render ? (
           <>
             <Toolbar {...elementFunctions} {...leftToolBarActions} />
-            <TransformWrapper {...canvasConfig}>
-              <TransformComponent>
                 <div
                   className="canvas" // TODO: previously "dnd"
                   // ref={parentRef}
@@ -702,8 +700,6 @@ export default function Editor() {
                     />
                   ))}
                 </div>
-              </TransformComponent>
-            </TransformWrapper>
             {showEdges()}
             {showPendingChanges()}
             {showRightToolbar()}

@@ -34,7 +34,8 @@ export default function Toolbar({
       attributes: {},
       generalisations: {},
     };
-    // console.log("id in addEntity" + newEntity.id);
+    console.log("x:" + x);
+    console.log("y:" + y);
     addElement(types.ENTITY, newEntity);
   };
 
