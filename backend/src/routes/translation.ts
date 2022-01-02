@@ -24,8 +24,6 @@ export const parseRelationships = (relationships: Relationship[]): Map<string, R
 };
 
 router.post('/translate', async function (req, res, next) {
-    // TODO add error catching
-
     // Parse req body for entities and relationships
     var modelAsJson = req.body;
     var entities: Entity[] = modelAsJson.entities;
@@ -39,9 +37,6 @@ router.post('/translate', async function (req, res, next) {
 				return r;
 			});
 
-    // // Save to database
-    // saveAll(entities, relationships);
-
     // Translate
     const translator: FullTranslator = new FullTranslator(
         parseEntities(entities), parseRelationships(relationships));
@@ -54,33 +49,24 @@ router.post('/translate', async function (req, res, next) {
 });
 
 router.get('/test', async function (req, res, next) {
-    // TODO add error catching
-    console.log("testing")
     // Parse req body for entities and relationships
-    
-    var entities: Entity[] = [
-        {id: "0", text: "swipe card", pos: {x: 0, y: 0}, isWeak: true, attributes: [
-            {id: "00", text: "issue", relativePos: {x: 0, y: 0}, 
-                isMultiValued: false, isPrimaryKey: true, isOptional: false},
-            {id: "01", text: "date", relativePos: {x: 0, y: 0}, 
-                isMultiValued: false, isPrimaryKey: false, isOptional: false}
-        ]},
-        {id: "1", text: "person", pos: {x: 0, y: 0}, isWeak: false, attributes: [
+    var person: Entity = {
+        id: "1", text: "person", pos: {x: 0, y: 0}, isWeak: false, attributes: [
             {id: "10", text: "bonus", relativePos: {x: 0, y: 0}, 
                 isMultiValued: false, isPrimaryKey: false, isOptional: true},
             {id: "11", text: "salary number", relativePos: {x: 0, y: 0}, 
                 isMultiValued: false, isPrimaryKey: true, isOptional: false},
             {id: "12", text: "name", relativePos: {x: 0, y: 0}, 
-                isMultiValued: false, isPrimaryKey: false, isOptional: false}]}];
-    
-    let map = new Map<string, LHConstraint>();
-    map.set("0", LHConstraint.ONE_TO_ONE);
-    map.set("1", LHConstraint.ZERO_TO_MANY);
-    var relationships: Relationship[] = [
-        {id: "2", text: "for", pos: {x: 0, y: 0}, attributes: [], lHConstraints: map}];
+                isMultiValued: false, isPrimaryKey: false, isOptional: false}]};
 
-    // // Save to database
-    // saveAll(entities, relationships);
+    var entities: Entity[] = [
+        {id: "0", text: "manager", pos: {x: 0, y: 0}, isWeak: false, attributes: [
+            {id: "00", text: "mobile number", relativePos: {x: 0, y: 0}, 
+                isMultiValued: false, isPrimaryKey: false, isOptional: false}
+        ], subsets: [person]},
+        person];
+    
+    var relationships: Relationship[] = [];
 
     // Translate
     const translator: FullTranslator = new FullTranslator(

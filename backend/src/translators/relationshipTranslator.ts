@@ -44,7 +44,6 @@ class RelationshipTranslator implements Translator {
         });
         if (!oneMany) {
             //one-many relationships should not have tables
-            console.log("hello")
             var columns: Array<Column> = new Array();
             this.relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: string) => {
                 const attribute: Attribute = getPrimaryKey(this.entities.get(entityID)!);

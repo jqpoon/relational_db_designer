@@ -5,7 +5,6 @@ import TranslatedTable, { Table, TableSource, Column, ForeignKey } from "./model
 import Translator from "./translator";
 
 export const getPrimaryKey = (entity: Entity): Attribute => {
-
     for (var attribute of entity.attributes ?? []) {
         if (attribute.isPrimaryKey) {
             return attribute;
@@ -13,6 +12,15 @@ export const getPrimaryKey = (entity: Entity): Attribute => {
     }
     throw new Error("no primary key found!");
 };
+
+const getPrimaryKeyTranslated = (cols: Array<Column>): string => {
+    for (var col of cols) {
+        if (col.isPrimaryKey) {
+            return col.columnName;
+        }
+    }
+    throw new Error("no primary key found!");
+}
 
 class ForeignKeyTranslator implements Translator {
 
@@ -70,7 +78,7 @@ class ForeignKeyTranslator implements Translator {
         this.entities.forEach((entity: Entity) => {
             if (entity.subsets !== undefined) {
                 var table: Table = translatedTable.tables.get(entity.text)!
-                const key: string = getPrimaryKey(entity).text;
+                const key: string = getPrimaryKeyTranslated(table.columns);
                 entity.subsets.map((s: Entity) => {
                     const foreignTable = s.text;
                     const foreignKey: ForeignKey = {
