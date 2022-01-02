@@ -189,6 +189,37 @@
         }
       }
     },
+    "Generalisation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "pos": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            }
+          }
+        },
+        "parent": {
+          "type": "string"
+        },
+        "entities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "InvalidResponse": {
       "type": "object",
       "properties": {
@@ -272,6 +303,10 @@
       "description": "ER Schema Relationships"
     },
     {
+      "name": "Generalisations",
+      "description": "ER Schema Generalisations"
+    },
+    {
       "name": "General",
       "description": "ER Schema General Functions"
     },
@@ -288,34 +323,6 @@
   ],
   "paths": {
     "/schema/all": {
-      "get": {
-        "tags": [
-          "General"
-        ],
-        "description": "Retrieves **FULL** schema",
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "entities": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/Entity"
-                  }
-                },
-                "relationships": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/Relationship"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
       "post": {
         "tags": [
           "General"
@@ -328,6 +335,11 @@
             "schema": {
               "type": "object",
               "properties": {
+                "graphID": {
+                  "type": "integer",
+                  "description": "Graph ID of the given ER Diagram",
+                  "example": 1
+                },
                 "entities": {
                   "type": "array",
                   "items": {
@@ -387,6 +399,22 @@
                           "isMultiValued": false
                         }
                       ]
+                    },
+                    {
+                      "id": "3",
+                      "pos": {
+                        "x": 1,
+                        "y": 2
+                      },
+                      "text": "Mock Entity 3"
+                    },
+                    {
+                      "id": "4",
+                      "pos": {
+                        "x": 1,
+                        "y": 2
+                      },
+                      "text": "Mock Entity 4"
                     }
                   ]
                 },
@@ -422,6 +450,27 @@
                       }
                     }
                   ]
+                },
+                "generalisations": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Generalisation"
+                  },
+                  "example": [
+                    {
+                      "id": "1",
+                      "text": "messages",
+                      "pos": {
+                        "x": 1,
+                        "y": 2
+                      },
+                      "parent": "1",
+                      "entities": [
+                        "3",
+                        "4"
+                      ]
+                    }
+                  ]
                 }
               }
             }
@@ -441,14 +490,86 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Failed operation",
+            "schema": {
+              "$ref": "#/definitions/InvalidResponse"
+            }
           }
         }
       }
     },
-    "/schema/entities": {
+    "/schema/all/{graphID}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "graphID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "The graph ID"
+          }
+        ],
+        "tags": [
+          "General"
+        ],
+        "description": "Retrieves **FULL** schema",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "entities": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Entity"
+                  }
+                },
+                "relationships": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Relationship"
+                  }
+                },
+                "generalisations": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Generalisation"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Failed operation",
+            "schema": {
+              "$ref": "#/definitions/InvalidResponse"
+            }
+          }
+        }
+      }
+    },
+    "/schema/entities/{graphID}": {
       "get": {
         "tags": [
           "Entities"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "graphID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "The graph ID"
+          }
         ],
         "description": "Returns **ALL** entities",
         "responses": {
@@ -460,14 +581,32 @@
                 "$ref": "#/definitions/Entity"
               }
             }
+          },
+          "400": {
+            "description": "Failed operation",
+            "schema": {
+              "$ref": "#/definitions/InvalidResponse"
+            }
           }
         }
       }
     },
-    "/schema/relationship": {
+    "/schema/relationship/{graphID}": {
       "get": {
         "tags": [
           "Relationships"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "graphID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "The graph ID"
+          }
         ],
         "description": "Returns **ALL** relationships",
         "responses": {
@@ -478,6 +617,49 @@
               "items": {
                 "$ref": "#/definitions/Relationship"
               }
+            }
+          },
+          "400": {
+            "description": "Failed operation",
+            "schema": {
+              "$ref": "#/definitions/InvalidResponse"
+            }
+          }
+        }
+      }
+    },
+    "/schema/generalisation/{graphID}": {
+      "get": {
+        "tags": [
+          "Generalisations"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "graphID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "The graph ID"
+          }
+        ],
+        "description": "Returns **ALL** generalisations",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Generalisation"
+              }
+            }
+          },
+          "400": {
+            "description": "Failed operation",
+            "schema": {
+              "$ref": "#/definitions/InvalidResponse"
             }
           }
         }

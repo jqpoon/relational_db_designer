@@ -1,0 +1,90 @@
+{
+	"name": "Test ERD",
+  "data": {
+	  "entities": [
+	    {
+	      "id": "E0",
+	      "text": "Person",
+	      "pos": {
+	        "x": 300,
+	        "y": 250
+	      },
+	      "isWeak": false,
+	      "attributes": [
+	        {
+	          "id": "E0A0",
+	          "text": "Name",
+	          "relativePos": {
+	            "x": -100,
+	            "y": -30
+	          },
+	          "isMultiValued": false,
+	          "isOptional": false,
+	          "isPrimaryKey": false
+	        }
+	      ],
+	      "subsets": []
+	    },
+	    {
+	      "id": "E1",
+	      "text": "Manager",
+	      "pos": {
+	        "x": 100,
+	        "y": 250
+	      },
+	      "isWeak": false,
+	      "attributes": [],
+	      "subsets": []
+	    },
+	    {
+	      "id": "E2",
+	      "text": "Department",
+	      "pos": {
+	        "x": 750,
+	        "y": 250
+	      },
+	      "isWeak": false,
+	      "attributes": [],
+	      "subsets": []
+	    },
+	    {
+	      "id": "E3",
+	      "text": "Email Users",
+	      "pos": {
+	        "x": 100,
+	        "y": 500
+	      },
+	      "isWeak": false,
+	      "attributes": [],
+	      "subsets": []
+	    },
+	    {
+	      "id": "E4",
+	      "text": "Non-email Users",
+	      "pos": {
+	        "x": 550,
+	        "y": 500
+	      },
+	      "isWeak": false,
+	      "attributes": [],
+	      "subsets": []
+	    }
+	  ],
+	  "relationships": [
+	    {
+	      "id": "R0",
+	      "text": "Works In",
+	      "pos": {
+	        "x": 550,
+	        "y": 250
+	      },
+	      "attributes": [],
+	      "lHConstraints": {
+	        "E0": "ONE_TO_ONE",
+	        "E2": "ZERO_TO_MANY"
+	      }
+	    }
+	  ],
+	  "disjoints": []
+	}
+}
