@@ -22,7 +22,7 @@ describe("ERD", () => {
 				.get(`/api/erd?ERid=${params.testErid}&Uid=${params.testUid}`)
 				.end((_, res) => {
 					expect(res.status).to.be.equal(200);
-					expect(JSON.parse(res.text)).to.be.deep.equal(example);
+					expect(JSON.parse(res.text)).to.be.deep.equal({...example, counter: 1});
 					done();
 				});
 		});
@@ -99,7 +99,7 @@ describe("ERD", () => {
 		it("Cannot update ERD without a user account", (done) => {
 			chai.request(server)
 				.put(`/api/erd?ERid=${params.testErid}&Uid=${params.badUid}`)
-				.send(params.someData)
+				.send({...params.someData, counter: 1})
 				.end((_, res) => {
 					expect(res.status).to.be.equal(404);
 					done();
@@ -109,7 +109,7 @@ describe("ERD", () => {
 		it("Cannot update non-existent ERD", (done) => {
 			chai.request(server)
 				.put(`/api/erd?ERid=${params.badErid}&Uid=${params.testUid}`)
-				.send(params.someData)
+				.send({...params.someData, counter: 1})
 				.end((_, res) => {
 					expect(res.status).to.be.equal(404);
 					done();
@@ -119,7 +119,7 @@ describe("ERD", () => {
 		it("Cannot update ERD without sufficient permission", (done) => {
 			chai.request(server)
 				.put(`/api/erd?ERid=${params.testErid}&Uid=${params.otherUid}`)
-				.send(params.someData)
+				.send({...params.someData, counter: 1})
 				.end((_, res) => {
 					expect(res.status).to.be.equal(403);
 					done();
@@ -179,16 +179,16 @@ describe("ERD", () => {
 			let readRes = await chai.request(server)
 				.get(`/api/erd?ERid=${createRes.text}&Uid=${params.testUid}`);
 			expect(readRes.status).to.be.equal(200);
-			expect(JSON.parse(readRes.text)).to.be.deep.equal(example);
+			expect(JSON.parse(readRes.text)).to.be.deep.equal({...example, counter: 1});
 			// update
 			const updateRes = await chai.request(server)
 				.put(`/api/erd?ERid=${createRes.text}&Uid=${params.testUid}`)
-				.send(params.someData);
+				.send({...params.someData, counter: 1});
 			expect(updateRes.status).to.be.equal(200);
 			readRes = await chai.request(server)
 				.get(`/api/erd?ERid=${createRes.text}&Uid=${params.testUid}`);
 			expect(readRes.status).to.be.equal(200);
-			expect(JSON.parse(readRes.text)).to.be.deep.equal(params.someData);
+			expect(JSON.parse(readRes.text)).to.be.deep.equal({...params.someData, counter: 2});
 			// delete
 			const deleteRes = await chai.request(server)
 				.delete(`/api/erd?ERid=${createRes.text}&Uid=${params.testUid}`);
@@ -196,6 +196,27 @@ describe("ERD", () => {
 			readRes = await chai.request(server)
 				.get(`/api/erd?ERid=${createRes.text}&Uid=${params.testUid}`);
 			expect(readRes.status).to.be.equal(404);
+		});
+
+		it("Update conflicts throw errors", async () => {
+			// create
+			const createRes = await chai.request(server)
+				.post(`/api/erd?Uid=${params.testUid}`)
+				.send(example);
+			expect(createRes.status).to.be.equal(200);
+			// update
+			let updateRes = await chai.request(server)
+				.put(`/api/erd?ERid=${createRes.text}&Uid=${params.testUid}`)
+				.send({...params.someData, counter: 1});
+			expect(updateRes.status).to.be.equal(200);
+			updateRes = await chai.request(server)
+				.put(`/api/erd?ERid=${createRes.text}&Uid=${params.testUid}`)
+				.send({...params.someData, counter: 1});
+			expect(updateRes.status).to.be.equal(409);
+			// delete
+			const deleteRes = await chai.request(server)
+				.delete(`/api/erd?ERid=${createRes.text}&Uid=${params.testUid}`);
+			expect(deleteRes.status).to.be.equal(200);
 		});
 	});
 });
