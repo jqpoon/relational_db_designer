@@ -14,10 +14,11 @@ import {
 	DocumentSnapshot,
 	arrayRemove,
 	deleteDoc,
+	increment,
 } from "firebase/firestore"
 
 interface ERDSchema {
-	owner: string;
+	counter: number;
 	name: string;
 	data: string;
 }
@@ -58,7 +59,7 @@ class FirestoreController {
 		// Store ERD
 		const parsedJson = JSON.parse(json);
 		const data: ERDSchema = {
-			owner: uid,
+			counter: 1,
 			name: parsedJson.name,
 			data: parsedJson.data,
 		}
@@ -134,15 +135,12 @@ class FirestoreController {
 	public async getERD(erid: string): Promise<string> {
 		const docRef: DocumentReference = doc(this.db, `erds_list/${erid}`);
 		const docData: DocumentSnapshot = await getDoc(docRef);
-		const name = (await docData.get("name")) as string;
-		const data = (await docData.get("data")) as string;
-		return JSON.stringify({name, data});
+		return JSON.stringify(docData.data());
 	}
 
 	public async updateERD(erid: string, json: string): Promise<void> {
 		const docRef: DocumentReference = doc(this.db, `erds_list/${erid}`);
-		await setDoc(docRef, JSON.parse(json));
-
+		await updateDoc(docRef, {...JSON.parse(json), counter: increment(1)});		
 		// TODO: concurrent update?
 	}
 
