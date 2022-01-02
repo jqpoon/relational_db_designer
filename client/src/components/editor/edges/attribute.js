@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback, StrictMode } from "react";
 import "./stylesheets/attribute.css";
 import { types } from "../types";
 import { AttributeContextMenu } from "../contextMenus/attributeContextMenu";
@@ -24,15 +24,28 @@ export default function Attribute({
 
   // Toggles key attribute feature
   const toggleKeyAttribute = () =>
-    updateAttribute((attr) => (attr.isPrimaryKey = !attr.isPrimaryKey));
+    updateAttribute((attr) => {
+      attr.isPrimaryKey = !attr.isPrimaryKey;
+      if (attr.isPrimaryKey) {
+        // Key attributes are mandatory and unique
+        attr.isOptional = false;
+        attr.isMultiValued = false;
+      }
+    });
 
   // Toggles optional attribute feature
   const toggleOptionalAttribute = () =>
-    updateAttribute((attr) => (attr.isOptional = !attr.isOptional));
+    updateAttribute((attr) => {
+      attr.isOptional = !attr.isOptional;
+      attr.isPrimaryKey = false;
+    });
 
   // Toggles multi-valued attribute feature
   const toggleMultiValuedAttribute = () =>
-    updateAttribute((attr) => (attr.isMultiValued = !attr.isMultiValued));
+    updateAttribute((attr) => {
+      attr.isMultiValued = !attr.isMultiValued;
+      attr.isPrimaryKey = false;
+    });
 
   const contextMenuActions = {
     "Edit Label": () => setEditable(true),
@@ -47,13 +60,16 @@ export default function Attribute({
   }, [setContextMenu]);
 
   // Show context menu
-  const handleContextMenu = useCallback((event) => {
-    event.preventDefault();
-    setContextMenu({
-      actions: contextMenuActions,
-      anchor: { x: event.pageX, y: event.pageY },
-    });
-  }, [setContextMenu]);
+  const handleContextMenu = useCallback(
+    (event) => {
+      event.preventDefault();
+      setContextMenu({
+        actions: contextMenuActions,
+        anchor: { x: event.pageX, y: event.pageY },
+      });
+    },
+    [setContextMenu]
+  );
 
   // Handle context menus callbacks on mount
   useEffect(() => {
@@ -225,9 +241,9 @@ export function addAttributeToNode({
     id: attributeId,
     text: "Attribute",
     relativePos: relativePos,
-		isPrimaryKey: false,
-		isMultiValued: false,
-		isOptional: false,
+    isPrimaryKey: false,
+    isMultiValued: false,
+    isOptional: false,
     type: types.ATTRIBUTE,
   };
   console.log(attributeEntry);
