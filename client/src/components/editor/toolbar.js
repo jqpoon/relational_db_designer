@@ -1,6 +1,6 @@
 import Draggable from "react-draggable";
 import axios from "axios";
-import {useRef} from "react";
+import {useRef, useState} from "react";
 import {types} from "./types";
 import {getId} from "./idGenerator";
 import "./stylesheets/toolbar.css";
@@ -18,12 +18,24 @@ export default function Toolbar({
                                   redo,
 																	user,
 																	setUser,
-																	erid,
-																	setErid,
-																	incrementCounter
                                 }) {
+	const [name, setName] = useState("Untitled");
+	const [erid, setErid] = useState(null);
+	const [counter, setCounter] = useState(0);
   const entityToolRef = useRef(null);
   const relationshipToolRef = useRef(null);
+
+	const buildObject = () => {
+		const obj = exportStateToObject();
+		if (counter !== 0) obj["counter"] = counter;
+		return obj;
+	}
+
+	const buildState = (res) => {
+		setName(res.name);
+		setCounter(res.counter);
+		exportStateToObject(res.data)
+	}
 
   const addEntity = (x, y) => {
     const newEntity = {
@@ -60,10 +72,10 @@ export default function Toolbar({
 
 	const createERD = async () => {
 		try {
-			const res = await axios.post(`/api/erd?Uid=${user}`, exportStateToObject());
+			const res = await axios.post(`/api/erd?Uid=${user}`, buildObject());
 			const erid = await res.data; 
 			setErid(erid);
-			incrementCounter();
+			setCounter(counter => counter + 1);
 			alert("ERD successfully created");
 		} catch (error) {
 			alert(error.response.data);
@@ -73,9 +85,9 @@ export default function Toolbar({
 	const updateERD = async () => {
 		try {
 			console.log(exportStateToObject());
-			const res = await axios.put(`/api/erd?Uid=${user}&ERid=${erid}`, exportStateToObject());
+			const res = await axios.put(`/api/erd?Uid=${user}&ERid=${erid}`, buildObject());
 			const data = await res.data; 
-			incrementCounter();
+			setCounter(counter => counter + 1);
 			alert(data);
 		} catch (error) {
 			alert(error.response.data);
@@ -84,26 +96,28 @@ export default function Toolbar({
 
   return (
     <div className="toolbar">
-      <Draggable
-        ref={entityToolRef}
-        onStop={(e, data) => {
-          addEntity(data.x - 125, data.y);
-          entityToolRef.current.state.x = 0;
-          entityToolRef.current.state.y = 0;
-        }}
-      >
-        <div className="create-tool"><span class="grippy"></span> Entity</div>
-      </Draggable>
-      <Draggable
-        ref={relationshipToolRef}
-        onStop={(e, data) => {
-          addRelationship(data.x - 125, data.y);
-          relationshipToolRef.current.state.x = 0;
-          relationshipToolRef.current.state.y = 0;
-        }}
-      >
-        <div className="create-tool"><span class="grippy"></span>Relationship</div>
-      </Draggable>
+			<div>
+	      <Draggable
+	        ref={entityToolRef}
+	        onStop={(e, data) => {
+	          addEntity(data.x - 125, data.y);
+	          entityToolRef.current.state.x = 0;
+	          entityToolRef.current.state.y = 0;
+	        }}
+	      >
+	        <div className="create-tool"><span class="grippy"></span> Entity</div>
+	      </Draggable>
+	      <Draggable
+	        ref={relationshipToolRef}
+	        onStop={(e, data) => {
+	          addRelationship(data.x - 125, data.y);
+	          relationshipToolRef.current.state.x = 0;
+	          relationshipToolRef.current.state.y = 0;
+	        }}
+	      >
+	        <div className="create-tool"><span class="grippy"></span>Relationship</div>
+	      </Draggable>
+			</div>
       <div className="footer">
         <div className="tool" onClick={undo}>
           Undo

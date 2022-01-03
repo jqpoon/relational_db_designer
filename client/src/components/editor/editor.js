@@ -35,10 +35,6 @@ export default function Editor({user, setUser}) {
   const [panDisabled, setPanDisabled] = useState(false);
   const [editableId, setEditableId] = useState(0);
 
-	const [name, setName] = useState("Untitled");
-	const [erid, setErid] = useState(null);
-	const [counter, setCounter] = useState(0);
-
   // List of components that will be rendered
   const [entities, setEntities] = useState(initialEntities);
   const [relationships, setRelationships] = useState(initialRelationships);
@@ -349,30 +345,21 @@ export default function Editor({user, setUser}) {
 
   // Translates entire model state from backend JSON into client components.
   const importStateFromObject = (state) => {
-		setName(state.name);
-		setCounter(state.counter);
-    setEntities(state.data.entities);
-    setRelationships(state.data.relationships);
-    setEdges(state.data.edges);
+    setEntities(state.entities);
+    setRelationships(state.relationships);
+    setEdges(state.edges);
   };
 
   // Translates entire schema state into a single JSON object.
   const exportStateToObject = () => {
-    const obj = {
-			name: name,
+    return {
 			data: {
 				entities: entities,
 				relationships: relationships,
 				edges: edges
 			}
     };
-		if (counter !== 0) obj["counter"] = counter;
-		return obj;
   };
-
-	const incrementCounter = () => {
-		setCounter(counter => counter + 1);
-	}
 
   // Translates entire schema state into a JSON object that fits backend format.
   // TODO: Move this function to backend after working out Firebase stuff.
@@ -537,9 +524,6 @@ export default function Editor({user, setUser}) {
     redo,
 		user,
 		setUser,
-		erid,
-		setErid,
-		incrementCounter,
   };
 
   const rightToolBarActions = {
