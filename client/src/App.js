@@ -1,10 +1,10 @@
 import "./App.css";
-import Editor from "./components/editor/editor";
+import Main from "./components";
 
 function App() {
 	return (
 		<div className="App">
-			<Editor />
+			<Main />
 		</div>
 	);
 }

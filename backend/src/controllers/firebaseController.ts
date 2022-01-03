@@ -37,7 +37,7 @@ class FirebaseController {
     public async signUp(email: string, password: string): Promise<string> {
 				const uid: string = await this.firebaseAuthController.signUp(email, password);
 				this.firestoreController.createDocumentForNewUser(uid);
-				return "User created";
+				return uid;
     }
 
     public login(email: string, password: string): Promise<string> {
