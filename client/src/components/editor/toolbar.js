@@ -27,6 +27,7 @@ export default function Toolbar({
 
 	const buildObject = () => {
 		const obj = exportStateToObject();
+		obj["name"] = name;
 		if (counter !== 0) obj["counter"] = counter;
 		return obj;
 	}
@@ -34,7 +35,7 @@ export default function Toolbar({
 	const buildState = (res) => {
 		setName(res.name);
 		setCounter(res.counter);
-		exportStateToObject(res.data)
+		importStateFromObject(res.data)
 	}
 
   const addEntity = (x, y) => {
@@ -119,14 +120,15 @@ export default function Toolbar({
 	      </Draggable>
 			</div>
       <div className="footer">
-        <div className="tool" onClick={undo}>
+				<input className="tool" value={name} onChange={(e) => setName(e.target.value)}/>
+        <div className="clickable tool" onClick={undo}>
           Undo
         </div>
-        <div className="tool" onClick={redo}>
+        <div className="clickable tool" onClick={redo}>
           Redo
         </div>
         <div
-          className="tool"
+          className="clickable tool"
           onClick={() => {
             axios
               .get("/schema/all")
@@ -141,12 +143,12 @@ export default function Toolbar({
           Load
         </div>
         <div
-          className="tool"
+          className="clickable tool"
           onClick={erid ? updateERD : createERD}
         >
           Save
         </div>
-        <div className="tool" onClick={() => {
+        <div className="clickable tool" onClick={() => {
           axios
             .post('/translation/translate', exportStateToObject())
             .then(function (response) {
@@ -159,12 +161,12 @@ export default function Toolbar({
         >
           Translate
         </div>
-        <div className="tool">Validate</div>
+        <div className="clickable tool">Validate</div>
         <UploadTool text="Import JSON file" handleFile={uploadStateFromObject} />
-        <div className="tool" onClick={downloadStateAsObject}>
+        <div className="clickable tool" onClick={downloadStateAsObject}>
           Export JSON file
         </div>
-				<div className="tool" onClick={() => setUser(null)}>
+				<div className="clickable tool" onClick={() => setUser(null)}>
 					Log out
 				</div>
       </div>

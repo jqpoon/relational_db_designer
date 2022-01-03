@@ -25,15 +25,18 @@
 }
 
 .tool {
-	border-radius: 3px;
-  height: 35px;
-  padding: 10px;
+	height: 35px;
   margin: 2px 0;
+  padding: 10px;
   border: 1px solid navy;
+	border-radius: 3px;
+}
+
+.clickable {
 	cursor: pointer;
 }
 
-.tool:hover {
+.clickable:hover {
 	border: 1px solid orange;
 }
 
@@ -66,7 +69,6 @@ span.grippy::after {
 }
 
 .footer {
-	width: 10vw;
   padding: 0;
   margin: 0;
 }
