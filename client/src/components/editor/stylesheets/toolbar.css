@@ -31,6 +31,7 @@
   padding: 10px;
   margin: 0;
   border: 1px solid navy;
+	cursor: pointer;
 }
 
 span.grippy {

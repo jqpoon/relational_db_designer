@@ -18,7 +18,7 @@ import DisplayTranslation from "./right_toolbar/translationDisplay";
 import { addToUndo, redo, undo } from "./historyUtilities/history";
 import { deletes, gets, updates } from "./elementUtilities/elementFunctions";
 
-export default function Editor() {
+export default function Editor({user, setUser}) {
   // Canvas states: passed to children for metadata (eg width and height of main container)
   const parentRef = useRef(null);
   const [render, setRender] = useState(false);
@@ -259,6 +259,7 @@ export default function Editor() {
     },
     undo: () => undo(historyAndSetter, elementsAndSetter),
     redo: () => redo(historyAndSetter, elementsAndSetter),
+		setUser: setUser,
   };
 
   const rightToolBarActions = {
