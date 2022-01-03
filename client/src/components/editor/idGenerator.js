@@ -7,6 +7,12 @@ class IdCounter {
   }
 }
 
+export function setCounter(count) {
+  IdCounter.counter = count;
+}
+export function saveCounter() {
+  return IdCounter.counter;
+}
 export function getId(type, parentId = null, secondaryId = null) {
   switch (type) {
     case types.ATTRIBUTE:

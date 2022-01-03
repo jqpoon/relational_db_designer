@@ -17,8 +17,9 @@ import { ContextMenu } from "./contextMenus/contextMenu";
 import DisplayTranslation from "./right_toolbar/translationDisplay";
 import { addToUndo, redo, undo } from "./historyUtilities/history";
 import { deletes, gets, updates } from "./elementUtilities/elementFunctions";
+import { saveCounter, setCounter } from "./idGenerator";
 
-export default function Editor({user, setUser}) {
+export default function Editor({ user, setUser }) {
   // Canvas states: passed to children for metadata (eg width and height of main container)
   const parentRef = useRef(null);
   const [render, setRender] = useState(false);
@@ -86,12 +87,16 @@ export default function Editor({user, setUser}) {
   };
   // Translates entire model state from backend JSON into client components.
   const importStateFromObject = (state) => {
+    if (state.count) {
+      setCounter(state.count);
+      delete state.count;
+    }
     setElements(state);
   };
 
   // Translates entire schema state into a single JSON object.
   const exportStateToObject = () => {
-    return elements;
+    return { ...elements, count: saveCounter() };
   };
 
   // Translates entire schema state into a JSON object that fits backend format.
@@ -259,7 +264,7 @@ export default function Editor({user, setUser}) {
     },
     undo: () => undo(historyAndSetter, elementsAndSetter),
     redo: () => redo(historyAndSetter, elementsAndSetter),
-		setUser: setUser,
+    setUser: setUser,
   };
 
   const rightToolBarActions = {
@@ -290,8 +295,6 @@ export default function Editor({user, setUser}) {
     scale: scale, // TODO
   };
 
-  // TODO
-  const showPendingChanges = () => {};
   const showRightToolbar = () => {
     switch (context.action) {
       case actions.TRANSLATE:
