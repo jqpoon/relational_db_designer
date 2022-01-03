@@ -1,4 +1,4 @@
-import { useCallback, useState, useRef, useEffect } from "react";
+import { useCallback, useState, useRef, useEffect, useMemo } from "react";
 import Draggable from "react-draggable";
 import { useXarrow } from "react-xarrows";
 import Attribute, { addAttributeToNode } from "../edges/attribute";
@@ -81,9 +81,9 @@ export default function Node({
 
   const [editable, setEditable] = useState(false);
 
-  const contextMenuActions = {
+  const contextMenuActions = useMemo(() => ({
     "Edit Label": () => setEditable(true),
-  };
+  }), []);
 
   switch (type) {
     case types.ENTITY:
@@ -112,7 +112,7 @@ export default function Node({
         anchor: { x: event.pageX, y: event.pageY },
       });
     },
-    [setContextMenu]
+    [setContextMenu, contextMenuActions]
   );
 
   // Set dimensions on mount
@@ -129,7 +129,7 @@ export default function Node({
       document?.removeEventListener("click", handleClick);
       curNode?.removeEventListener("contextmenu", handleContextMenu);
     };
-  }, []);
+  }, [handleContextMenu, handleClick]);
 
   // For updating edges connected to the node
   const updateXarrow = useXarrow();
@@ -232,18 +232,24 @@ export default function Node({
       context.action === actions.SELECT.NORMAL &&
       id === context.selected.id
     ) {
-      return className === "weak-entity" ? { borderColor: "orange"} : { border: "2px solid orange" };
+      return className === "weak-entity"
+        ? { borderColor: "orange" }
+        : { border: "2px solid orange" };
     } else if (
       context.action === actions.SELECT.ADD_RELATIONSHIP &&
       id === context.selected.id
     ) {
-      return className === "weak-entity" ? { borderColor: "orange"} : { border: "2px solid orange" };
+      return className === "weak-entity"
+        ? { borderColor: "orange" }
+        : { border: "2px solid orange" };
     } else if (
       context.action === actions.SELECT.ADD_RELATIONSHIP &&
       context.target !== null &&
       id === context.target.id
     ) {
-      return className === "weak-entity" ? { borderColor: "orange"} : { border: "2px solid orange" };
+      return className === "weak-entity"
+        ? { borderColor: "orange" }
+        : { border: "2px solid orange" };
     } else {
       return null;
     }
@@ -258,19 +264,6 @@ export default function Node({
       )}
     </div>
   );
-
-  const generalisation = (
-    <div className={className} style={highlightStyle(className)}>
-      <div className="generalisation inner">
-      {editable ? (
-        editingMode()
-      ) : (
-        <div className={className + "-label"}>{text}</div>
-      )}
-      </div>
-    </div>
-  );
-  // TODO:conditional rendering
 
   return (
     <>

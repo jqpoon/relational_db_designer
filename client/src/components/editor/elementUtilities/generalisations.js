@@ -19,7 +19,7 @@ export const deleteGeneralisation = (
   // Actually delete elements from state
   setElements((prev) => {
     let newElements = { ...prev };
-    const { entities, relationships, edges } = newElements;
+    const { entities, edges } = newElements;
     // Delete edge references from nodes and edges themselves
     data.edges.forEach((edge) => {
       console.assert(edge.type === types.EDGE.HIERARCHY);

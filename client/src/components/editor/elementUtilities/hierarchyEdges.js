@@ -36,7 +36,7 @@ export const updateHierarchyEdge = ({ elements, setElements }, edge) => {
 
   setElements((prev) => {
     let newElements = { ...prev };
-    const { entities, relationships, edges } = newElements;
+    const { entities, edges } = newElements;
     edges[edge.id] = edge;
     if (!oldEntry) {
       // Newly added edge, update source and target

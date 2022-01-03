@@ -1,5 +1,3 @@
-import { actions, types } from "../types";
-
 export function ContextMenu({ contextMenu }) {
   if (contextMenu === null) {
     return null;

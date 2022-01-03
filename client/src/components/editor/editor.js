@@ -267,12 +267,6 @@ export default function Editor({ user, setUser }) {
     setUser: setUser,
   };
 
-  const rightToolBarActions = {
-    cancel: () => {
-      setContext({ action: actions.NORMAL });
-    },
-  };
-
   const canvasConfig = {
     panning: {
       disabled: panDisabled,

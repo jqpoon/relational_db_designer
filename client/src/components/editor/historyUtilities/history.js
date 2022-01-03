@@ -36,7 +36,6 @@ export const redo = ({ history, setHistory }, elementsAndSetter) => {
     newHistory.position++;
     return newHistory;
   });
-
 };
 
 export const undo = ({ history, setHistory }, elementsAndSetter) => {
@@ -51,7 +50,6 @@ export const undo = ({ history, setHistory }, elementsAndSetter) => {
     newHistory.position--;
     return newHistory;
   });
-  
 };
 
 const undoUpdate = (data, elementsAndSetter) => {
@@ -88,6 +86,7 @@ const undoDelete = (data, elementsAndSetter) => {
           entities[data.node.parent.id].generalisations[data.node.id] =
             data.node;
           break;
+        default:
       }
     }
     data.edges.forEach((edge) => {

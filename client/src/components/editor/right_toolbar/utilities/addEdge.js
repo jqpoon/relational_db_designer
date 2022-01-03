@@ -24,14 +24,6 @@ function AddingEdge({
     });
   };
 
-  const updateNodeWithEdge = (nodeID, nodeType, edge, parent) => {
-    console.log(`updatenodewithedge(${nodeID}, ${nodeType})`);
-    console.log(edge);
-    console.log(parent);
-    let node = getElement(nodeType, nodeID, parent);
-    node.edges[edge.id] = { type: edge.type };
-    updateElement(nodeType, node);
-  };
   const addEdge = () => {
     if (!validate || validate(target)) {
       const edge = createEdge(selected, target);
@@ -87,6 +79,9 @@ function AddingEdge({
           </div>
         );
       }
+      break;
+    default:
+      console.assert(false);
   }
 
   if (warning !== null) {
