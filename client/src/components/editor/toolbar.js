@@ -150,7 +150,7 @@ export default function Toolbar({
         </div>
         <div className="clickable tool" onClick={() => {
           axios
-            .post('/translation/translate', exportStateToObject())
+            .post('/api/translation/translate', exportStateToObject())
             .then(function (response) {
               translate(response.data);
             })
