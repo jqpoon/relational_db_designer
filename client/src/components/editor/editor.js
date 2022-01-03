@@ -27,7 +27,7 @@ import { getId } from "./idGenerator";
 
 const STACK_LIMIT = 25;
 
-export default function Editor() {
+export default function Editor({user, setUser}) {
   // Canvas states: passed to children for metadata (eg width and height of main container)
   const parentRef = useRef(null);
   const [render, setRender] = useState(false);
@@ -520,6 +520,7 @@ export default function Editor() {
     },
     undo: undo,
     redo: redo,
+		setUser: setUser,
   };
 
   const rightToolBarActions = {
