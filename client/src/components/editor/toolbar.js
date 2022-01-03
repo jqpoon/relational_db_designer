@@ -16,7 +16,11 @@ export default function Toolbar({
                                   translate,
                                   undo,
                                   redo,
+																	user,
 																	setUser,
+																	erid,
+																	setErid,
+																	incrementCounter
                                 }) {
   const entityToolRef = useRef(null);
   const relationshipToolRef = useRef(null);
@@ -53,6 +57,30 @@ export default function Toolbar({
     };
     addElement(types.RELATIONSHIP, newRelationship);
   };
+
+	const createERD = async () => {
+		try {
+			const res = await axios.post(`/api/erd?Uid=${user}`, exportStateToObject());
+			const erid = await res.data; 
+			setErid(erid);
+			incrementCounter();
+			alert("ERD successfully created");
+		} catch (error) {
+			alert(error.response.data);
+		}
+	}
+
+	const updateERD = async () => {
+		try {
+			console.log(exportStateToObject());
+			const res = await axios.put(`/api/erd?Uid=${user}&ERid=${erid}`, exportStateToObject());
+			const data = await res.data; 
+			incrementCounter();
+			alert(data);
+		} catch (error) {
+			alert(error.response.data);
+		}
+	}
 
   return (
     <div className="toolbar">
@@ -100,16 +128,7 @@ export default function Toolbar({
         </div>
         <div
           className="tool"
-          onClick={() => {
-            axios
-              .post("/schema/all", exportStateToObject())
-              .then(function (response) {
-                console.log(response);
-              })
-              .catch(function (error) {
-                console.log(error);
-              });
-          }}
+          onClick={erid ? updateERD : createERD}
         >
           Save
         </div>
