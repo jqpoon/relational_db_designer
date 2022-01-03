@@ -17,6 +17,7 @@ import SelectGeneralisation from "./right_toolbar/selectGeneralisation";
 import { ContextMenu } from "./contextMenus/contextMenu";
 import DisplayTranslation from "./right_toolbar/translationDisplay";
 import { getId } from "./idGenerator";
+import Load from "./right_toolbar/load";
 
 // TODO: update left,right toolbar to match new data structures
 // TODO: add initial attributes to initial.js + implement position update based on parent node of the attribute
@@ -36,11 +37,15 @@ export default function Editor({user, setUser}) {
   const [editableId, setEditableId] = useState(0);
 
   // List of components that will be rendered
-  const [entities, setEntities] = useState(initialEntities);
-  const [relationships, setRelationships] = useState(initialRelationships);
-  const [edges, setEdges] = useState(initialEdges);
+	const [entities, setEntities] = useState({});
+  const [relationships, setRelationships] = useState({});
+  const [edges, setEdges] = useState({});
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
+
+	const [name, setName] = useState("Untitled");
+	const [erid, setErid] = useState(null);
+	const [counter, setCounter] = useState(0);
 
   const [context, setContext] = useState({ action: actions.NORMAL });
 
@@ -344,21 +349,27 @@ export default function Editor({user, setUser}) {
   };
 
   // Translates entire model state from backend JSON into client components.
-  const importStateFromObject = (state) => {
-    setEntities(state.entities);
-    setRelationships(state.relationships);
-    setEdges(state.edges);
+  const importStateFromObject = (obj) => {
+		setName(obj.name);
+		setErid(obj.erid);
+		setCounter(obj.counter);
+    setEntities(obj.data.entities);
+    setRelationships(obj.data.relationships);
+    setEdges(obj.data.edges);
   };
 
   // Translates entire schema state into a single JSON object.
   const exportStateToObject = () => {
-    return {
+		const obj = {
 			data: {
 				entities: entities,
 				relationships: relationships,
 				edges: edges
 			}
     };
+		obj["name"] = name;
+		if (counter !== 0) obj["counter"] = counter;
+		return obj;
   };
 
   // Translates entire schema state into a JSON object that fits backend format.
@@ -510,10 +521,10 @@ export default function Editor({user, setUser}) {
         target: null,
       });
     },
-    importStateFromObject: importStateFromObject,
-    exportStateToObject: exportStateToObject,
-    uploadStateFromObject: uploadStateFromObject,
-    downloadStateAsObject: downloadStateAsObject,
+    importStateFromObject,
+    exportStateToObject,
+    uploadStateFromObject,
+    downloadStateAsObject,
     translate: (schema) => {
       setContext({
         action: actions.TRANSLATE,
@@ -524,6 +535,14 @@ export default function Editor({user, setUser}) {
     redo,
 		user,
 		setUser,
+		name,
+		setName,
+		erid,
+		setErid,
+		counter,
+		setCounter,
+		load: () => setContext({ action: actions.LOAD }),
+		share: () => setContext({ action: actions.SHARE }),
   };
 
   const rightToolBarActions = {
@@ -609,6 +628,12 @@ export default function Editor({user, setUser}) {
             {...generalFunctions}
           />
         );
+			case actions.LOAD:
+				return <Load 
+					user={user} 
+					importStateFromObject={importStateFromObject} 
+					backToNormal={() => setContext({action: actions.NORMAL})}
+				/>
       default:
         // TODO
         return <Normal />;

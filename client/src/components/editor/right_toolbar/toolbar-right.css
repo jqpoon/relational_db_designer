@@ -101,3 +101,15 @@ input[type=text]:hover {
   display: inline-block;
   font-size: 12px
 }
+
+.erid-block {
+	padding: 5px;
+	margin: 2px 0;
+	height: 35px;
+	cursor: pointer;
+	border: 1px solid gray;
+}
+
+.erid-block:hover {
+	border: 2px solid purple;
+}

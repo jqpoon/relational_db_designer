@@ -9,7 +9,6 @@ import UploadTool from "./utilities/uploadTool";
 export default function Toolbar({
                                   addEdgeToRelationship,
                                   addElement,
-                                  importStateFromObject,
                                   exportStateToObject,
                                   uploadStateFromObject,
                                   downloadStateAsObject,
@@ -18,25 +17,17 @@ export default function Toolbar({
                                   redo,
 																	user,
 																	setUser,
+																	name,
+																	setName,
+																	erid,
+																	setErid,
+																	counter,
+																	setCounter,
+																	load,
+																	share,
                                 }) {
-	const [name, setName] = useState("Untitled");
-	const [erid, setErid] = useState(null);
-	const [counter, setCounter] = useState(0);
   const entityToolRef = useRef(null);
   const relationshipToolRef = useRef(null);
-
-	const buildObject = () => {
-		const obj = exportStateToObject();
-		obj["name"] = name;
-		if (counter !== 0) obj["counter"] = counter;
-		return obj;
-	}
-
-	const buildState = (res) => {
-		setName(res.name);
-		setCounter(res.counter);
-		importStateFromObject(res.data)
-	}
 
   const addEntity = (x, y) => {
     const newEntity = {
@@ -73,7 +64,7 @@ export default function Toolbar({
 
 	const createERD = async () => {
 		try {
-			const res = await axios.post(`/api/erd?Uid=${user}`, buildObject());
+			const res = await axios.post(`/api/erd?Uid=${user}`, exportStateToObject());
 			const erid = await res.data; 
 			setErid(erid);
 			setCounter(counter => counter + 1);
@@ -85,8 +76,7 @@ export default function Toolbar({
 
 	const updateERD = async () => {
 		try {
-			console.log(exportStateToObject());
-			const res = await axios.put(`/api/erd?Uid=${user}&ERid=${erid}`, buildObject());
+			const res = await axios.put(`/api/erd?Uid=${user}&ERid=${erid}`, exportStateToObject());
 			const data = await res.data; 
 			setCounter(counter => counter + 1);
 			alert(data);
@@ -96,80 +86,67 @@ export default function Toolbar({
 	}
 
   return (
-    <div className="toolbar">
-			<div>
-	      <Draggable
-	        ref={entityToolRef}
-	        onStop={(e, data) => {
-	          addEntity(data.x - 125, data.y);
-	          entityToolRef.current.state.x = 0;
-	          entityToolRef.current.state.y = 0;
-	        }}
-	      >
-	        <div className="create-tool"><span class="grippy"></span> Entity</div>
-	      </Draggable>
-	      <Draggable
-	        ref={relationshipToolRef}
-	        onStop={(e, data) => {
-	          addRelationship(data.x - 125, data.y);
-	          relationshipToolRef.current.state.x = 0;
-	          relationshipToolRef.current.state.y = 0;
-	        }}
-	      >
-	        <div className="create-tool"><span class="grippy"></span>Relationship</div>
-	      </Draggable>
-			</div>
-      <div className="footer">
-				<input className="tool" value={name} onChange={(e) => setName(e.target.value)}/>
-        <div className="clickable tool" onClick={undo}>
-          Undo
-        </div>
-        <div className="clickable tool" onClick={redo}>
-          Redo
-        </div>
-        <div
-          className="clickable tool"
-          onClick={() => {
-            axios
-              .get("/schema/all")
-              .then(function (response) {
-                importStateFromObject(response.data);
-              })
-              .catch(function (error) {
-                console.log(error);
-              });
-          }}
-        >
-          Load
-        </div>
-        <div
-          className="clickable tool"
-          onClick={erid ? updateERD : createERD}
-        >
-          Save
-        </div>
-        <div className="clickable tool" onClick={() => {
-          axios
-            .post('/api/translation/translate', exportStateToObject())
-            .then(function (response) {
-              translate(response.data);
-            })
-            .catch(function (error) {
-              console.log(error);
-            })
-        }}
-        >
-          Translate
-        </div>
-        <div className="clickable tool">Validate</div>
-        <UploadTool text="Import JSON file" handleFile={uploadStateFromObject} />
-        <div className="clickable tool" onClick={downloadStateAsObject}>
-          Export JSON file
-        </div>
-				<div className="clickable tool" onClick={() => setUser(null)}>
-					Log out
+		<>
+	    <div className="toolbar">
+				<div>
+		      <Draggable
+		        ref={entityToolRef}
+		        onStop={(e, data) => {
+		          addEntity(data.x - 125, data.y);
+		          entityToolRef.current.state.x = 0;
+		          entityToolRef.current.state.y = 0;
+		        }}
+						>
+		        <div className="create-tool"><span class="grippy"></span> Entity</div>
+		      </Draggable>
+		      <Draggable
+		        ref={relationshipToolRef}
+		        onStop={(e, data) => {
+							addRelationship(data.x - 125, data.y);
+		          relationshipToolRef.current.state.x = 0;
+		          relationshipToolRef.current.state.y = 0;
+		        }}
+						>
+		        <div className="create-tool"><span class="grippy"></span>Relationship</div>
+		      </Draggable>
 				</div>
-      </div>
-    </div>
+	      <div className="footer">
+					<input className="tool" value={name} onChange={(e) => setName(e.target.value)}/>
+	        <div className="clickable tool" onClick={undo}>
+	          Undo
+	        </div>
+	        <div className="clickable tool" onClick={redo}>
+	          Redo
+	        </div>
+	        <div className="clickable tool" onClick={load}>
+	          Load
+	        </div>
+	        <div className="clickable tool" onClick={erid ? updateERD : createERD}>
+	          Save
+	        </div>
+	        <div className="clickable tool" onClick={() => {
+						axios
+						.post('/api/translation/translate', exportStateToObject())
+						.then(function (response) {
+							translate(response.data);
+						})
+						.catch(function (error) {
+							console.log(error);
+						})
+	        }}
+	        >
+	          Translate
+	        </div>
+	        <div className="clickable tool">Validate</div>
+	        <UploadTool text="Import JSON file" handleFile={uploadStateFromObject} />
+	        <div className="clickable tool" onClick={downloadStateAsObject}>
+	          Export JSON file
+	        </div>
+					<div className="clickable tool" onClick={() => setUser(null)}>
+						Log out
+					</div>
+	      </div>
+	    </div>
+		</>
   );
 }
