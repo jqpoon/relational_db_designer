@@ -14,7 +14,7 @@ router.get("/", function (req, res) {
 	// We serve exactly one query
 	if (req.query.Uid === undefined && req.query.ERid === undefined || 
 		req.query.Uid !== undefined && req.query.ERid !== undefined) {
-		return res.sendStatus(400);
+		return res.status(400).send("Either Uid or ERid has to be defined as query.");
 	}
 	const isUser: boolean = req.query.Uid !== undefined;
 	const id: string = (isUser ? req.query.Uid : req.query.ERid) as string;
@@ -39,7 +39,7 @@ router.put('/', function (req, res) {
 	if (req.query.Uid === undefined || 
 		req.query.ERid === undefined ||
 		req.query.permission === undefined) {
-		return res.sendStatus(400);
+		return res.status(400).send("Uid, ERid and permission have to be defined as queries.");
 	}
 	const uid: string = req.query.Uid as string;
 	const erid: string = req.query.ERid as string;
@@ -63,7 +63,7 @@ router.put('/', function (req, res) {
 */
 router.post("/create-duplicate", function (req, res) {
 	if (req.query.Uid === undefined || req.query.ERid === undefined) {
-		return res.sendStatus(400);
+		return res.status(400).send("Uid and ERid have to be defined as queries.");
 	}
 	const uid: string = req.query.Uid as string;
 	const erid: string = req.query.ERid as string;
