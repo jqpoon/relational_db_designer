@@ -3,9 +3,7 @@ import Draggable from "react-draggable";
 import { useXarrow } from "react-xarrows";
 import Attribute, { addAttributeToNode } from "../edges/attribute";
 import { actions, types } from "../types";
-import { EntityContextMenu } from "../contextMenus/entityContextMenu";
 import "./stylesheets/node.css";
-import { HierarchyEdge } from "../edges/edge";
 
 export function Relationship({ relationship, general }) {
   const attributes = Object.values(relationship.attributes).map((attribute) => {
@@ -21,7 +19,7 @@ export function Relationship({ relationship, general }) {
   );
 }
 
-export function TestEntity({ entity, general }) {
+export function Entity({ entity, general }) {
   const attributes = Object.values(entity.attributes).map((attribute) => {
     return <Attribute attribute={attribute} {...general} />;
   });

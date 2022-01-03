@@ -6,7 +6,7 @@ import { Xwrapper } from "react-xarrows";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import Toolbar from "./toolbar";
 import "./stylesheets/editor.css";
-import { TestEntity, Relationship } from "./nodes/node";
+import { Entity, Relationship } from "./nodes/node";
 
 import SelectEntity from "./right_toolbar/selectEntity";
 import SelectRelationship from "./right_toolbar/selectRelationship";
@@ -392,7 +392,7 @@ export default function Editor({ user, setUser }) {
                   onClick={() => setPanDisabled(false)}
                 >
                   {Object.values(elements.entities).map((entity) => (
-                    <TestEntity
+                    <Entity
                       key={entity.id}
                       entity={entity}
                       general={{

@@ -1,7 +1,6 @@
 import { useRef, useState, useEffect, useCallback, StrictMode } from "react";
 import "./stylesheets/attribute.css";
 import { types } from "../types";
-import { AttributeContextMenu } from "../contextMenus/attributeContextMenu";
 import { getId } from "../idGenerator";
 
 export default function Attribute({
