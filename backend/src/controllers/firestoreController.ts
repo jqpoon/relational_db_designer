@@ -30,8 +30,9 @@ interface ERDMeta {
 }
 
 interface UserPermission {
-	uid: string;
+	uid?: string;
 	permission: string;
+	email?: string;
 }
 
 class FirestoreController {
@@ -53,9 +54,9 @@ class FirestoreController {
   }
 
 	// New doc for user to store ERDs it can access
-	public createDocumentForNewUser(uid: string): void {
+	public createDocumentForNewUser(uid: string, email: string): void {
 		const docRef: DocumentReference = doc(this.db, `user_erds/${uid}`);
-		setDoc(docRef, {});
+		setDoc(docRef, {email});
 	}
 
 	public async createERD(uid: string, json: string): Promise<string> {
@@ -179,7 +180,13 @@ class FirestoreController {
 		const docRef: DocumentReference = doc(this.db, `erd_users/${erid}`);
 		const docData: DocumentSnapshot = await getDoc(docRef);
 		const users: UserPermission[] = docData.get("users");
-		return JSON.stringify(users);
+		const res: UserPermission[] = [];
+		for (const x of users) {
+			const userRef: DocumentReference = doc(this.db, `user_erds/${x.uid}`);
+			const userData = await getDoc(userRef);
+			res.push({email: userData.get("email"), permission: x.permission});
+		}
+		return JSON.stringify(res);
 	}
 
 	public async getUserAccessList(uid: string): Promise<string> {

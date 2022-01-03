@@ -41,7 +41,7 @@ describe("Collab", () => {
 			chai.request(server)
 				.get(`/api/collab?ERid=${params.testErid}`)
 				.end((_, res) => {
-					expect(some(JSON.parse(res.text), {uid: params.testUid})).to.be.true;
+					expect(some(JSON.parse(res.text), {email: params.email.toLowerCase()})).to.be.true;
 					done();
 				});
 		});
@@ -114,7 +114,7 @@ describe("Collab", () => {
 			expect(some(JSON.parse(accessRes.text), {erid: params.testErid})).to.be.true;
 			accessRes = await chai.request(server)
 				.get(`/api/collab?ERid=${params.testErid}`);
-				expect(some(JSON.parse(accessRes.text), {uid: params.otherUid, permission: params.read})).to.be.true;
+			expect(some(JSON.parse(accessRes.text), {email: params.otherEmail, permission: params.read})).to.be.true;
 			// remove
 			const removeRes = await chai.request(server)
 				.put(`/api/collab?owner=${params.testUid}&Uid=${params.otherUid}&ERid=${params.testErid}&permission=${params.remove}`);
@@ -125,7 +125,7 @@ describe("Collab", () => {
 			expect(some(JSON.parse(accessRes.text), {erid: params.testErid})).to.be.false;
 			accessRes = await chai.request(server)
 				.get(`/api/collab?ERid=${params.testErid}`);
-				expect(some(JSON.parse(accessRes.text), {uid: params.otherUid, permission: params.read})).to.be.false;
+			expect(some(JSON.parse(accessRes.text), {email: params.otherEmail, permission: params.read})).to.be.false;
 		});
 	});
 
