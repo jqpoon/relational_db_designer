@@ -12,13 +12,11 @@ import SelectEntity from "./right_toolbar/selectEntity";
 import SelectRelationship from "./right_toolbar/selectRelationship";
 import Normal from "./right_toolbar/normal";
 import SelectEdge from "./right_toolbar/selectEdge";
-import EdgeToRelationship from "./right_toolbar/edgeRelationship";
 import SelectGeneralisation from "./right_toolbar/selectGeneralisation";
 import { ContextMenu } from "./contextMenus/contextMenu";
 import DisplayTranslation from "./right_toolbar/translationDisplay";
 import { addToUndo, redo, undo } from "./historyUtilities/history";
 import { deletes, gets, updates } from "./elementUtilities/elementFunctions";
-import { getId } from "./idGenerator";
 
 export default function Editor() {
   // Canvas states: passed to children for metadata (eg width and height of main container)
@@ -249,13 +247,6 @@ export default function Editor() {
   };
 
   const leftToolBarActions = {
-    addEdgeToRelationship: () => {
-      setContext({
-        action: actions.RELATIONSHIP_ADD.SELECT_TARGET,
-        sources: {},
-        target: null,
-      });
-    },
     importStateFromObject: importStateFromObject,
     exportStateToObject: exportStateToObject,
     uploadStateFromObject: uploadStateFromObject,
@@ -348,15 +339,6 @@ export default function Editor() {
           default:
             return <Normal />; // TODO: type not found page
         }
-      case actions.RELATIONSHIP_ADD.SELECT_SOURCES:
-      case actions.RELATIONSHIP_ADD.SELECT_TARGET:
-        return (
-          <EdgeToRelationship
-            {...elementFunctions}
-            {...rightToolBarActions}
-            {...generalFunctions}
-          />
-        );
       default:
         // TODO
         return <Normal />;

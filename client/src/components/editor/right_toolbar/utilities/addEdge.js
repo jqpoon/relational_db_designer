@@ -1,5 +1,5 @@
 import { actions, cardinality, types } from "../../types";
-import { generateID, typeToString } from "./general";
+import { generateID } from "./general";
 import CardinalityChoices from "./cardinality";
 import { MdCheck, MdClear } from "react-icons/md";
 
@@ -107,7 +107,6 @@ function AddingEdge({
   }
 
   const node = getElement(target.type, target.id, target.parent);
-  const nodeType = typeToString(target.type);
 
   return (
     <div
