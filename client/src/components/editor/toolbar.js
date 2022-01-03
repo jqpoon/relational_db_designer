@@ -16,6 +16,7 @@ export default function Toolbar({
                                   translate,
                                   undo,
                                   redo,
+																	setUser,
                                 }) {
   const entityToolRef = useRef(null);
   const relationshipToolRef = useRef(null);
@@ -130,6 +131,9 @@ export default function Toolbar({
         <div className="tool" onClick={downloadStateAsObject}>
           Export JSON file
         </div>
+				<div className="tool" onClick={() => setUser(null)}>
+					Log out
+				</div>
       </div>
     </div>
   );

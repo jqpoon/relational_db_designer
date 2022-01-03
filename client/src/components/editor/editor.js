@@ -545,6 +545,7 @@ export default function Editor({user, setUser}) {
     },
     undo: undo,
     redo: redo,
+		setUser: setUser,
   };
 
   const rightToolBarActions = {
