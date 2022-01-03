@@ -32,19 +32,21 @@ router.get("/", function (req, res) {
 });
 
 /*
-	/collab?Uid&ERid&permission
+	/collab?owner&Uid&ERid&permission
 	- Update user (Uid) access (permission) to ERD (ERid)
 */
 router.put('/', function (req, res) {
-	if (req.query.Uid === undefined || 
+	if (req.query.owner === undefined ||
+		req.query.Uid === undefined || 
 		req.query.ERid === undefined ||
 		req.query.permission === undefined) {
-		return res.status(400).send("Uid, ERid and permission have to be defined as queries.");
+		return res.status(400).send("Owner, Uid, ERid and permission have to be defined as queries.");
 	}
+	const owner: string = req.query.owner as string;
 	const uid: string = req.query.Uid as string;
 	const erid: string = req.query.ERid as string;
 	const permission: string = req.query.permission as string;
-	FirebaseController.getInstance().updateAccess(uid, erid, permission)
+	FirebaseController.getInstance().updateAccess(owner, uid, erid, permission)
 		.then(() => {
 			res.status(200).send("Permission updated");
 		})
