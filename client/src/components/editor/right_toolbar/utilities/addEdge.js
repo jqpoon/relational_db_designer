@@ -1,5 +1,5 @@
 import { actions, cardinality, types } from "../../types";
-import { generateID } from "./general";
+import { getId } from "../../idGenerator";
 import CardinalityChoices from "./cardinality";
 import { MdCheck, MdClear } from "react-icons/md";
 
@@ -150,7 +150,7 @@ function AddingEdge({
 export function RelationshipAdding(props) {
   const createEdge = (selected, target) => {
     const newEdge = {
-      id: generateID(target.id, selected.id),
+      id: getId(types.EDGE.RELATIONSHIP, target.id, selected.id),
       type: types.EDGE.RELATIONSHIP,
       source_type: target.type,
       target_type: selected.type,
@@ -175,7 +175,7 @@ export function RelationshipAdding(props) {
 export function AddingRelationship(props) {
   const createEdge = (selected, target) => {
     const newEdge = {
-      id: generateID(selected.id, target.id),
+      id: getId(types.EDGE.RELATIONSHIP, selected.id, target.id),
       type: types.EDGE.RELATIONSHIP,
       source_type: selected.type,
       target_type: target.type,
@@ -203,7 +203,7 @@ export function AddingRelationship(props) {
 export function AddingSuperset(props) {
   const createEdge = (selected, target) => {
     let newEdge = {
-      id: generateID(selected.id, target.id),
+      id: getId(types.EDGE.HIERARCHY, target.id, selected.id),
       type: types.EDGE.HIERARCHY,
       child: selected.id,
     };
@@ -221,7 +221,7 @@ export function AddingSuperset(props) {
 export function AddingSubset(props) {
   const createEdge = (selected, target) => {
     const newEdge = {
-      id: generateID(target.id, selected.id),
+      id: getId(types.EDGE.HIERARCHY, target.id, selected.id),
       type: types.EDGE.HIERARCHY,
       child: target.id,
       parent: selected.id,
@@ -236,7 +236,7 @@ export function AddingSubset(props) {
 export function AddingSubsetViaGeneralisation(props) {
   const createEdge = (selected, target) => {
     const newEdge = {
-      id: generateID(target.id, selected.id),
+      id: getId(types.EDGE.HIERARCHY, target.id, selected.id),
       parent: selected.parent.id,
       child: target.id,
       generalisation: selected.id,
