@@ -14,10 +14,12 @@ import {
 	DocumentSnapshot,
 	arrayRemove,
 	deleteDoc,
+	increment,
 } from "firebase/firestore"
+import asyncLock from "async-lock";
 
 interface ERDSchema {
-	owner: string;
+	counter: number;
 	name: string;
 	data: string;
 }
@@ -36,9 +38,11 @@ class FirestoreController {
 
   private static instance: FirestoreController;
   private db: Firestore;
+	private lock: asyncLock;
 
   private constructor(firebaseApp: FirebaseApp) {
     this.db = getFirestore(firebaseApp);
+		this.lock = new asyncLock();
   }
 
   public static getInstance(firebaseApp: FirebaseApp): FirestoreController {
@@ -58,7 +62,7 @@ class FirestoreController {
 		// Store ERD
 		const parsedJson = JSON.parse(json);
 		const data: ERDSchema = {
-			owner: uid,
+			counter: 1,
 			name: parsedJson.name,
 			data: parsedJson.data,
 		}
@@ -131,19 +135,29 @@ class FirestoreController {
 		return false;
 	}
 
-	public async getERD(erid: string): Promise<string> {
+	public getERD(erid: string): Promise<string> {
 		const docRef: DocumentReference = doc(this.db, `erds_list/${erid}`);
-		const docData: DocumentSnapshot = await getDoc(docRef);
-		const name = (await docData.get("name")) as string;
-		const data = (await docData.get("data")) as string;
-		return JSON.stringify({name, data});
+		return this.lock.acquire(erid, () => {
+			return getDoc(docRef)
+		}, {}).then((res) => {
+			return JSON.stringify(res.data());
+		}) as Promise<string>;
 	}
 
-	public async updateERD(erid: string, json: string): Promise<void> {
+	public canUpdateERD(erid: string, counter: number): Promise<boolean> {
 		const docRef: DocumentReference = doc(this.db, `erds_list/${erid}`);
-		await setDoc(docRef, JSON.parse(json));
+		return this.lock.acquire(erid, () => {
+			return getDoc(docRef)
+		}, {}).then((res) => {
+			return counter === res.get("counter");
+		}) as Promise<boolean>;
+	}
 
-		// TODO: concurrent update?
+	public updateERD(erid: string, json: string): Promise<void> {
+		const docRef: DocumentReference = doc(this.db, `erds_list/${erid}`);
+		return this.lock.acquire(erid, () => {
+			updateDoc(docRef, {...JSON.parse(json), counter: increment(1)});
+		}, {}) as Promise<void>;
 	}
 
 	public async deleteERD(erid: string): Promise<void> {

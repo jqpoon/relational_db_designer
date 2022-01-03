@@ -1,6 +1,6 @@
 import React, {useRef} from "react";
 
-export default function UploadTool({text, handleFile}) {
+export default function UploadTool({ text, handleFile }) {
   // Create a reference to the hidden file input element
   const hiddenFileInput = useRef(null);
 

@@ -7,7 +7,7 @@ import TranslatedTable from "../translators/models/translatedTable";
 
 const router = Router();
 
-const parseEntities = (entities: Entity[]): Map<string, Entity> => {
+export const parseEntities = (entities: Entity[]): Map<string, Entity> => {
     var entityMap = new Map<string, Entity>();
     for (var entity of entities) {
         entityMap.set(entity.id, entity);
@@ -15,7 +15,7 @@ const parseEntities = (entities: Entity[]): Map<string, Entity> => {
     return entityMap;
 };
 
-const parseRelationships = (relationships: Relationship[]): Map<string, Relationship> => {
+export const parseRelationships = (relationships: Relationship[]): Map<string, Relationship> => {
     var rsMap = new Map<string, Relationship>();
     for (var rs of relationships) {
         rsMap.set(rs.id, rs);
@@ -24,8 +24,6 @@ const parseRelationships = (relationships: Relationship[]): Map<string, Relation
 };
 
 router.post('/translate', async function (req, res, next) {
-    // TODO add error catching
-
     // Parse req body for entities and relationships
     var modelAsJson = req.body;
     var entities: Entity[] = modelAsJson.entities;
@@ -39,9 +37,6 @@ router.post('/translate', async function (req, res, next) {
 				return r;
 			});
 
-    // // Save to database
-    // saveAll(entities, relationships);
-
     // Translate
     const translator: FullTranslator = new FullTranslator(
         parseEntities(entities), parseRelationships(relationships));
@@ -51,6 +46,36 @@ router.post('/translate', async function (req, res, next) {
     return res.status(OK).json({SUCCESS: true, translatedtables: {
         tables: Object.fromEntries(translatedTable.tables),
     }});
-})
+});
+
+router.get('/test', async function (req, res, next) {
+    // Parse req body for entities and relationships
+    var person: Entity = {
+        id: "1", text: "person", pos: {x: 0, y: 0}, isWeak: false, attributes: [
+            {id: "10", text: "bonus", relativePos: {x: 0, y: 0}, 
+                isMultiValued: false, isPrimaryKey: false, isOptional: true},
+            {id: "11", text: "salary number", relativePos: {x: 0, y: 0}, 
+                isMultiValued: false, isPrimaryKey: true, isOptional: false},
+            {id: "12", text: "name", relativePos: {x: 0, y: 0}, 
+                isMultiValued: false, isPrimaryKey: false, isOptional: false}]};
+
+    var entities: Entity[] = [
+        {id: "0", text: "manager", pos: {x: 0, y: 0}, isWeak: false, attributes: [
+            {id: "00", text: "mobile number", relativePos: {x: 0, y: 0}, 
+                isMultiValued: false, isPrimaryKey: false, isOptional: false}
+        ], subsets: [person]},
+        person];
+    
+    var relationships: Relationship[] = [];
+
+    // Translate
+    const translator: FullTranslator = new FullTranslator(
+        parseEntities(entities), parseRelationships(relationships));
+    const translatedTable: TranslatedTable = translator.translateFromDiagramToSchema();
+    // Return translation
+    return res.status(OK).json({SUCCESS: true, translatedtables: {
+        tables: Object.fromEntries(translatedTable.tables),
+    }});
+});
 
 export default router;

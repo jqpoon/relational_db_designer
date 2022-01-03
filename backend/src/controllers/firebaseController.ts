@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { FirebaseApp, initializeApp } from "firebase/app"
 import ErrorBuilder from "./errorBuilder";
 import FirebaseAuthController from "./firebaseAuthController";
@@ -62,8 +63,8 @@ class FirebaseController {
 
 		public async updateERD(uid: string, erid: string, data: string): Promise<void> {
 				const json: any = JSON.parse(data);		
-				if (json.name === undefined || json.data === undefined) {
-					throw new ErrorBuilder(400, "Name and data have to be defined");
+				if (json.name === undefined || json.data === undefined || json.counter === undefined) {
+					throw new ErrorBuilder(400, "Name, data and counter have to be defined");
 				}
 				const userExists: boolean = await this.firestoreController.checkUserExists(uid);
 				if (!userExists) throw new ErrorBuilder(404, "User does not exist");
@@ -71,6 +72,8 @@ class FirebaseController {
 				if (!erdExists) throw new ErrorBuilder(404, "ERD does not exist");
 				const canWrite: boolean = await this.firestoreController.canWrite(uid, erid);
 				if (!canWrite) throw new ErrorBuilder(403, "You do not have permission to access");
+				const canUpdate: boolean = await this.firestoreController.canUpdateERD(erid, json.counter as number);
+				if (!canUpdate) throw new ErrorBuilder(409, "ERD update conflict, please retrieve the latest version");
 				await this.firestoreController.updateERD(erid, data);
 		}
 
