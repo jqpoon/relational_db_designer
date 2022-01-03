@@ -1,22 +1,21 @@
 import Draggable from "react-draggable";
 import axios from "axios";
-import {useRef} from "react";
-import {types} from "./types";
-import {getId} from "./idGenerator";
+import { useRef } from "react";
+import { types } from "./types";
+import { getId } from "./idGenerator";
 import "./stylesheets/toolbar.css";
 import UploadTool from "./utilities/uploadTool";
 
 export default function Toolbar({
-                                  addEdgeToRelationship,
-                                  addElement,
-                                  importStateFromObject,
-                                  exportStateToObject,
-                                  uploadStateFromObject,
-                                  downloadStateAsObject,
-                                  translate,
-                                  undo,
-                                  redo,
-                                }) {
+  addElement,
+  importStateFromObject,
+  exportStateToObject,
+  uploadStateFromObject,
+  downloadStateAsObject,
+  translate,
+  undo,
+  redo,
+}) {
   const entityToolRef = useRef(null);
   const relationshipToolRef = useRef(null);
 
@@ -34,7 +33,6 @@ export default function Toolbar({
       attributes: {},
       generalisations: {},
     };
-    // console.log("id in addEntity" + newEntity.id);
     addElement(types.ENTITY, newEntity);
   };
 
@@ -63,7 +61,9 @@ export default function Toolbar({
           entityToolRef.current.state.y = 0;
         }}
       >
-        <div className="create-tool"><span class="grippy"></span> Entity</div>
+        <div className="create-tool">
+          <span class="grippy"></span> Entity
+        </div>
       </Draggable>
       <Draggable
         ref={relationshipToolRef}
@@ -73,7 +73,9 @@ export default function Toolbar({
           relationshipToolRef.current.state.y = 0;
         }}
       >
-        <div className="create-tool"><span class="grippy"></span>Relationship</div>
+        <div className="create-tool">
+          <span class="grippy"></span>Relationship
+        </div>
       </Draggable>
       <div className="footer">
         <div className="tool" onClick={undo}>
@@ -112,21 +114,26 @@ export default function Toolbar({
         >
           Save
         </div>
-        <div className="tool" onClick={() => {
-          axios
-            .post('/translation/translate', exportStateToObject())
-            .then(function (response) {
-              translate(response.data);
-            })
-            .catch(function (error) {
-              console.log(error);
-            })
-        }}
+        <div
+          className="tool"
+          onClick={() => {
+            axios
+              .post("/translation/translate", exportStateToObject())
+              .then(function (response) {
+                translate(response.data);
+              })
+              .catch(function (error) {
+                console.log(error);
+              });
+          }}
         >
           Translate
         </div>
         <div className="tool">Validate</div>
-        <UploadTool text="Import JSON file" handleFile={uploadStateFromObject} />
+        <UploadTool
+          text="Import JSON file"
+          handleFile={uploadStateFromObject}
+        />
         <div className="tool" onClick={downloadStateAsObject}>
           Export JSON file
         </div>
