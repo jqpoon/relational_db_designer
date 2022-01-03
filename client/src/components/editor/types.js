@@ -18,11 +18,6 @@ export const actions = {
     ADD_SUPERSET: "select_add_superset",
     ADD_SUBSET: "select_add_subset",
   },
-  NODE_EDIT: "node_edit",
-  RELATIONSHIP_ADD: {
-    SELECT_SOURCES: "relationship_add_source",
-    SELECT_TARGET: "relationship_add_target",
-  },
 };
 
 export const cardinality = {

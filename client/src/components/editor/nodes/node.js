@@ -7,7 +7,7 @@ import { EntityContextMenu } from "../contextMenus/entityContextMenu";
 import "./stylesheets/node.css";
 import { HierarchyEdge } from "../edges/edge";
 
-export function TestRelationship({ relationship, general }) {
+export function Relationship({ relationship, general }) {
   const attributes = Object.values(relationship.attributes).map((attribute) => {
     return <Attribute attribute={attribute} {...general} />;
   });
@@ -180,19 +180,6 @@ export default function Node({
           return newCtx;
         });
         break;
-      case actions.RELATIONSHIP_ADD.SELECT_SOURCES: {
-        let newContext = { ...context };
-        newContext.sources[id] = { type: type, cardinality: "" };
-        setContext(newContext);
-        console.log(newContext);
-        break;
-      }
-      case actions.RELATIONSHIP_ADD.SELECT_TARGET: {
-        let newContext = { ...context };
-        newContext.target = { id: id, type: type };
-        setContext(newContext);
-        break;
-      }
       default:
     }
   };
@@ -259,32 +246,9 @@ export default function Node({
       id === context.target.id
     ) {
       return className === "weak-entity" ? { borderColor: "orange"} : { border: "2px solid orange" };
-    } else if (
-      (context.action === actions.RELATIONSHIP_ADD.SELECT_SOURCES ||
-        context.action === actions.RELATIONSHIP_ADD.SELECT_TARGET) &&
-      context.sources != null &&
-      idIsInSelectedRelationship(Object.keys(context.sources))
-    ) {
-      return className === "weak-entity" ? { borderColor: "orange"} : { border: "2px solid orange" };
-    } else if (
-      (context.action === actions.RELATIONSHIP_ADD.SELECT_SOURCES ||
-        context.action === actions.RELATIONSHIP_ADD.SELECT_TARGET) &&
-      context.target != null &&
-      id === context.target.id
-    ) {
-      return className === "weak-entity" ? { borderColor: "orange"} : { border: "2px solid orange" };
     } else {
       return null;
     }
-  };
-
-  const idIsInSelectedRelationship = (sources) => {
-    for (const x of sources) {
-      if (x === id) {
-        return true;
-      }
-    }
-    return false;
   };
 
   const normalMode = (

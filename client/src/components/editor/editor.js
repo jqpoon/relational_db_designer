@@ -6,7 +6,7 @@ import { Xwrapper } from "react-xarrows";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import Toolbar from "./toolbar";
 import "./stylesheets/editor.css";
-import { TestEntity, TestRelationship } from "./nodes/node";
+import { TestEntity, Relationship } from "./nodes/node";
 
 import SelectEntity from "./right_toolbar/selectEntity";
 import SelectRelationship from "./right_toolbar/selectRelationship";
@@ -403,7 +403,7 @@ export default function Editor({ user, setUser }) {
                     />
                   ))}
                   {Object.values(elements.relationships).map((relationship) => (
-                    <TestRelationship
+                    <Relationship
                       key={relationship.id}
                       relationship={relationship}
                       general={{
@@ -417,7 +417,6 @@ export default function Editor({ user, setUser }) {
               </TransformComponent>
             </TransformWrapper>
             {showEdges()}
-            {showPendingChanges()}
             {showRightToolbar()}
             <ContextMenu contextMenu={contextMenu} />
           </>
