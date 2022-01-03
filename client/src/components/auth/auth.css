@@ -19,24 +19,6 @@ body, html {
 	font-family: Ubuntu-Regular, sans-serif;
 }
 
-p {
-	font-family: Ubuntu-Regular;
-	font-size: 14px;
-	line-height: 1.7;
-	color: #666666;
-	margin: 0px;
-}
-
-input {
-	outline: none;
-	border: none;
-}
-
-label {
-  display: block;
-  margin: 0;
-}
-
 button:hover {
 	cursor: pointer;
 }
@@ -99,6 +81,7 @@ button:hover {
   background-color: #e6e6e6;
   border: 1px solid transparent;
   border-radius: 3px;
+	margin: 5px 0;
 }
 
 .input {
@@ -110,7 +93,9 @@ button:hover {
   width: 100%;
   background: transparent;
   height: 62px;
-  padding: 0 20px 0 38px;
+  padding: 0 20px 0 30px;
+	outline: none;
+	border: none;
 }
 
 .input:focus {
