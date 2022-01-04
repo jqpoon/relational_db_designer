@@ -10,6 +10,7 @@ import UploadTool from "./utilities/uploadTool";
 export default function Toolbar({
                                   addEdgeToRelationship,
                                   addElement,
+																	importStateFromObject,
                                   exportStateToObject,
                                   uploadStateFromObject,
                                   downloadStateAsObject,
@@ -63,14 +64,14 @@ export default function Toolbar({
     addElement(types.RELATIONSHIP, newRelationship);
   };
 
-	const saveSubmit = (cb) => {
+	const submitHandler = (cb, message) => {
 		confirmAlert({
       title: "Confirmation",
-      message: "ERD will be saved",
+      message,
       buttons: [
         {
           label: 'Yes',
-          onClick: () => cb()
+          onClick: cb
         },
         {
           label: 'No',
@@ -97,6 +98,20 @@ export default function Toolbar({
 			const data = await res.data; 
 			setCounter(counter => counter + 1);
 			alert(data);
+		} catch (error) {
+			alert(error.response.data);
+		}
+	}
+
+	const duplicate = async () => {
+		try {
+			const obj = exportStateToObject();
+			obj["name"] = "Copy of " + obj["name"];
+			const res = await axios.post(`/api/collab/create-duplicate?Uid=${user}&ERid=${erid}`, obj);
+			const duplicatedErid = await res.data;
+			obj["erid"] = duplicatedErid;
+			importStateFromObject(obj);
+			alert("ERD has been succesfully duplicated and loaded");
 		} catch (error) {
 			alert(error.response.data);
 		}
@@ -139,13 +154,20 @@ export default function Toolbar({
 	          Load
 	        </div>
 	        <div className="clickable tool" onClick={() => {
-						erid ? saveSubmit(updateERD) : saveSubmit(createERD)
+						erid 
+							? submitHandler(updateERD, "ERD will be saved")
+							: submitHandler(createERD, "ERD will be saved")
 					}}>
 	          Save
 	        </div>
 					<div className="clickable tool" onClick={share}>
 	          Share
 	        </div>
+					<div className="clickable tool" onClick={
+							() => submitHandler(duplicate, "ERD will be duplicated")
+					}>
+						Duplicate
+					</div>
 	        <div className="clickable tool" onClick={() => {
 						axios
 						.post('/api/translation/translate', exportStateToObject())
