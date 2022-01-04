@@ -27,6 +27,7 @@ export default function Toolbar({
 																	setCounter,
 																	load,
 																	share,
+																	resetState,
                                 }) {
   const entityToolRef = useRef(null);
   const relationshipToolRef = useRef(null);
@@ -117,6 +118,16 @@ export default function Toolbar({
 		}
 	}
 
+	const cloudDelete = async () => {
+		try {
+			const res = await axios.delete(`/api/erd?Uid=${user}&ERid=${erid}`);
+			resetState();
+			alert(res.data);
+		} catch (error) {
+			alert(error.response.data);
+		}
+	}
+
   return (
 		<>
 	    <div className="toolbar">
@@ -164,10 +175,22 @@ export default function Toolbar({
 	          Share
 	        </div>
 					<div className="clickable tool" onClick={
-							() => submitHandler(duplicate, "ERD will be duplicated")
+						() => submitHandler(duplicate, "ERD will be duplicated")
 					}>
 						Duplicate
 					</div>
+					<div className="clickable tool" onClick={
+						() => submitHandler(resetState, "Canvas will be cleared. This cannot be undone.")
+					}>
+						Clear
+					</div>
+					{erid ? 
+						<div className="clickable tool" onClick={
+							() => submitHandler(cloudDelete, "ERD will be deleted from cloud storage. This cannot be undone.")
+						}>
+							Delete
+						</div>
+					: null}
 	        <div className="clickable tool" onClick={() => {
 						axios
 						.post('/api/translation/translate', exportStateToObject())

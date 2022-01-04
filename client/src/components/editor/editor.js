@@ -254,6 +254,9 @@ export default function Editor({user, setUser}) {
 
   // Resets the state of the whiteboard and deletes the current schema.
   const resetState = () => {
+		setName("Untitled");
+		setErid(null);
+		setCounter(0);
     setEntities({});
     setRelationships({});
     setEdges({});
@@ -358,6 +361,8 @@ export default function Editor({user, setUser}) {
     setEntities(obj.data.entities);
     setRelationships(obj.data.relationships);
     setEdges(obj.data.edges);
+		setUndoStack([]);
+    setRedoStack([]);
   };
 
   // Translates entire schema state into a single JSON object.
@@ -545,6 +550,7 @@ export default function Editor({user, setUser}) {
 		setCounter,
 		load: () => setContext({ action: actions.LOAD }),
 		share: () => setContext({ action: actions.SHARE }),
+		resetState,
   };
 
   const rightToolBarActions = {
