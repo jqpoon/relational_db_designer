@@ -1,4 +1,5 @@
 import Draggable from "react-draggable";
+import { Tooltip } from '@mui/material';
 import axios from "axios";
 import {useRef} from "react";
 import {types} from "./types";
@@ -56,6 +57,7 @@ export default function Toolbar({
 
   return (
     <div className="toolbar">
+
       <Draggable
         ref={entityToolRef}
         onStop={(e, data) => {
@@ -64,8 +66,11 @@ export default function Toolbar({
           entityToolRef.current.state.y = 0;
         }}
       >
+        <Tooltip title="Drag to create new entity">
         <div className="create-tool"><span class="grippy"></span> Entity</div>
+        </Tooltip>
       </Draggable>
+
       <Draggable
         ref={relationshipToolRef}
         onStop={(e, data) => {
@@ -74,9 +79,11 @@ export default function Toolbar({
           relationshipToolRef.current.state.y = 0;
         }}
       >
+         <Tooltip title="Drag to create new relationship">
         <div className="create-tool"><span class="grippy"></span>Relationship</div>
+        </Tooltip>
       </Draggable>
-      <div className="footer">
+      <div className="footer"></div>
         <div className="tool" onClick={undo}>
           Undo
         </div>
@@ -131,7 +138,7 @@ export default function Toolbar({
         <div className="tool" onClick={downloadStateAsObject}>
           Export JSON file
         </div>
-      </div>
+
     </div>
   );
 }
