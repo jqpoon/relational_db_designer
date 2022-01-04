@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios';
+import { confirmAlert } from 'react-confirm-alert';
 
 export default function Load({user, importStateFromObject, backToNormal}) {
 	
@@ -24,9 +25,25 @@ export default function Load({user, importStateFromObject, backToNormal}) {
 		}
 	}
 
+	const submit = (name, erid) => {
+		confirmAlert({
+      title: "Confirmation",
+      message: `${name} will be loaded`,
+      buttons: [
+        {
+          label: 'Yes',
+          onClick: () => loadERD(erid)
+        },
+        {
+          label: 'No',
+        }
+      ]
+    });
+	}
+
 	const eridBlock = ({name, erid}) => {
 		return (
-			<div className="erid-block" onClick={() => loadERD(erid)}>
+			<div className="erid-block" onClick={() => submit(name, erid)}>
 				{name}
 			</div>
 		)

@@ -1,5 +1,10 @@
 .editor {
 	display: flex;
+	height: 100vh;
+}
+
+.react-transform-wrapper {
+	height: 100vh;
 }
 
 .canvas {
@@ -24,5 +29,4 @@
 	width: 140vw;
 	height: 200vh;
 	overflow: hidden;
-
 }

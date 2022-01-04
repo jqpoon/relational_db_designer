@@ -4,9 +4,10 @@ import { actions, types } from "./types";
 import Edge, { AttributeEdge, HierarchyEdge } from "./edges/edge";
 import { Xarrow, Xwrapper } from "react-xarrows";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
+import { TestEntity, TestRelationship } from "./nodes/node";
 import Toolbar from "./toolbar";
 import "./stylesheets/editor.css";
-import { TestEntity, TestRelationship } from "./nodes/node";
+import 'react-confirm-alert/src/react-confirm-alert.css'; 
 
 import SelectEntity from "./right_toolbar/selectEntity";
 import SelectRelationship from "./right_toolbar/selectRelationship";
@@ -18,6 +19,7 @@ import { ContextMenu } from "./contextMenus/contextMenu";
 import DisplayTranslation from "./right_toolbar/translationDisplay";
 import { getId } from "./idGenerator";
 import Load from "./right_toolbar/load";
+import Share from "./right_toolbar/share";
 
 // TODO: update left,right toolbar to match new data structures
 // TODO: add initial attributes to initial.js + implement position update based on parent node of the attribute
@@ -632,6 +634,12 @@ export default function Editor({user, setUser}) {
 				return <Load 
 					user={user} 
 					importStateFromObject={importStateFromObject} 
+					backToNormal={() => setContext({action: actions.NORMAL})}
+				/>
+			case actions.SHARE:	
+				return <Share 
+					user={user}
+					erid={erid}
 					backToNormal={() => setContext({action: actions.NORMAL})}
 				/>
       default:
