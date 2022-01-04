@@ -63,7 +63,6 @@ export default function Node({
   getElement,
   addElement,
   updateElement,
-  setPanDisabled,
   context,
   setContext,
   setContextMenu,
@@ -146,8 +145,6 @@ export default function Node({
       // Update arrow position
       updateXarrow(e); // TODO: check function signature of updateXarrow(E, DATA) ?
     }
-    // Re-enable panning of canvas
-    setPanDisabled(false);
   };
   const onClick = () => {
     switch (context.action) {
@@ -195,7 +192,6 @@ export default function Node({
     },
     onDrag: onDrag,
     onStop: onStop,
-    onMouseDown: () => setPanDisabled(true),
   };
 
   const contentsConfig = {
@@ -227,31 +223,32 @@ export default function Node({
     );
   };
 
+  const getReadableStyle = (className) => {
+    if(className === "relationship"){
+      return  {backgroundColor: "rgb(216, 216, 194)"};
+    }
+    return (className === "generalisation") ? { "--generalisation-color-var": "rgb(111,163,179)"} : {backgroundColor: "rgb(111,163,179)"};
+  }
+
   const highlightStyle = (className) => {
     if (
       context.action === actions.SELECT.NORMAL &&
       id === context.selected.id
     ) {
-      return className === "weak-entity"
-        ? { borderColor: "orange" }
-        : { border: "2px solid orange" };
+      return getReadableStyle(className);
     } else if (
       context.action === actions.SELECT.ADD_RELATIONSHIP &&
       id === context.selected.id
     ) {
-      return className === "weak-entity"
-        ? { borderColor: "orange" }
-        : { border: "2px solid orange" };
+      return getReadableStyle(className);
     } else if (
       context.action === actions.SELECT.ADD_RELATIONSHIP &&
       context.target !== null &&
       id === context.target.id
     ) {
-      return className === "weak-entity"
-        ? { borderColor: "orange" }
-        : { border: "2px solid orange" };
+      return getReadableStyle(className);
     } else {
-      return null;
+      return { "--generalisation-color-var": "lightblue"};
     }
   };
 

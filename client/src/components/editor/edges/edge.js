@@ -64,7 +64,7 @@ export function AttributeEdge({ parent, child }) {
           /*TODO */
         },
       }}
-      zIndex={-1}
+      zIndex={0}
     />
   );
 }

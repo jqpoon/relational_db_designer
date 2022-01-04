@@ -1,4 +1,5 @@
 import Draggable from "react-draggable";
+import { Tooltip } from "@mui/material";
 import axios from "axios";
 import { useRef } from "react";
 import { types } from "./types";
@@ -62,10 +63,13 @@ export default function Toolbar({
           entityToolRef.current.state.y = 0;
         }}
       >
-        <div className="create-tool">
-          <span class="grippy"></span> Entity
-        </div>
+        <Tooltip title="Drag to create new entity">
+          <div className="create-tool">
+            <span class="grippy"></span> Entity
+          </div>
+        </Tooltip>
       </Draggable>
+
       <Draggable
         ref={relationshipToolRef}
         onStop={(e, data) => {
@@ -74,73 +78,71 @@ export default function Toolbar({
           relationshipToolRef.current.state.y = 0;
         }}
       >
-        <div className="create-tool">
-          <span class="grippy"></span>Relationship
-        </div>
+        <Tooltip title="Drag to create new relationship">
+          <div className="create-tool">
+            <span class="grippy"></span>Relationship
+          </div>
+        </Tooltip>
       </Draggable>
-      <div className="footer">
-        <div className="tool" onClick={undo}>
-          Undo
-        </div>
-        <div className="tool" onClick={redo}>
-          Redo
-        </div>
-        <div
-          className="tool"
-          onClick={() => {
-            axios
-              .get("/schema/all")
-              .then(function (response) {
-                importStateFromObject(response.data);
-              })
-              .catch(function (error) {
-                console.log(error);
-              });
-          }}
-        >
-          Load
-        </div>
-        <div
-          className="tool"
-          onClick={() => {
-            axios
-              .post("/schema/all", exportStateToObject())
-              .then(function (response) {
-                console.log(response);
-              })
-              .catch(function (error) {
-                console.log(error);
-              });
-          }}
-        >
-          Save
-        </div>
-        <div
-          className="tool"
-          onClick={() => {
-            axios
-              .post("/translation/translate", exportStateToObject())
-              .then(function (response) {
-                translate(response.data);
-              })
-              .catch(function (error) {
-                console.log(error);
-              });
-          }}
-        >
-          Translate
-        </div>
-        <div className="tool">Validate</div>
-        <UploadTool
-          text="Import JSON file"
-          handleFile={uploadStateFromObject}
-        />
-        <div className="tool" onClick={downloadStateAsObject}>
-          Export JSON file
-        </div>
-        <div className="tool" onClick={() => setUser(null)}>
-          Log out
-        </div>
+      <div className="footer"></div>
+      <div className="tool" onClick={undo}>
+        Undo
+      </div>
+      <div className="tool" onClick={redo}>
+        Redo
+      </div>
+      <div
+        className="tool"
+        onClick={() => {
+          axios
+            .get("/schema/all")
+            .then(function (response) {
+              importStateFromObject(response.data);
+            })
+            .catch(function (error) {
+              console.log(error);
+            });
+        }}
+      >
+        Load
+      </div>
+      <div
+        className="tool"
+        onClick={() => {
+          axios
+            .post("/schema/all", exportStateToObject())
+            .then(function (response) {
+              console.log(response);
+            })
+            .catch(function (error) {
+              console.log(error);
+            });
+        }}
+      >
+        Save
+      </div>
+      <div
+        className="tool"
+        onClick={() => {
+          axios
+            .post("/translation/translate", exportStateToObject())
+            .then(function (response) {
+              translate(response.data);
+            })
+            .catch(function (error) {
+              console.log(error);
+            });
+        }}
+      >
+        Translate
+      </div>
+      <div className="tool">Validate</div>
+      <UploadTool text="Import JSON file" handleFile={uploadStateFromObject} />
+      <div className="tool" onClick={downloadStateAsObject}>
+        Export JSON file
+      </div>
+      <div className="tool" onClick={() => setUser(null)}>
+        Log out
       </div>
     </div>
   );

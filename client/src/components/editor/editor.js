@@ -3,7 +3,6 @@ import { initialEntities, initialRelationships, initialEdges } from "./initial";
 import { actions, types } from "./types";
 import Edge, { AttributeEdge, HierarchyEdge } from "./edges/edge";
 import { Xwrapper } from "react-xarrows";
-import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import Toolbar from "./toolbar";
 import "./stylesheets/editor.css";
 import { Entity, Relationship } from "./nodes/node";
@@ -24,7 +23,6 @@ export default function Editor({ user, setUser }) {
   const parentRef = useRef(null);
   const [render, setRender] = useState(false);
   const [scale, setScale] = useState(1);
-  const [panDisabled, setPanDisabled] = useState(false);
 
   // List of components that will be rendered
   const [elements, setElements] = useState({
@@ -42,9 +40,6 @@ export default function Editor({ user, setUser }) {
   };
 
   const [context, setContext] = useState({ action: actions.NORMAL });
-
-  const [, setRerender] = useState(false);
-  const forceRerender = () => setRerender((rerender) => !rerender);
 
   const [contextMenu, setContextMenu] = useState(null);
 
@@ -245,7 +240,6 @@ export default function Editor({ user, setUser }) {
   };
 
   const generalFunctions = {
-    setPanDisabled: setPanDisabled,
     setContext: setContext,
     context: context,
     setContextMenu: setContextMenu,
@@ -265,23 +259,6 @@ export default function Editor({ user, setUser }) {
     undo: () => undo(historyAndSetter, elementsAndSetter),
     redo: () => redo(historyAndSetter, elementsAndSetter),
     setUser: setUser,
-  };
-
-  const canvasConfig = {
-    panning: {
-      disabled: panDisabled,
-      excluded: ["input", "button"],
-      velocityDisabled: true,
-    },
-    // TODO: check if we need scale here
-    onZoomStop: (ref) => setScale(ref.state.scale),
-    onZoom: forceRerender,
-    onPanning: forceRerender,
-    alignmentAnimation: { animationTime: 0 },
-    onAlignBound: forceRerender,
-    doubleClick: { disabled: true },
-    minScale: 0.3,
-    limitToBounds: false,
   };
 
   const nodeConfig = {
@@ -378,13 +355,11 @@ export default function Editor({ user, setUser }) {
         {render ? (
           <>
             <Toolbar {...elementFunctions} {...leftToolBarActions} />
-            <TransformWrapper {...canvasConfig}>
-              <TransformComponent>
                 <div
                   className="canvas" // TODO: previously "dnd"
-                  // ref={parentRef}
-                  onClick={() => setPanDisabled(false)}
+                  ref={parentRef}
                 >
+                  {showEdges()}
                   {Object.values(elements.entities).map((entity) => (
                     <Entity
                       key={entity.id}
@@ -407,11 +382,10 @@ export default function Editor({ user, setUser }) {
                       }}
                     />
                   ))}
+                  
+            
                 </div>
-              </TransformComponent>
-            </TransformWrapper>
-            {showEdges()}
-            {showRightToolbar()}
+                {showRightToolbar()}
             <ContextMenu contextMenu={contextMenu} />
           </>
         ) : null}
