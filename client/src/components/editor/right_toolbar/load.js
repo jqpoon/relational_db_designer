@@ -52,7 +52,7 @@ export default function Load({user, importStateFromObject, backToNormal}) {
 	return (
 		<div className="toolbar-right">
 			<h3 className="toolbar-header">Load ERD</h3>
-			{erids.map((x) => eridBlock(x))}
+			{erids.length === 0 ? "Nothing to load!" : erids.map((x) => eridBlock(x))}
 		</div>
 	)
 }
