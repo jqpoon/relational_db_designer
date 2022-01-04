@@ -75,6 +75,8 @@
     "module-alias": "^2.2.2",
     "morgan": "^1.10.0",
     "neo4j-driver": "^4.3.4",
+    "socket.io": "^4.4.0",
+    "socket.io-client": "^4.4.0",
     "swagger-jsdoc": "^6.1.0",
     "swagger-ui-express": "^4.1.6",
     "tsoa": "^3.14.0"

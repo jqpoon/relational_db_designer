@@ -4,7 +4,6 @@ import Entity from "src/models/entity";
 import Relationship, {LHConstraint} from "src/models/relationship";
 import FullTranslator from "src/translators/fullTranslator";
 import TranslatedTable from "src/translators/models/translatedTable";
-import { saveAll } from "./schema";
 
 const router = Router();
 
