@@ -141,11 +141,23 @@ input[type=text]:hover {
 	font-size: large;
 }
 
+.permission-block {
+	display: flex;
+}
+
 .user-block {
+	flex-grow: 1;
+	overflow-x: hidden;
 	text-align: center;
 	padding: 3px;
 	margin: 2px 0;
 	height: 30px;
 	border: 1px solid gray;
 	border-radius: 3px;
+}
+
+.remove-permission-btn {
+	height: 30px;
+	padding: 3px;
+	margin: 2px;
 }

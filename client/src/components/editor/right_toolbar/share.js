@@ -55,15 +55,19 @@ export default function Share({user, erid, backToNormal}) {
 
 	const handleSubmit = (e, email, permission) => {
 		e.preventDefault();
+		if (email === "") return;
 		givePermission(email, permission);
+		setEmail("");
 	}
 
 	const userBlock = ({email, permission}) => {
 		return (
-			<div className="user-block">
-				<p>{email} - {permission}</p>
+			<div className="permission-block">
+				<div className="user-block">
+					<p>{email} - {permission}</p>
+				</div>
 				{permission !== "OWNER" 
-					? <button onClick={() => givePermission(email, "REMOVE")}>Remove</button> 
+					? <button className="remove-permission-btn" onClick={() => givePermission(email, "REMOVE")}>Remove</button> 
 					: null}
 			</div>
 		)
@@ -74,7 +78,7 @@ export default function Share({user, erid, backToNormal}) {
 			<h3 className="toolbar-header">Share ERD</h3>
 			<form className="share-form-wrapper" onSubmit={(e) => handleSubmit(e, email, permission)}>
 				<div className="share-form">
-					<input className="share-email" placeholder="email" onChange={(e) => setEmail(e.target.value)}/>
+					<input className="share-email" placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)}/>
 					<select className="share-permission" onChange={(e) => setPermission(e.target.value)}>
   					<option value="READ">Read</option>
 						<option value="READ-WRITE">Read-write</option>
