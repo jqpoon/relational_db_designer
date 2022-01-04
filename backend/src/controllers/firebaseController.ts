@@ -71,7 +71,8 @@ class FirebaseController {
 				const erdExists: boolean = await this.firestoreController.checkERDExists(erid);
 				if (!erdExists) throw new ErrorBuilder(404, "ERD does not exist");
 				const canWrite: boolean = await this.firestoreController.canWrite(uid, erid);
-				if (!canWrite) throw new ErrorBuilder(403, "You do not have permission to write");
+				if (!canWrite) throw new ErrorBuilder(403, 
+					"You do not have permission to write, please make a duplicate to make changes.");
 				const canUpdate: boolean = await this.firestoreController.canUpdateERD(erid, json.counter as number);
 				if (!canUpdate) throw new ErrorBuilder(409, "ERD update conflict, please retrieve the latest version");
 				await this.firestoreController.updateERD(erid, data);

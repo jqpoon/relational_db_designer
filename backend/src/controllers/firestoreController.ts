@@ -256,7 +256,7 @@ class FirestoreController {
 		const erdRef: DocumentReference = doc(this.db, `erds_list/${erid}`);
 		const erdData: DocumentSnapshot = await getDoc(erdRef);
 		const data = erdData.get("data");
-		const name = erdData.get("name");
+		const name = "Copy of " + erdData.get("name");
 		const result = JSON.stringify({name, data});
 		return await this.createERD(uid, result);
 	}
