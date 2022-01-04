@@ -17,7 +17,7 @@ export default function UploadTool({ text, handleFile }) {
 
   return (
     <>
-      <div className="tool" onClick={handleClick}>
+      <div className="clickable tool" onClick={handleClick}>
         {text}
       </div>
       <input
