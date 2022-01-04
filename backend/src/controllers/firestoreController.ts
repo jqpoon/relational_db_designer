@@ -30,7 +30,7 @@ interface ERDMeta {
 }
 
 interface UserPermission {
-	uid?: string;
+	uid: string;
 	permission: string;
 	email?: string;
 }
@@ -184,7 +184,7 @@ class FirestoreController {
 		for (const x of users) {
 			const userRef: DocumentReference = doc(this.db, `user_erds/${x.uid}`);
 			const userData = await getDoc(userRef);
-			res.push({email: userData.get("email"), permission: x.permission});
+			res.push({...x, email: userData.get("email")});
 		}
 		return JSON.stringify(res);
 	}
@@ -200,6 +200,13 @@ class FirestoreController {
 			erdsMeta.push({erid: x, name: erdData.get("name")});
 		}
 		return JSON.stringify(erdsMeta);
+	}
+
+	public async getUidFromEmail(email: string): Promise<string | null> {
+		const docRef: DocumentReference = doc(this.db, `email_uid/${email}`);
+		const docData: DocumentSnapshot = await getDoc(docRef);
+		if (!docData.exists()) return null;
+		return docData.get("uid");
 	}
 
 	public isValidPermission(permission: string): boolean {

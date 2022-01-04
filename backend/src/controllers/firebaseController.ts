@@ -104,7 +104,7 @@ class FirebaseController {
 						throw new ErrorBuilder(400, "Cannot change owner permission");
 				}
 				if (!this.firestoreController.isValidPermission(permission)) {
-						throw new ErrorBuilder(400, "Permission should be READ or READ-WRITE");
+						throw new ErrorBuilder(400, "Permission should be READ, READ-WRITE OR REMOVE");
 				}
 				const userExists: boolean = await this.firestoreController.checkUserExists(uid);
 				if (!userExists) throw new ErrorBuilder(404, "User does not exist");
@@ -113,6 +113,12 @@ class FirebaseController {
 				const ownerGrant: boolean = await this.firestoreController.checkOwner(owner, erid);
 				if (!ownerGrant) throw new ErrorBuilder(403, "Only owner can change permissions");
 				return this.firestoreController.updateAccess(uid, erid, permission);
+		}
+
+		public async updateAccessWithEmail(owner: string, email: string, erid: string, permission: string): Promise<void> {
+				const uid: string | null = await this.firestoreController.getUidFromEmail(email);
+				if (uid == null) throw new ErrorBuilder(404, "User does not exist");
+				return this.updateAccess(owner, uid, erid, permission);
 		}
 
 		public async createDuplicate(uid: string, erid: string): Promise<string> {
