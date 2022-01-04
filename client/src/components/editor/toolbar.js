@@ -3,6 +3,7 @@ import axios from "axios";
 import {useRef, useState} from "react";
 import {types} from "./types";
 import {getId} from "./idGenerator";
+import { confirmAlert } from 'react-confirm-alert';
 import "./stylesheets/toolbar.css";
 import UploadTool from "./utilities/uploadTool";
 
@@ -61,6 +62,22 @@ export default function Toolbar({
     };
     addElement(types.RELATIONSHIP, newRelationship);
   };
+
+	const saveSubmit = (cb) => {
+		confirmAlert({
+      title: "Confirmation",
+      message: "ERD will be saved",
+      buttons: [
+        {
+          label: 'Yes',
+          onClick: () => cb()
+        },
+        {
+          label: 'No',
+        }
+      ]
+    });
+	}
 
 	const createERD = async () => {
 		try {
@@ -121,8 +138,13 @@ export default function Toolbar({
 	        <div className="clickable tool" onClick={load}>
 	          Load
 	        </div>
-	        <div className="clickable tool" onClick={erid ? updateERD : createERD}>
+	        <div className="clickable tool" onClick={() => {
+						erid ? saveSubmit(updateERD) : saveSubmit(createERD)
+					}}>
 	          Save
+	        </div>
+					<div className="clickable tool" onClick={share}>
+	          Share
 	        </div>
 	        <div className="clickable tool" onClick={() => {
 						axios
