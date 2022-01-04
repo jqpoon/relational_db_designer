@@ -113,3 +113,39 @@ input[type=text]:hover {
 .erid-block:hover {
 	border: 2px solid purple;
 }
+
+.share-form-wrapper {
+	margin-bottom: 10px;
+}
+
+.share-form {
+	display: flex;
+	height: 30px;
+}
+
+.share-email {
+	flex-grow: 1;
+}
+
+.share-permission {
+	flex-grow: 0;
+}
+
+.share-btn-wrapper {
+	text-align: center;
+	margin: 5px auto;
+}
+
+.share-btn-wrapper button {
+	width: 100px;
+	font-size: large;
+}
+
+.user-block {
+	text-align: center;
+	padding: 3px;
+	margin: 2px 0;
+	height: 30px;
+	border: 1px solid gray;
+	border-radius: 3px;
+}
