@@ -30,8 +30,9 @@ interface ERDMeta {
 }
 
 interface UserPermission {
-	uid: string;
+	uid?: string;
 	permission: string;
+	email?: string;
 }
 
 class FirestoreController {
@@ -53,9 +54,11 @@ class FirestoreController {
   }
 
 	// New doc for user to store ERDs it can access
-	public createDocumentForNewUser(uid: string): void {
-		const docRef: DocumentReference = doc(this.db, `user_erds/${uid}`);
-		setDoc(docRef, {});
+	public async createDocumentForNewUser(uid: string, email: string): Promise<void> {
+		let docRef: DocumentReference = doc(this.db, `user_erds/${uid}`);
+		await setDoc(docRef, {email});
+		docRef = doc(this.db, `email_uid/${email}`);
+		await setDoc(docRef, {uid});
 	}
 
 	public async createERD(uid: string, json: string): Promise<string> {
@@ -179,7 +182,13 @@ class FirestoreController {
 		const docRef: DocumentReference = doc(this.db, `erd_users/${erid}`);
 		const docData: DocumentSnapshot = await getDoc(docRef);
 		const users: UserPermission[] = docData.get("users");
-		return JSON.stringify(users);
+		const res: UserPermission[] = [];
+		for (const x of users) {
+			const userRef: DocumentReference = doc(this.db, `user_erds/${x.uid}`);
+			const userData = await getDoc(userRef);
+			res.push({email: userData.get("email"), permission: x.permission});
+		}
+		return JSON.stringify(res);
 	}
 
 	public async getUserAccessList(uid: string): Promise<string> {
@@ -193,6 +202,13 @@ class FirestoreController {
 			erdsMeta.push({erid: x, name: erdData.get("name")});
 		}
 		return JSON.stringify(erdsMeta);
+	}
+
+	public async getUidFromEmail(email: string): Promise<string | null> {
+		const docRef: DocumentReference = doc(this.db, `email_uid/${email}`);
+		const docData: DocumentSnapshot = await getDoc(docRef);
+		if (!docData.exists()) return null;
+		return docData.get("uid");
 	}
 
 	public isValidPermission(permission: string): boolean {
@@ -240,7 +256,7 @@ class FirestoreController {
 		const erdRef: DocumentReference = doc(this.db, `erds_list/${erid}`);
 		const erdData: DocumentSnapshot = await getDoc(erdRef);
 		const data = erdData.get("data");
-		const name = erdData.get("name");
+		const name = "Copy of " + erdData.get("name");
 		const result = JSON.stringify({name, data});
 		return await this.createERD(uid, result);
 	}

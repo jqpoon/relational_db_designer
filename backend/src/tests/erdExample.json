@@ -1,90 +1,224 @@
 {
-	"name": "Test ERD",
+	"name": "DO NOT EDIT",
   "data": {
-	  "entities": [
-	    {
-	      "id": "E0",
-	      "text": "Person",
-	      "pos": {
-	        "x": 300,
-	        "y": 250
-	      },
-	      "isWeak": false,
-	      "attributes": [
-	        {
-	          "id": "E0A0",
-	          "text": "Name",
-	          "relativePos": {
-	            "x": -100,
-	            "y": -30
-	          },
-	          "isMultiValued": false,
-	          "isOptional": false,
-	          "isPrimaryKey": false
-	        }
-	      ],
-	      "subsets": []
-	    },
-	    {
-	      "id": "E1",
-	      "text": "Manager",
-	      "pos": {
-	        "x": 100,
-	        "y": 250
-	      },
-	      "isWeak": false,
-	      "attributes": [],
-	      "subsets": []
-	    },
-	    {
-	      "id": "E2",
-	      "text": "Department",
-	      "pos": {
-	        "x": 750,
-	        "y": 250
-	      },
-	      "isWeak": false,
-	      "attributes": [],
-	      "subsets": []
-	    },
-	    {
-	      "id": "E3",
-	      "text": "Email Users",
-	      "pos": {
-	        "x": 100,
-	        "y": 500
-	      },
-	      "isWeak": false,
-	      "attributes": [],
-	      "subsets": []
-	    },
-	    {
-	      "id": "E4",
-	      "text": "Non-email Users",
-	      "pos": {
-	        "x": 550,
-	        "y": 500
-	      },
-	      "isWeak": false,
-	      "attributes": [],
-	      "subsets": []
-	    }
-	  ],
-	  "relationships": [
-	    {
-	      "id": "R0",
-	      "text": "Works In",
-	      "pos": {
-	        "x": 550,
-	        "y": 250
-	      },
-	      "attributes": [],
-	      "lHConstraints": {
-	        "E0": "ONE_TO_ONE",
-	        "E2": "ZERO_TO_MANY"
-	      }
-	    }
-	  ],
-	  "disjoints": []
+		"entities": {
+			"E0": {
+				"attributes": {
+					"E0A0": {
+						"text": "Name",
+						"id": "E0A0",
+						"isPrimaryKey": false,
+						"type": "attribute",
+						"isMultiValued": false,
+						"parent": {
+							"id": "E0",
+							"type": "entity"
+						},
+						"isOptional": false,
+						"relativePos": {
+							"x": -100,
+							"y": -30
+						}
+					}
+				},
+				"generalisations": {
+					"E0G0": {
+						"parent": {
+							"id": "E0"
+						},
+						"type": "generalisation",
+						"edges": {
+							"E3E0G0": {
+								"type": "hierarchy_edge"
+							},
+							"E4E0G0": {
+								"type": "hierarchy_edge"
+							}
+						},
+						"text": "Messages",
+						"id": "E0G0",
+						"pos": {
+							"x": 551,
+							"y": 528
+						}
+					}
+				},
+				"text": "Person",
+				"pos": {
+					"x": 300,
+					"y": 250
+				},
+				"edges": {
+					"E1E0": {
+						"type": "hierarchy_edge"
+					},
+					"E0R0": {
+						"type": "relationship_edge"
+					}
+				},
+				"id": "E0",
+				"type": "entity",
+				"isWeak": []
+			},
+			"E1": {
+				"type": "entity",
+				"isWeak": [],
+				"id": "E1",
+				"generalisations": {},
+				"text": "Manager",
+				"attributes": {},
+				"pos": {
+					"y": 250,
+					"x": 100
+				},
+				"edges": {
+					"E1E0": {
+						"type": "hierarchy_edge"
+					}
+				}
+			},
+			"ESwipeCard": {
+				"generalisations": {},
+				"isWeak": [
+					"ESwipeCardR0"
+				],
+				"attributes": {},
+				"type": "entity",
+				"id": "ESwipeCard",
+				"pos": {
+					"y": 100,
+					"x": 550
+				},
+				"edges": {
+					"ESwipeCardR0": {
+						"type": "relationship_edge"
+					}
+				},
+				"text": "Swipe Card"
+			},
+			"E2": {
+				"id": "E2",
+				"generalisations": {},
+				"isWeak": [],
+				"pos": {
+					"y": 117,
+					"x": 765
+				},
+				"type": "entity",
+				"edges": {
+					"E2R0": {
+						"type": "relationship_edge"
+					}
+				},
+				"text": "Department",
+				"attributes": {}
+			},
+			"E3": {
+				"edges": {
+					"E3E0G0": {
+						"type": "hierarchy_edge"
+					}
+				},
+				"generalisations": {},
+				"pos": {
+					"y": 500,
+					"x": 100
+				},
+				"type": "entity",
+				"isWeak": [],
+				"id": "E3",
+				"text": "Email Users",
+				"attributes": {}
+			},
+			"E4": {
+				"id": "E4",
+				"edges": {
+					"E4E0G0": {
+						"type": "hierarchy_edge"
+					}
+				},
+				"pos": {
+					"x": 320,
+					"y": 609
+				},
+				"attributes": {},
+				"type": "entity",
+				"text": "Non-email Users",
+				"isWeak": [],
+				"generalisations": {}
+			}
+		},
+		"relationships": {
+			"R0": {
+				"attributes": {},
+				"edges": {
+					"E2R0": {
+						"type": "relationship_edge"
+					},
+					"E0R0": {
+						"type": "relationship_edge"
+					}
+				},
+				"id": "R0",
+				"text": "Works In",
+				"pos": {
+					"x": 690,
+					"y": 393
+				},
+				"type": "relationship"
+			}
+		},
+		"edges": {
+			"E3E0G0": {
+				"generalisation": "E0G0",
+				"type": "hierarchy_edge",
+				"id": "E3E0G0",
+				"parent": "E0",
+				"child": "E3"
+			},
+			"E4E0G0": {
+				"generalisation": "E0G0",
+				"parent": "E0",
+				"type": "hierarchy_edge",
+				"child": "E4",
+				"id": "E4E0G0"
+			},
+			"E2R0": {
+				"target_type": "relationship",
+				"cardinality": "ZERO_TO_MANY",
+				"start": "E2",
+				"end": "R0",
+				"source_type": "entity",
+				"id": "E2R0",
+				"type": "relationship_edge",
+				"isKey": false
+			},
+			"ESwipeCardR0": {
+				"target_type": "relationship",
+				"source_type": "entity",
+				"cardinality": "ONE_TO_ONE",
+				"isKey": true,
+				"id": "ESwipeCardR0",
+				"start": "ESwipeCard",
+				"end": "R0",
+				"type": "relationship_edge"
+			},
+			"E1E0": {
+				"child": "E1",
+				"id": "E1E0",
+				"parent": "E0",
+				"type": "hierarchy_edge"
+			},
+			"E0R0": {
+				"target_type": "relationship",
+				"id": "E0R0",
+				"isKey": false,
+				"cardinality": "ONE_TO_ONE",
+				"source_type": "entity",
+				"end": "R0",
+				"start": "E0",
+				"type": "relationship_edge"
+			}
+		}
 	}
 }

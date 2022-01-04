@@ -4,9 +4,10 @@ import { actions, types } from "./types";
 import Edge, { AttributeEdge, HierarchyEdge } from "./edges/edge";
 import { Xarrow, Xwrapper } from "react-xarrows";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
+import { TestEntity, TestRelationship } from "./nodes/node";
 import Toolbar from "./toolbar";
 import "./stylesheets/editor.css";
-import { TestEntity, TestRelationship } from "./nodes/node";
+import 'react-confirm-alert/src/react-confirm-alert.css'; 
 
 import SelectEntity from "./right_toolbar/selectEntity";
 import SelectRelationship from "./right_toolbar/selectRelationship";
@@ -17,6 +18,8 @@ import SelectGeneralisation from "./right_toolbar/selectGeneralisation";
 import { ContextMenu } from "./contextMenus/contextMenu";
 import DisplayTranslation from "./right_toolbar/translationDisplay";
 import { getId } from "./idGenerator";
+import Load from "./right_toolbar/load";
+import Share from "./right_toolbar/share";
 
 // TODO: update left,right toolbar to match new data structures
 // TODO: add initial attributes to initial.js + implement position update based on parent node of the attribute
@@ -36,11 +39,15 @@ export default function Editor({user, setUser}) {
   const [editableId, setEditableId] = useState(0);
 
   // List of components that will be rendered
-  const [entities, setEntities] = useState(initialEntities);
-  const [relationships, setRelationships] = useState(initialRelationships);
-  const [edges, setEdges] = useState(initialEdges);
+	const [entities, setEntities] = useState({});
+  const [relationships, setRelationships] = useState({});
+  const [edges, setEdges] = useState({});
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
+
+	const [name, setName] = useState("Untitled");
+	const [erid, setErid] = useState(null);
+	const [counter, setCounter] = useState(0);
 
   const [context, setContext] = useState({ action: actions.NORMAL });
 
@@ -247,6 +254,9 @@ export default function Editor({user, setUser}) {
 
   // Resets the state of the whiteboard and deletes the current schema.
   const resetState = () => {
+		setName("Untitled");
+		setErid(null);
+		setCounter(0);
     setEntities({});
     setRelationships({});
     setEdges({});
@@ -344,19 +354,29 @@ export default function Editor({user, setUser}) {
   };
 
   // Translates entire model state from backend JSON into client components.
-  const importStateFromObject = (state) => {
-    setEntities(state.entities);
-    setRelationships(state.relationships);
-    setEdges(state.edges);
+  const importStateFromObject = (obj) => {
+		setName(obj.name);
+		setErid(obj.erid);
+		setCounter(obj.counter);
+    setEntities(obj.data.entities);
+    setRelationships(obj.data.relationships);
+    setEdges(obj.data.edges);
+		setUndoStack([]);
+    setRedoStack([]);
   };
 
   // Translates entire schema state into a single JSON object.
   const exportStateToObject = () => {
-    return {
-      entities: entities,
-      relationships: relationships,
-      edges: edges
+		const obj = {
+			data: {
+				entities: entities,
+				relationships: relationships,
+				edges: edges
+			}
     };
+		obj["name"] = name;
+		if (counter !== 0) obj["counter"] = counter;
+		return obj;
   };
 
   // Translates entire schema state into a JSON object that fits backend format.
@@ -508,19 +528,29 @@ export default function Editor({user, setUser}) {
         target: null,
       });
     },
-    importStateFromObject: importStateFromObject,
-    exportStateToObject: exportStateToObject,
-    uploadStateFromObject: uploadStateFromObject,
-    downloadStateAsObject: downloadStateAsObject,
+    importStateFromObject,
+    exportStateToObject,
+    uploadStateFromObject,
+    downloadStateAsObject,
     translate: (schema) => {
       setContext({
         action: actions.TRANSLATE,
         tables: schema.translatedtables.tables,
       });
     },
-    undo: undo,
-    redo: redo,
-		setUser: setUser,
+    undo,
+    redo,
+		user,
+		setUser,
+		name,
+		setName,
+		erid,
+		setErid,
+		counter,
+		setCounter,
+		load: () => setContext({ action: actions.LOAD }),
+		share: () => setContext({ action: actions.SHARE }),
+		resetState,
   };
 
   const rightToolBarActions = {
@@ -606,6 +636,18 @@ export default function Editor({user, setUser}) {
             {...generalFunctions}
           />
         );
+			case actions.LOAD:
+				return <Load 
+					user={user} 
+					importStateFromObject={importStateFromObject} 
+					backToNormal={() => setContext({action: actions.NORMAL})}
+				/>
+			case actions.SHARE:	
+				return <Share 
+					user={user}
+					erid={erid}
+					backToNormal={() => setContext({action: actions.NORMAL})}
+				/>
       default:
         // TODO
         return <Normal />;
