@@ -30,7 +30,7 @@ interface ERDMeta {
 }
 
 interface UserPermission {
-	uid: string;
+	uid?: string;
 	permission: string;
 	email?: string;
 }
@@ -184,7 +184,7 @@ class FirestoreController {
 		for (const x of users) {
 			const userRef: DocumentReference = doc(this.db, `user_erds/${x.uid}`);
 			const userData = await getDoc(userRef);
-			res.push({...x, email: userData.get("email")});
+			res.push({email: userData.get("email"), permission: x.permission});
 		}
 		return JSON.stringify(res);
 	}

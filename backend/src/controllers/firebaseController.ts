@@ -99,26 +99,20 @@ class FirebaseController {
 				return this.firestoreController.getERDAccessList(id);
 		}
 
-		public async updateAccess(owner: string, uid: string, erid: string, permission: string): Promise<void> {
+		public async updateAccess(owner: string, email: string, erid: string, permission: string): Promise<void> {
+				const uid: string | null = await this.firestoreController.getUidFromEmail(email);
+				if (uid == null) throw new ErrorBuilder(404, "User does not exist");
 				if (owner === uid) {
 						throw new ErrorBuilder(400, "Cannot change owner permission");
 				}
 				if (!this.firestoreController.isValidPermission(permission)) {
-						throw new ErrorBuilder(400, "Permission should be READ, READ-WRITE OR REMOVE");
+						throw new ErrorBuilder(400, "Permission should be READ or READ-WRITE");
 				}
-				const userExists: boolean = await this.firestoreController.checkUserExists(uid);
-				if (!userExists) throw new ErrorBuilder(404, "User does not exist");
 				const erdExists: boolean = await this.firestoreController.checkERDExists(erid);
 				if (!erdExists) throw new ErrorBuilder(404, "ERD does not exist");
 				const ownerGrant: boolean = await this.firestoreController.checkOwner(owner, erid);
 				if (!ownerGrant) throw new ErrorBuilder(403, "Only owner can change permissions");
 				return this.firestoreController.updateAccess(uid, erid, permission);
-		}
-
-		public async updateAccessWithEmail(owner: string, email: string, erid: string, permission: string): Promise<void> {
-				const uid: string | null = await this.firestoreController.getUidFromEmail(email);
-				if (uid == null) throw new ErrorBuilder(404, "User does not exist");
-				return this.updateAccess(owner, uid, erid, permission);
 		}
 
 		public async createDuplicate(uid: string, erid: string): Promise<string> {

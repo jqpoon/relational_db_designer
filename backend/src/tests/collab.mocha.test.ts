@@ -68,7 +68,7 @@ describe("Collab", () => {
 
 		it("Invalid permission is rejected", (done) => {
 			chai.request(server)
-				.put(`/api/collab?owner=${params.testUid}&Uid=${params.otherUid}&ERid=${params.testErid}&permission=${params.badPermission}`)
+				.put(`/api/collab?owner=${params.testUid}&email=${params.otherEmail}&ERid=${params.testErid}&permission=${params.badPermission}`)
 				.end((_, res) => {
 					expect(res.status).to.be.equal(400);
 					done();
@@ -77,7 +77,7 @@ describe("Collab", () => {
 
 		it("Cannot give permission to non-existent user", (done) => {
 			chai.request(server)
-				.put(`/api/collab?owner=${params.testUid}&Uid=${params.badUid}&ERid=${params.testErid}&permission=${params.read}`)
+				.put(`/api/collab?owner=${params.testUid}&email=${params.badEmail}&ERid=${params.testErid}&permission=${params.read}`)
 				.end((_, res) => {
 					expect(res.status).to.be.equal(404);
 					done();
@@ -87,7 +87,7 @@ describe("Collab", () => {
 		it("Cannot give user access to non-existent ERD", (done) => {
 			chai.request(server)
 				.put(
-					`/api/collab?owner=${params.testUid}&Uid=${params.otherUid}&ERid=${params.badErid}&permission=${params.read}`)
+					`/api/collab?owner=${params.testUid}&email=${params.otherEmail}&ERid=${params.badErid}&permission=${params.read}`)
 				.end((_, res) => {
 					expect(res.status).to.be.equal(404);
 					done();
@@ -96,7 +96,7 @@ describe("Collab", () => {
 
 		it("Permission of owner cannot be changed", (done) => {
 			chai.request(server)
-				.put(`/api/collab?owner=${params.testUid}&Uid=${params.testUid}&ERid=${params.testErid}&permission=${params.read}`)
+				.put(`/api/collab?owner=${params.testUid}&email=${params.email.toLowerCase()}&ERid=${params.testErid}&permission=${params.read}`)
 				.end((_, res) => {
 					expect(res.status).to.be.equal(400);
 					done();
@@ -106,7 +106,7 @@ describe("Collab", () => {
 		it("Permission can be given and removed", async () => {
 			// give
 			const grantRes = await chai.request(server)
-				.put(`/api/collab?owner=${params.testUid}&Uid=${params.otherUid}&ERid=${params.testErid}&permission=${params.read}`);
+				.put(`/api/collab?owner=${params.testUid}&email=${params.otherEmail}&ERid=${params.testErid}&permission=${params.read}`);
 			expect(grantRes.status).to.be.equal(200);
 			// verify
 			let accessRes = await chai.request(server)
@@ -117,7 +117,7 @@ describe("Collab", () => {
 			expect(some(JSON.parse(accessRes.text), {email: params.otherEmail, permission: params.read})).to.be.true;
 			// remove
 			const removeRes = await chai.request(server)
-				.put(`/api/collab?owner=${params.testUid}&Uid=${params.otherUid}&ERid=${params.testErid}&permission=${params.remove}`);
+				.put(`/api/collab?owner=${params.testUid}&email=${params.otherEmail}&ERid=${params.testErid}&permission=${params.remove}`);
 			expect(removeRes.status).to.be.equal(200);
 			// verify
 			accessRes = await chai.request(server)
@@ -169,7 +169,7 @@ describe("Collab", () => {
 		it("Can create duplicate with sufficient permission", async () => {
 			// give permission
 			const grantRes = await chai.request(server)
-				.put(`/api/collab?owner=${params.testUid}&Uid=${params.otherUid}&ERid=${params.testErid}&permission=${params.read}`);
+				.put(`/api/collab?owner=${params.testUid}&email=${params.otherEmail}&ERid=${params.testErid}&permission=${params.read}`);
 			expect(grantRes.status).to.be.equal(200);
 			// make duplicate
 			const duplicateRes = await chai.request(server)
@@ -181,7 +181,7 @@ describe("Collab", () => {
 			expect(JSON.parse(readRes.text)).to.be.deep.equal({...example, counter: 1});
 			// remove permission
 			const removeRes = await chai.request(server)
-				.put(`/api/collab?owner=${params.testUid}&Uid=${params.otherUid}&ERid=${params.testErid}&permission=${params.remove}`);
+				.put(`/api/collab?owner=${params.testUid}&email=${params.otherEmail}&ERid=${params.testErid}&permission=${params.remove}`);
 			expect(removeRes.status).to.be.equal(200);
 			// delete erd
 			const deleteRes = await chai.request(server)
