@@ -1,6 +1,6 @@
 import Draggable from "react-draggable";
 import axios from "axios";
-import {useRef, useState} from "react";
+import {useRef} from "react";
 import {types} from "./types";
 import {getId} from "./idGenerator";
 import { confirmAlert } from 'react-confirm-alert';
