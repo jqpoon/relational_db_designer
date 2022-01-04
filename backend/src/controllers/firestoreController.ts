@@ -54,9 +54,11 @@ class FirestoreController {
   }
 
 	// New doc for user to store ERDs it can access
-	public createDocumentForNewUser(uid: string, email: string): void {
-		const docRef: DocumentReference = doc(this.db, `user_erds/${uid}`);
-		setDoc(docRef, {email});
+	public async createDocumentForNewUser(uid: string, email: string): Promise<void> {
+		let docRef: DocumentReference = doc(this.db, `user_erds/${uid}`);
+		await setDoc(docRef, {email});
+		docRef = doc(this.db, `email_uid/${email}`);
+		await setDoc(docRef, {uid});
 	}
 
 	public async createERD(uid: string, json: string): Promise<string> {
