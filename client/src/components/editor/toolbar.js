@@ -128,6 +128,14 @@ export default function Toolbar({
 		}
 	}
 
+	const showUid = () => {
+		alert(`Your User ID is '${user}'. It can be used to directly interact with the API. Please keep it safe and do not share it with others.`);
+	}
+
+	const showERid = () => {
+		alert(`The ID of '${name}' is ${erid}`);
+	}
+
   return (
 		<>
 	    <div className="toolbar">
@@ -171,14 +179,18 @@ export default function Toolbar({
 					}}>
 	          Save
 	        </div>
-					<div className="clickable tool" onClick={share}>
-	          Share
-	        </div>
-					<div className="clickable tool" onClick={
-						() => submitHandler(duplicate, "ERD will be duplicated")
-					}>
-						Duplicate
-					</div>
+					{erid ? 
+						<div className="clickable tool" onClick={share}>
+		          Share
+		        </div>
+					: null}
+					{erid ? 
+						<div className="clickable tool" onClick={
+							() => submitHandler(duplicate, "ERD will be duplicated")
+						}>
+							Duplicate
+						</div>
+					: null}
 					<div className="clickable tool" onClick={
 						() => submitHandler(resetState, "Canvas will be cleared. This cannot be undone.")
 					}>
@@ -209,6 +221,14 @@ export default function Toolbar({
 	        <div className="clickable tool" onClick={downloadStateAsObject}>
 	          Export JSON file
 	        </div>
+					<div className="clickable tool" onClick={showUid}>
+	          Show User ID
+	        </div>
+					{erid ? 
+						<div className="clickable tool" onClick={showERid}>
+		          Show ERD ID
+		        </div>
+					: null}
 					<div className="clickable tool" onClick={() => setUser(null)}>
 						Log out
 					</div>
