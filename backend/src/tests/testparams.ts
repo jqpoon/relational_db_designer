@@ -1,4 +1,6 @@
 const email = "ONLY_FOR_TEST@gmail.com";
+const otherEmail = "smtg123@gmail.com";
+const badEmail = "tomato@potato.com"
 const password = "123456";
 const badPassword = "123";
 const testUid = "FGQzwkGywpVzusiEDcFzHCZ50gk1";
@@ -19,6 +21,8 @@ const badPermission = "badpermission";
 
 export default {
 	email,
+	otherEmail,
+	badEmail,
 	password,
 	badPassword,
 	testUid,

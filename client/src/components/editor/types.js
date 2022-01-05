@@ -13,11 +13,13 @@ export const actions = {
   NORMAL: "normal",
   TRANSLATE: "translate",
   SELECT: {
-    NORMAL: "select_normal",
+		NORMAL: "select_normal",
     ADD_RELATIONSHIP: "select_add_relationship",
     ADD_SUPERSET: "select_add_superset",
     ADD_SUBSET: "select_add_subset",
   },
+	LOAD: "load",
+	SHARE: "share",
 };
 
 export const cardinality = {

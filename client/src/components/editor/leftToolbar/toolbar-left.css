@@ -1,7 +1,7 @@
 .toolbar-left {
   position: fixed;
   top: 0;
-  width: 10vw;
+  width: 11vw;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -9,27 +9,42 @@
   background-color: antiquewhite;
   text-align: left;
   z-index: 1;
+  overflow: scroll;
+  padding: 10px 5px;
 }
 
 .toolbar-left * {
   background: antiquewhite;
-  padding: 10px 5px;
 }
 
 .toolbar-left .group {
+  padding: 0px 0px 15px 0px;
+}
+
+.toolbar-left .group-header {
+  padding: 0px 0px 5px 0px;
+}
+.toolbar-left .group-content {
   padding: 0;
+}
+.toolbar-left .group-content * {
+  overflow: hidden;
 }
 
 .toolbar-left .group * {
-  overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .toolbar-left .section {
-  height: 30px;
-  margin: 0;
+  height: 40px;
+  margin: 5px 0px 0px 0px; 
   border: 1px solid navy;
-  box-shadow: 1px 1px;
+  border-radius: 3px;
+  width: 100%;
+}
+
+.toolbar-left .section:hover {
+  border: 1px solid orange;
 }
 
 .click-action {
@@ -45,5 +60,16 @@
 }
 
 .drag-to-create * {
-  padding: 5px 5px 5px 0px;
+  padding: 0px 5px 0px 0px;
+}
+
+.toolbar-left input {
+  text-align: center;
+}
+
+.toolbar-left input:hover, input:focus {
+  background-color: white;
+  cursor: text;
+  outline: none !important;
+  border: 1px solid orange !important;
 }

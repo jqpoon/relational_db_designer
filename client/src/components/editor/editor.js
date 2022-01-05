@@ -3,9 +3,9 @@ import { initialEntities, initialRelationships, initialEdges } from "./initial";
 import { actions, types } from "./types";
 import Edge, { AttributeEdge, HierarchyEdge } from "./edges/edge";
 import { Xwrapper } from "react-xarrows";
-import Toolbar from "./toolbar";
 import "./stylesheets/editor.css";
 import { Entity, Relationship } from "./nodes/node";
+import "react-confirm-alert/src/react-confirm-alert.css";
 
 import SelectEntity from "./right_toolbar/selectEntity";
 import SelectRelationship from "./right_toolbar/selectRelationship";
@@ -19,6 +19,14 @@ import { deletes, gets, updates } from "./elementUtilities/elementFunctions";
 import { saveCounter, setCounter } from "./idGenerator";
 import LeftToolbar from "./leftToolbar/leftToolbar";
 import axios from "axios";
+import Load from "./right_toolbar/load";
+import Share from "./right_toolbar/share";
+import {
+  deleteERDInBackEnd,
+  duplicateERD,
+  saveERDToBackEnd,
+  translateERtoRelational,
+} from "./backendUtilities/backendUtils";
 
 export default function Editor({ user, setUser }) {
   // Canvas states: passed to children for metadata (eg width and height of main container)
@@ -40,6 +48,9 @@ export default function Editor({ user, setUser }) {
     setHistory: setHistory,
   };
 
+  const [name, setName] = useState("Untitled");
+  const [erid, setErid] = useState(null);
+
   const [context, setContext] = useState({ action: actions.NORMAL });
 
   const [contextMenu, setContextMenu] = useState(null);
@@ -56,8 +67,11 @@ export default function Editor({ user, setUser }) {
   }, []);
 
   // Resets the state of the whiteboard and deletes the current schema.
-  const resetState = () => {
-    setElements({ entities: {}, relationships: {}, edges: {} });
+  const resetState = (obj) => {
+    setName(obj?.name || "Untitled");
+    setErid(obj?.erid || null);
+    setCounter(obj?.counter || 0);
+    setElements(obj?.state || { entities: {}, relationships: {}, edges: {} });
     setHistory({ store: [], position: -1 });
   };
 
@@ -97,19 +111,15 @@ export default function Editor({ user, setUser }) {
     context: context,
     setContextMenu: setContextMenu,
   };
-  
+
   // Translates entire model state from backend JSON into client components.
-  const importStateFromObject = (state) => {
-    if (state.count) {
-      setCounter(state.count);
-      delete state.count;
-    }
-    setElements(state);
+  const importStateFromObject = (obj) => {
+    resetState(obj);
   };
 
   // Translates entire schema state into a single JSON object.
   const exportStateToObject = () => {
-    return { ...elements, count: saveCounter() };
+    return { name: name, state: elements, counter: saveCounter() };
   };
 
   // Translates entire schema state into a JSON object that fits backend format.
@@ -247,45 +257,35 @@ export default function Editor({ user, setUser }) {
     a.remove();
   };
 
+  const erdInfo = {
+    user: user,
+    erid: erid,
+    name: name,
+  };
+
+  const backendUtils = {
+    ...erdInfo,
+    exportERD: exportStateToObject,
+    importERD: importStateFromObject,
+    resetERD: resetState,
+    setErid: setErid,
+    setContext: setContext,
+  };
+
   const leftToolBarActions = {
-    loadSchemaFromBackEnd: () => {
-      axios
-        .get("/schema/all")
-        .then(function (response) {
-          importStateFromObject(response.data);
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
-    },
-    saveSchemaToBackEnd: () => {
-      axios
-        .post("/schema/all", exportStateToObject())
-        .then(function (response) {
-          console.log(response);
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
-    },
-    translateERtoRelational: () => {
-      axios
-        .post("/translation/translate", exportStateToObject())
-        .then(function (response) {
-          setContext({
-            action: actions.TRANSLATE,
-            tables: response.data.translatedtables.tables,
-          });
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
-    },
+    duplicateERD: async () => duplicateERD(backendUtils),
+    loadERD: () => setContext({ action: actions.LOAD }),
+    shareERD: () => setContext({ action: actions.SHARE }),
+    saveERD: async () => saveERDToBackEnd(backendUtils),
+    translateERtoRelational: () => translateERtoRelational(backendUtils),
     importFromJSON: uploadStateFromObject,
     exportToJSON: downloadStateAsObject,
     undo: () => undo(historyAndSetter, elementsAndSetter),
     redo: () => redo(historyAndSetter, elementsAndSetter),
     logout: () => setUser(null),
+    deleteERD: async () => deleteERDInBackEnd(backendUtils),
+    resetState: resetState,
+    setName,
   };
 
   const nodeConfig = {
@@ -341,6 +341,22 @@ export default function Editor({ user, setUser }) {
           default:
             return <Normal />; // TODO: type not found page
         }
+      case actions.LOAD:
+        return (
+          <Load
+            user={user}
+            importStateFromObject={importStateFromObject}
+            backToNormal={() => setContext({ action: actions.NORMAL })}
+          />
+        );
+      case actions.SHARE:
+        return (
+          <Share
+            user={user}
+            erid={erid}
+            backToNormal={() => setContext({ action: actions.NORMAL })}
+          />
+        );
       default:
         // TODO
         return <Normal />;
@@ -381,7 +397,10 @@ export default function Editor({ user, setUser }) {
       <div className="editor" ref={parentRef}>
         {render ? (
           <>
-            <LeftToolbar {...elementFunctions} {...leftToolBarActions} />
+            <LeftToolbar
+              info={erdInfo}
+              functions={{ ...leftToolBarActions, ...elementFunctions }}
+            />
             {/* <Toolbar {...elementFunctions} {...leftToolBarActions} /> */}
             {showRightToolbar()}
             <div

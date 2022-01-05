@@ -13,7 +13,7 @@ const router = Router();
 */
 router.get("/", function (req, res) {
 	if (req.query.Uid === undefined || req.query.ERid === undefined) {
-		return res.sendStatus(400);
+		return res.status(400).send("Uid and ERid have to be defined.");
 	}
 	const uid: string = req.query.Uid as string;
 	const erid: string = req.query.ERid as string;
@@ -39,7 +39,8 @@ router.post("/", function (req, res) {
 	if (req.query.Uid === undefined 
 		|| req.body.data === undefined
 		|| req.body.name === undefined) {
-		return res.sendStatus(400);
+		return res.status(400).send(
+			"Uid has to be defined as query. ERD name and data have to be defined in request body.");
 	}
 	const uid: string = req.query.Uid as string;
 	const data: string = JSON.stringify(req.body as string);
@@ -65,8 +66,10 @@ router.put('/', function (req, res) {
 	if (req.query.Uid === undefined || 
 		req.query.ERid === undefined || 
 		req.body.data === undefined ||
-		req.body.name === undefined) {
-		return res.sendStatus(400);
+		req.body.name === undefined ||
+		req.body.counter === undefined) {
+		return res.status(400).send(
+			"Uid and ERid have to be defined as queries. ERD name, counter and data have to be defined in request body.");
 	}
 	const uid: string = req.query.Uid as string;
 	const erid: string = req.query.ERid as string;
@@ -93,7 +96,7 @@ router.put('/', function (req, res) {
 */
 router.delete('/', function (req, res) {
 	if (req.query.Uid === undefined || req.query.ERid === undefined) {
-		return res.sendStatus(400);
+		return res.status(400).send("Uid and ERid have to be defined as queries.");
 	}
 	const uid: string = req.query.Uid as string;
 	const erid: string = req.query.ERid as string;
