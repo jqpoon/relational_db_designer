@@ -1,3 +1,4 @@
+// @ts-nocheck
 import Entity from "../models/entity";
 import DatabaseController from "../controllers/databaseController";
 import SchemaController from "../controllers/schemaController";
