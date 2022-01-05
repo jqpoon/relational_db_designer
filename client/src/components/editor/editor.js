@@ -27,9 +27,9 @@ export default function Editor({ user, setUser }) {
 
   // List of components that will be rendered
   const [elements, setElements] = useState({
-    entities: {},
-    relationships: {},
-    edges: {},
+    entities: initialEntities,
+    relationships: initialRelationships,
+    edges: initialEdges,
   });
 
   const elementsAndSetter = { elements: elements, setElements: setElements };
@@ -97,7 +97,7 @@ export default function Editor({ user, setUser }) {
     context: context,
     setContextMenu: setContextMenu,
   };
-
+  
   // Translates entire model state from backend JSON into client components.
   const importStateFromObject = (state) => {
     if (state.count) {
