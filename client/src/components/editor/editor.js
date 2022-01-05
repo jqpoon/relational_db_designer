@@ -12,23 +12,24 @@ import SelectRelationship from "./right_toolbar/selectRelationship";
 import Normal from "./right_toolbar/normal";
 import SelectEdge from "./right_toolbar/selectEdge";
 import SelectGeneralisation from "./right_toolbar/selectGeneralisation";
-import { ContextMenu } from "./contextMenus/contextMenu";
+import { ContextMenu } from "./contextMenu";
 import DisplayTranslation from "./right_toolbar/translationDisplay";
 import { addToUndo, redo, undo } from "./historyUtilities/history";
 import { deletes, gets, updates } from "./elementUtilities/elementFunctions";
 import { saveCounter, setCounter } from "./idGenerator";
+import LeftToolbar from "./leftToolbar/leftToolbar";
+import axios from "axios";
 
 export default function Editor({ user, setUser }) {
   // Canvas states: passed to children for metadata (eg width and height of main container)
   const parentRef = useRef(null);
   const [render, setRender] = useState(false);
-  const [scale, setScale] = useState(1);
 
   // List of components that will be rendered
   const [elements, setElements] = useState({
-    entities: initialEntities,
-    relationships: initialRelationships,
-    edges: initialEdges,
+    entities: {},
+    relationships: {},
+    edges: {},
   });
 
   const elementsAndSetter = { elements: elements, setElements: setElements };
@@ -80,6 +81,23 @@ export default function Editor({ user, setUser }) {
     const data = updates[type](elementsAndSetter, element);
     addToUndo("updateElement", arg, data, historyAndSetter);
   };
+
+  const elementFunctions = {
+    getElement: getElement,
+    addElement: addElement,
+    updateElement: updateElement,
+    deleteElement: deleteElement,
+    undo: () => {
+      undo(historyAndSetter, elementsAndSetter);
+    },
+  };
+
+  const generalFunctions = {
+    setContext: setContext,
+    context: context,
+    setContextMenu: setContextMenu,
+  };
+
   // Translates entire model state from backend JSON into client components.
   const importStateFromObject = (state) => {
     if (state.count) {
@@ -229,41 +247,50 @@ export default function Editor({ user, setUser }) {
     a.remove();
   };
 
-  const elementFunctions = {
-    getElement: getElement,
-    addElement: addElement,
-    updateElement: updateElement,
-    deleteElement: deleteElement,
-    undo: () => {
-      undo(historyAndSetter, elementsAndSetter);
-    },
-  };
-
-  const generalFunctions = {
-    setContext: setContext,
-    context: context,
-    setContextMenu: setContextMenu,
-  };
-
   const leftToolBarActions = {
-    importStateFromObject: importStateFromObject,
-    exportStateToObject: exportStateToObject,
-    uploadStateFromObject: uploadStateFromObject,
-    downloadStateAsObject: downloadStateAsObject,
-    translate: (schema) => {
-      setContext({
-        action: actions.TRANSLATE,
-        tables: schema.translatedtables.tables,
-      });
+    loadSchemaFromBackEnd: () => {
+      axios
+        .get("/schema/all")
+        .then(function (response) {
+          importStateFromObject(response.data);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
     },
+    saveSchemaToBackEnd: () => {
+      axios
+        .post("/schema/all", exportStateToObject())
+        .then(function (response) {
+          console.log(response);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    },
+    translateERtoRelational: () => {
+      axios
+        .post("/translation/translate", exportStateToObject())
+        .then(function (response) {
+          setContext({
+            action: actions.TRANSLATE,
+            tables: response.data.translatedtables.tables,
+          });
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    },
+    importFromJSON: uploadStateFromObject,
+    exportToJSON: downloadStateAsObject,
     undo: () => undo(historyAndSetter, elementsAndSetter),
     redo: () => redo(historyAndSetter, elementsAndSetter),
-    setUser: setUser,
+    logout: () => setUser(null),
   };
 
   const nodeConfig = {
     parentRef: parentRef,
-    scale: scale, // TODO
+    scale: 1,
   };
 
   const showRightToolbar = () => {
@@ -354,38 +381,38 @@ export default function Editor({ user, setUser }) {
       <div className="editor" ref={parentRef}>
         {render ? (
           <>
-            <Toolbar {...elementFunctions} {...leftToolBarActions} />
-                <div
-                  className="canvas" // TODO: previously "dnd"
-                  ref={parentRef}
-                >
-                  {showEdges()}
-                  {Object.values(elements.entities).map((entity) => (
-                    <Entity
-                      key={entity.id}
-                      entity={entity}
-                      general={{
-                        ...nodeConfig,
-                        ...elementFunctions,
-                        ...generalFunctions,
-                      }}
-                    />
-                  ))}
-                  {Object.values(elements.relationships).map((relationship) => (
-                    <Relationship
-                      key={relationship.id}
-                      relationship={relationship}
-                      general={{
-                        ...nodeConfig,
-                        ...elementFunctions,
-                        ...generalFunctions,
-                      }}
-                    />
-                  ))}
-                  
-            
-                </div>
-                {showRightToolbar()}
+            <LeftToolbar {...elementFunctions} {...leftToolBarActions} />
+            {/* <Toolbar {...elementFunctions} {...leftToolBarActions} /> */}
+            {showRightToolbar()}
+            <div
+              className="canvas" // TODO: previously "dnd"
+              ref={parentRef}
+              onClick={(e) => console.log(e)}
+            >
+              {showEdges()}
+              {Object.values(elements.entities).map((entity) => (
+                <Entity
+                  key={entity.id}
+                  entity={entity}
+                  general={{
+                    ...nodeConfig,
+                    ...elementFunctions,
+                    ...generalFunctions,
+                  }}
+                />
+              ))}
+              {Object.values(elements.relationships).map((relationship) => (
+                <Relationship
+                  key={relationship.id}
+                  relationship={relationship}
+                  general={{
+                    ...nodeConfig,
+                    ...elementFunctions,
+                    ...generalFunctions,
+                  }}
+                />
+              ))}
+            </div>
             <ContextMenu contextMenu={contextMenu} />
           </>
         ) : null}

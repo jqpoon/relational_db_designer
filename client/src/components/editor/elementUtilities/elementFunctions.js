@@ -1,10 +1,15 @@
 import { types } from "../types";
 import { deleteAttribute, getAttribute, updateAttribute } from "./attributes";
-import { deleteEntity, getEntity, updateEntity } from "./entities";
+import { createEntity, deleteEntity, getEntity, updateEntity } from "./entities";
 import { deleteGeneralisation, getGeneralisation, updateGeneralisation } from "./generalisations";
 import { deleteHierarchyEdge, getHierarchyEdge, updateHierarchyEdge } from "./hierarchyEdges";
 import { deleteRelationshipEdge, getRelationshipEdge, updateRelationshipEdge } from "./relationshipEdges";
-import { deleteRelationship, getRelationship, updateRelationship } from "./relationships";
+import { createRelationship, deleteRelationship, getRelationship, updateRelationship } from "./relationships";
+
+export const creates = {
+  [types.ENTITY]: createEntity,
+  [types.RELATIONSHIP]: createRelationship,
+}
 
 export const gets = {
   [types.ENTITY]: getEntity,

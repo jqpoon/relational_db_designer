@@ -8,18 +8,18 @@
   src: url('./fonts/Ubuntu-Bold.ttf'); 
 }
 
-* {
+.limiter * {
 	margin: 0px; 
 	padding: 0px; 
 	box-sizing: border-box;
 }
 
-body, html {
+.limiter body, html {
 	height: 100%;
 	font-family: Ubuntu-Regular, sans-serif;
 }
 
-p {
+.limiter p {
 	font-family: Ubuntu-Regular;
 	font-size: 14px;
 	line-height: 1.7;
@@ -27,17 +27,17 @@ p {
 	margin: 0px;
 }
 
-input {
+.limiter input {
 	outline: none;
 	border: none;
 }
 
-label {
+.limiter label {
   display: block;
   margin: 0;
 }
 
-button:hover {
+.limiter button:hover {
 	cursor: pointer;
 }
 

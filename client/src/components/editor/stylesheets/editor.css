@@ -4,8 +4,9 @@
 
 .canvas {
 	left: 10vw;
-	width: 140vw;
+	width: 70vw;
 	height: 100vh;
+	position: absolute;
 
 	/* Grid background */
 	background: radial-gradient(

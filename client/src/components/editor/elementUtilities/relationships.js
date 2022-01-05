@@ -1,4 +1,17 @@
 import { types } from "../types";
+import { getId } from "../idGenerator";
+
+export const createRelationship = ({ x, y }) => ({
+  id: getId(types.RELATIONSHIP),
+  pos: {
+    x: x,
+    y: y,
+  },
+  text: "",
+  type: types.RELATIONSHIP,
+  edges: {},
+  attributes: {},
+});
 
 export const getRelationship = ({ relationships }, id) => {
   return relationships[id] ? { ...relationships[id] } : null;

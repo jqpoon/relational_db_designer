@@ -183,13 +183,7 @@ export default function Node({
   const draggableConfig = {
     position: pos,
     scale: scale,
-    bounds: {
-      // Uncomment below to limit nodes to only be dragged within the canvas
-      // left: 5,
-      // top: 5,
-      // right: parentRef.current.clientWidth - dimensions.width - 5,
-      // bottom: parentRef.current.clientHeight - dimensions.height - 5,
-    },
+    bounds: "parent",
     onDrag: onDrag,
     onStop: onStop,
   };

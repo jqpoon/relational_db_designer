@@ -1,4 +1,19 @@
 import { types } from "../types";
+import { getId } from "../idGenerator";
+
+export const createEntity = ({ x, y }) => ({
+  id: getId(types.ENTITY),
+  pos: {
+    x: x,
+    y: y,
+  },
+  text: "Enter Text",
+  type: types.ENTITY,
+  isWeak: [],
+  edges: {},
+  attributes: {},
+  generalisations: {},
+});
 
 export const getEntity = ({ entities }, id) => {
   return entities[id] ? { ...entities[id] } : null;

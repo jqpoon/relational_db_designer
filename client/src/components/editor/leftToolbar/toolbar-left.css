@@ -1,0 +1,49 @@
+.toolbar-left {
+  position: fixed;
+  top: 0;
+  width: 10vw;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: antiquewhite;
+  text-align: left;
+  z-index: 1;
+}
+
+.toolbar-left * {
+  background: antiquewhite;
+  padding: 10px 5px;
+}
+
+.toolbar-left .group {
+  padding: 0;
+}
+
+.toolbar-left .group * {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toolbar-left .section {
+  height: 30px;
+  margin: 0;
+  border: 1px solid navy;
+  box-shadow: 1px 1px;
+}
+
+.click-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.drag-to-create {
+  display: flex;
+  cursor: move !important;
+}
+
+.drag-to-create * {
+  padding: 5px 5px 5px 0px;
+}
