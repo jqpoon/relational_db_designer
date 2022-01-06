@@ -1,7 +1,9 @@
 import Draggable from "react-draggable";
-import { Tooltip } from "@mui/material";
+import { IconButton, Tooltip } from "@mui/material";
+import UndoIcon from '@mui/icons-material/Undo';
+import RedoIcon from '@mui/icons-material/Redo';
+import ClearIcon from '@mui/icons-material/Clear';
 import { types } from "../types";
-
 import "./toolbar-left.css";
 import { useRef, useState } from "react";
 import { creates } from "../elementUtilities/elementFunctions";
@@ -50,11 +52,30 @@ function DragToCreate({ nodeType, addElement, setScrollable, scale }) {
 }
 
 export function ClickAction({ title, action, tooltip }) {
-  return (
+  if(title === "Undo"){
+    return (<Tooltip title={tooltip ? tooltip : ""} placement="bottom">
+             <div className="edit-buttons left" onClick={action}>
+               <UndoIcon />
+            </div>
+            </Tooltip>);
+  } else if(title === "Redo"){
+    return (<Tooltip title={tooltip ? tooltip : ""} placement="bottom">
+              <div className="edit-buttons" onClick={action}>
+                <RedoIcon />
+              </div>
+             </Tooltip>);
+  } else if(title === "Clear"){
+    return (<Tooltip title={tooltip ? tooltip : ""} placement="bottom">
+              <div className="edit-buttons" onClick={action}>
+                 <ClearIcon />
+              </div>
+            </Tooltip>);
+  }
+  return  (
     <Tooltip title={tooltip ? tooltip : ""} placement="right">
-      <div className="section click-action" onClick={action}>
-        {title}
-      </div>
+    <div className="section click-action" onClick={action}>
+      {title}
+    </div>
     </Tooltip>
   );
 }

@@ -8,7 +8,7 @@
   justify-content: space-between;
   background-color: antiquewhite;
   text-align: left;
-  z-index: 1;
+  z-index: 0;
   padding: 10px 5px;
 }
 
@@ -36,7 +36,7 @@
 
 .toolbar-left .section {
   height: 40px;
-  margin: 5px 0px 0px 0px; 
+  margin: 5px 0px 0px 0px;
   border: 1px solid navy;
   border-radius: 3px;
   width: 100%;
@@ -72,3 +72,17 @@
   outline: none !important;
   border: 1px solid orange !important;
 }
+
+.edit-buttons{
+  padding: 0% 5% 0% 5%;
+  float:left;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.left{
+  margin-left: 8%;
+}
+
+
