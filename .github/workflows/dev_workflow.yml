@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - dev
-      - backend_test_integration
+      - deployment
 
 jobs:
   frontend_tests:
@@ -23,16 +23,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Backend tests
-        env:
-          NEO_URL : ${{ secrets.NEO_URL }}
-          NEO_USERNAME : ${{ secrets.NEO_USERNAME }}
-          NEO_PASSWORD : ${{ secrets.NEO_PASSWORD }}
         run: |
           cd backend
           npm ci
           npx jest
+          npm run test:api
 
-  # Frontend is minified into a build folder and served from the backend
+  # Deployment
   backend_deploy:
     runs-on: ubuntu-latest
     needs: [frontend_tests, backend_tests]
@@ -42,20 +39,47 @@ jobs:
       - name: Login to Heroku
         env: 
           HEROKU_API_KEY : ${{ secrets.HEROKU_API_KEY }}
-        run: heroku container:login
+        run: |
+          cd backend
+          heroku container:login
 
       - name: Build and push
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: heroku container:push -a relational-db-designer web 
+        run: |
+          cd backend
+          heroku container:push -a relational-db-designer web 
 
       - name: Release
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: heroku container:release -a relational-db-designer web 
+        run: |
+          cd backend
+          heroku container:release -a relational-db-designer web 
 
-  database_deploy:
+  frontend_deploy:
     runs-on: ubuntu-latest
     needs: [frontend_tests, backend_tests]
     steps:
-      - run: echo "Database commands here (if needed)"
+      - uses: actions/checkout@v2
+
+      - name: Login to Heroku
+        env: 
+          HEROKU_API_KEY : ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          cd client
+          heroku container:login
+
+      - name: Build and push
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          cd client
+          heroku container:push -a relational-db-designer web 
+
+      - name: Release
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          cd client
+          heroku container:release -a relational-db-designer web 
