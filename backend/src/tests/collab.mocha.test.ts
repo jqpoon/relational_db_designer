@@ -6,6 +6,7 @@ import server from "../Server";
 import params from "./testparams";
 import example from "./erdExample.json";
 
+jest.setTimeout(10000)
 chai.use(chaiHttp);
 
 describe("Collab", () => {
