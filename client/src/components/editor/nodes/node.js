@@ -66,6 +66,7 @@ export default function Node({
   context,
   setContext,
   setContextMenu,
+  setPanDisabled,
   children,
   parent,
   className,
@@ -80,9 +81,12 @@ export default function Node({
 
   const [editable, setEditable] = useState(false);
 
-  const contextMenuActions = useMemo(() => ({
-    "Edit Label": () => setEditable(true),
-  }), []);
+  const contextMenuActions = useMemo(
+    () => ({
+      "Edit Label": () => setEditable(true),
+    }),
+    []
+  );
 
   switch (type) {
     case types.ENTITY:
@@ -144,6 +148,8 @@ export default function Node({
       updateElement(type, newNode);
       // Update arrow position
       updateXarrow(e); // TODO: check function signature of updateXarrow(E, DATA) ?
+      // Re-enable panning of canvas
+      setPanDisabled(false);
     }
   };
   const onClick = () => {
@@ -183,9 +189,9 @@ export default function Node({
   const draggableConfig = {
     position: pos,
     scale: scale,
-    bounds: "parent",
     onDrag: onDrag,
     onStop: onStop,
+    onMouseDown: () => setPanDisabled(true),
   };
 
   const contentsConfig = {
@@ -218,11 +224,13 @@ export default function Node({
   };
 
   const getReadableStyle = (className) => {
-    if(className === "relationship"){
-      return  {backgroundColor: "rgb(216, 216, 194)"};
+    if (className === "relationship") {
+      return { backgroundColor: "rgb(216, 216, 194)" };
     }
-    return (className === "generalisation") ? { "--generalisation-color-var": "rgb(111,163,179)"} : {backgroundColor: "rgb(111,163,179)"};
-  }
+    return className === "generalisation"
+      ? { "--generalisation-color-var": "rgb(111,163,179)" }
+      : { backgroundColor: "rgb(111,163,179)" };
+  };
 
   const highlightStyle = (className) => {
     if (
@@ -242,7 +250,7 @@ export default function Node({
     ) {
       return getReadableStyle(className);
     } else {
-      return { "--generalisation-color-var": "lightblue"};
+      return { "--generalisation-color-var": "lightblue" };
     }
   };
 

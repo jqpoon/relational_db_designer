@@ -6,7 +6,7 @@ import { Xwrapper } from "react-xarrows";
 import "./stylesheets/editor.css";
 import { Entity, Relationship } from "./nodes/node";
 import "react-confirm-alert/src/react-confirm-alert.css";
-
+import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import SelectEntity from "./right_toolbar/selectEntity";
 import SelectRelationship from "./right_toolbar/selectRelationship";
 import Normal from "./right_toolbar/normal";
@@ -61,6 +61,36 @@ export default function Editor({ user, setUser }) {
     }
   };
 
+  // Canvas states:
+  // Disable panning eg. when dragging nodes
+  const [panDisabled, setPanDisabled] = useState(false);
+  // Record
+  const [scale, setScale] = useState(1);
+  // Trigger rerendering onZoom/Pan etc for edges to update properly
+  const [, setRerender] = useState(false);
+  const forceRerender = () => setRerender((r) => !r);
+
+  const canvasConfig = {
+    panning: {
+      disabled: panDisabled,
+      excluded: ["input", "button"],
+      velocityDisabled: true,
+    },
+    onZoomStop: (ref) => {
+      setScale(ref.state.scale);
+    },
+    onZoom: (ref) => {
+      setScale(ref.state.scale);
+      forceRerender();
+    },
+    onPanning: forceRerender,
+    alignmentAnimation: { animationTime: 0 },
+    onAlignBound: forceRerender,
+    doubleClick: { disabled: true },
+    minScale: 0.4,
+    limitToBounds: false,
+  };
+
   useEffect(() => {
     setRender(true);
     document?.addEventListener("click", resetClick);
@@ -110,6 +140,7 @@ export default function Editor({ user, setUser }) {
     setContext: setContext,
     context: context,
     setContextMenu: setContextMenu,
+    setPanDisabled: setPanDisabled,
   };
 
   // Translates entire model state from backend JSON into client components.
@@ -261,6 +292,7 @@ export default function Editor({ user, setUser }) {
     user: user,
     erid: erid,
     name: name,
+    scale: scale,
   };
 
   const backendUtils = {
@@ -367,7 +399,7 @@ export default function Editor({ user, setUser }) {
     return Object.values(nodes).map((node) => {
       return Object.values(node.attributes).map((attribute) => {
         return (
-          <AttributeEdge parent={attribute.parent.id} child={attribute.id} />
+          <AttributeEdge parent={attribute.parent.id} child={attribute.id} scale={scale} />
         );
       });
     });
@@ -377,12 +409,12 @@ export default function Editor({ user, setUser }) {
       <>
         {/* Normal relationship and hierarchy edges */}
         {Object.values(elements.edges).map((edge) => (
-          <Edge edge={edge} />
+          <Edge edge={edge} scale={scale} />
         ))}
         {/* Generalisation edges */}
         {Object.values(elements.entities).map((entity) => {
           return Object.values(entity.generalisations).map((generalisation) => (
-            <HierarchyEdge parent={entity.id} child={generalisation.id} />
+            <HierarchyEdge parent={entity.id} child={generalisation.id} scale={scale} />
           ));
         })}
         {/* Attribute edges */}
@@ -397,41 +429,44 @@ export default function Editor({ user, setUser }) {
       <div className="editor" ref={parentRef}>
         {render ? (
           <>
+            <TransformWrapper {...canvasConfig}>
+              <TransformComponent>
+                <div
+                  className="canvas" // TODO: previously "dnd"
+                  onClick={() => setPanDisabled(false)}
+                >
+                  {Object.values(elements.entities).map((entity) => (
+                    <Entity
+                      key={entity.id}
+                      entity={entity}
+                      general={{
+                        ...nodeConfig,
+                        ...elementFunctions,
+                        ...generalFunctions,
+                      }}
+                    />
+                  ))}
+                  {Object.values(elements.relationships).map((relationship) => (
+                    <Relationship
+                      key={relationship.id}
+                      relationship={relationship}
+                      general={{
+                        ...nodeConfig,
+                        ...elementFunctions,
+                        ...generalFunctions,
+                      }}
+                    />
+                  ))}
+                </div>
+              </TransformComponent>
+            </TransformWrapper>
+            {showEdges()}
             <LeftToolbar
               info={erdInfo}
               functions={{ ...leftToolBarActions, ...elementFunctions }}
             />
             {/* <Toolbar {...elementFunctions} {...leftToolBarActions} /> */}
             {showRightToolbar()}
-            <div
-              className="canvas" // TODO: previously "dnd"
-              ref={parentRef}
-              onClick={(e) => console.log(e)}
-            >
-              {showEdges()}
-              {Object.values(elements.entities).map((entity) => (
-                <Entity
-                  key={entity.id}
-                  entity={entity}
-                  general={{
-                    ...nodeConfig,
-                    ...elementFunctions,
-                    ...generalFunctions,
-                  }}
-                />
-              ))}
-              {Object.values(elements.relationships).map((relationship) => (
-                <Relationship
-                  key={relationship.id}
-                  relationship={relationship}
-                  general={{
-                    ...nodeConfig,
-                    ...elementFunctions,
-                    ...generalFunctions,
-                  }}
-                />
-              ))}
-            </div>
             <ContextMenu contextMenu={contextMenu} />
           </>
         ) : null}

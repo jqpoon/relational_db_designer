@@ -3,33 +3,43 @@ import { Tooltip } from "@mui/material";
 import { types } from "../types";
 
 import "./toolbar-left.css";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { creates } from "../elementUtilities/elementFunctions";
 import UploadTool from "../utilities/uploadTool";
 import { submitHandler } from "../alerts/alert";
 
-function DragToCreate({ nodeType, addElement }) {
+function DragToCreate({ nodeType, addElement, setScrollable, scale }) {
   const ref = useRef(null);
   const createAndAdd = (e, data) => {
-    const canvas = document.querySelector(".canvas");
-    const bounds = canvas.getBoundingClientRect();
-    if (
-      e.pageX > bounds.left &&
-      e.pageX < bounds.right &&
-      e.pageY > bounds.top &&
-      e.pageY < bounds.bottom
-    ) {
+    const left = document
+      .querySelector(".toolbar-left")
+      .getBoundingClientRect();
+    const right = document
+      .querySelector(".toolbar-right")
+      .getBoundingClientRect();
+    const canvas = document.querySelector(".canvas").getBoundingClientRect();
+    if (e.pageX > left.right && e.pageX < right.left) {
       // Create element if dropped in canvas
-      const pos = { x: data.x - 125, y: data.y };
+      const pos = {
+        x: (e.pageX - canvas.left) / scale,
+        y: (e.pageY - canvas.top) / scale,
+      };
+      console.log('createelem')
       addElement(nodeType, creates[nodeType](pos));
     }
     // Reset dragged element to original position
     const node = ref.current.state;
     node.x = 0;
     node.y = 0;
+    // Reenable scrolling of toolbar
+    setScrollable(true);
   };
   return (
-    <Draggable ref={ref} onStop={createAndAdd}>
+    <Draggable
+      ref={ref}
+      onDrag={() => setScrollable(false)}
+      onStop={createAndAdd}
+    >
       <Tooltip title={`Drag to create new ${nodeType}`} placement="right">
         <div className="section drag-to-create">
           <div style={{ textOverflow: "clip" }}>+</div>
@@ -61,8 +71,15 @@ const showERid = (name, erid) => {
 };
 
 export default function LeftToolbar({ info, functions }) {
+  const [scrollable, setScrollable] = useState(true);
   return (
-    <div className="toolbar-left">
+    <div
+      className="toolbar-left"
+      onMouseDown={(e) => {
+        e.preventDefault();
+      }}
+      style={{ overflow: scrollable ? "scroll" : "visible" }}
+    >
       <div className="group">
         <Tooltip title="Edit name of diagram" placement="right">
           <input
@@ -136,8 +153,18 @@ export default function LeftToolbar({ info, functions }) {
       <div className="group">
         <div className="group-header">Edit:</div>
         <div className="group-content">
-          <DragToCreate nodeType={types.ENTITY} {...functions} />
-          <DragToCreate nodeType={types.RELATIONSHIP} {...functions} />
+          <DragToCreate
+            nodeType={types.ENTITY}
+            {...info}
+            {...functions}
+            setScrollable={setScrollable}
+          />
+          <DragToCreate
+            nodeType={types.RELATIONSHIP}
+            {...info}
+            {...functions}
+            setScrollable={setScrollable}
+          />
         </div>
         <ClickAction title="Undo" action={functions.undo} tooltip="Undo" />
         <ClickAction title="Redo" action={functions.redo} tooltip="Redo" />
@@ -160,7 +187,11 @@ export default function LeftToolbar({ info, functions }) {
             action={() => showERid(info.name, info.erid)}
             tooltip="Show ID of diagram"
           />
-          <ClickAction title="Log out" action={functions.logout} tooltip="Log out" />
+          <ClickAction
+            title="Log out"
+            action={functions.logout}
+            tooltip="Log out"
+          />
         </div>
       </div>
     </div>
