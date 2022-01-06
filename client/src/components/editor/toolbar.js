@@ -236,6 +236,7 @@ export default function Toolbar({
 					<div className="clickable tool" onClick={() => {
 							setUser(null);
 							localStorage.removeItem('user');
+							localStorage.removeItem('state');
 						}}>
 						Log out
 					</div>

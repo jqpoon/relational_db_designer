@@ -68,6 +68,19 @@ export default function Editor({user, setUser}) {
     document?.addEventListener("click", resetClick);
   }, []);
 
+  useEffect(() => {
+    // Loads latest ER diagram on login / refreshing the page
+    const state = JSON.parse(localStorage.getItem('state'));
+    importStateFromObject(state);
+  }, [user]);
+
+  useEffect(() => {
+    // Loads current state into local storage whenever ER diagram changes
+    const state = exportStateToObject();
+    localStorage.setItem('state', JSON.stringify(state));
+    localStorage.setItem('user', user);
+  }, [entities, relationships, edges, undoStack, redoStack, counter]);
+
   const getEdge = (id) => ({ ...edges[id] });
 
   // Returns a copy of the element
@@ -674,7 +687,7 @@ export default function Editor({user, setUser}) {
     });
   };
   const showEdges = () => {
-    console.log(edges);
+    // console.log(edges);
     return (
       <>
         {/* Normal relationship and hierarchy edges */}
