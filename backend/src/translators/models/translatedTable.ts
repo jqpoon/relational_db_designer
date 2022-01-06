@@ -4,7 +4,7 @@ interface TranslatedTable {
 
 interface Table {
     source: TableSource,
-    columns: Array<Column>
+    columns: Map<string, Column>
     foreignKeys: Array<ForeignKey>
 }
 

@@ -13,10 +13,10 @@ export const getPrimaryKey = (entity: Entity): Attribute => {
     throw new Error("no primary key found!");
 };
 
-const getPrimaryKeyTranslated = (cols: Array<Column>): string => {
+export const getPrimaryKeyTranslated = (cols: Map<string, Column>): Column => {
     for (var col of cols) {
-        if (col.isPrimaryKey) {
-            return col.columnName;
+        if (col[1].isPrimaryKey) {
+            return col[1];
         }
     }
     throw new Error("no primary key found!");
@@ -37,7 +37,7 @@ class ForeignKeyTranslator implements Translator {
             var oneMany:boolean = false;
             var oneManySource:string = "-1";
             relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: string) => {
-                if (lhConstraint === LHConstraint.ONE_TO_ONE) {
+                if (lhConstraint == LHConstraint.ONE_TO_ONE) {
                     oneMany = true;
                     oneManySource = entityID;
                 }
@@ -62,7 +62,9 @@ class ForeignKeyTranslator implements Translator {
             } else {
                 var table: Table = translatedTable.tables.get(relationship.text)!
                 relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: string) => {
-                    const key: string = getPrimaryKey(this.entities.get(entityID)!).text;
+                    var entity: Entity = this.entities.get(entityID)!;
+                    var entityTable: Table = translatedTable.tables.get(entity.text)!;
+                    const key: string = getPrimaryKeyTranslated(entityTable.columns).columnName;
                     const foreignTable = this.entities.get(entityID)!.text;
                     const foreignKey: ForeignKey = {
                         keyName: relationship.text + " " + foreignTable,
@@ -76,11 +78,11 @@ class ForeignKeyTranslator implements Translator {
         });
 
         this.entities.forEach((entity: Entity) => {
-            if (entity.subsets !== undefined) {
+            if (entity.subsets !== undefined && entity.subsets.length != 0) {
                 var table: Table = translatedTable.tables.get(entity.text)!
-                const key: string = getPrimaryKeyTranslated(table.columns);
-                entity.subsets.map((s: Entity) => {
-                    const foreignTable = s.text;
+                const key: string = getPrimaryKeyTranslated(table.columns).columnName;
+                entity.subsets.map((s: string) => {
+                    const foreignTable = this.entities.get(s)!.text;
                     const foreignKey: ForeignKey = {
                         keyName: entity.text + " " + foreignTable,
                         foreignTable: foreignTable,

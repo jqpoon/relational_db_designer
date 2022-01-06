@@ -21,7 +21,7 @@ class FullTranslator {
         }
 
         this.entities.forEach((entity: Entity) => { 
-            const eTranslator:EntityTranslator = new EntityTranslator(entity);
+            const eTranslator:EntityTranslator = new EntityTranslator(entity, this.entities);
             eTranslator.translateFromDiagramToTable(translatedTable);
         });
 
