@@ -34,7 +34,7 @@ jobs:
         run: |
           cd backend
           npm ci
-          npx jest
+          npx run test:translation
           npm run test:api
 
   # Deployment
