@@ -24,7 +24,6 @@ function DragToCreate({ nodeType, addElement, setScrollable, scale }) {
         x: (e.pageX - canvas.left) / scale,
         y: (e.pageY - canvas.top) / scale,
       };
-      console.log('createelem')
       addElement(nodeType, creates[nodeType](pos));
     }
     // Reset dragged element to original position
@@ -75,9 +74,6 @@ export default function LeftToolbar({ info, functions }) {
   return (
     <div
       className="toolbar-left"
-      onMouseDown={(e) => {
-        e.preventDefault();
-      }}
       style={{ overflow: scrollable ? "scroll" : "visible" }}
     >
       <div className="group">
