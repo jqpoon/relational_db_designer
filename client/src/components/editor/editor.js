@@ -7,6 +7,7 @@ import "./stylesheets/editor.css";
 import { Entity, Relationship } from "./nodes/node";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
+import html2canvas from "html2canvas";
 import SelectEntity from "./right_toolbar/selectEntity";
 import SelectRelationship from "./right_toolbar/selectRelationship";
 import Normal from "./right_toolbar/normal";
@@ -104,6 +105,18 @@ export default function Editor({ user, setUser }) {
     setElements(obj?.state || { entities: {}, relationships: {}, edges: {} });
     setHistory({ store: [], position: -1 });
   };
+  useEffect(() => {
+    // Loads latest ER diagram on login / refreshing the page
+    const state = JSON.parse(localStorage.getItem('state'));
+    importStateFromObject(state);
+  }, [user]);
+
+  useEffect(() => {
+    // Loads current state into local storage whenever ER diagram changes
+    const state = exportStateToObject();
+    localStorage.setItem('state', JSON.stringify(state));
+    localStorage.setItem('user', user);
+  }, [elements, history]);
 
   // Returns a copy of the element
   const getElement = (type, id, parent) => {
@@ -293,6 +306,14 @@ export default function Editor({ user, setUser }) {
     erid: erid,
     name: name,
     scale: scale,
+  };
+
+  const createSchemaImage = () => {
+    const canvasDiv = document.getElementsByClassName("canvas")[0];
+    html2canvas(canvasDiv).then((canvas) => {
+      const newTab = window.open("about:blank", "schema");
+      newTab.document.write("<img src='" + canvas.toDataURL("image/png") + "' alt=''/>");
+    });
   };
 
   const backendUtils = {

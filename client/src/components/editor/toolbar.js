@@ -15,6 +15,7 @@ export default function Toolbar({
                                   exportStateToObject,
                                   uploadStateFromObject,
                                   downloadStateAsObject,
+																	createSchemaImage,
                                   translate,
                                   undo,
                                   redo,
@@ -217,10 +218,13 @@ export default function Toolbar({
 	          Translate
 	        </div>
 	        <div className="clickable tool">Validate</div>
-	        <UploadTool text="Import JSON file" handleFile={uploadStateFromObject} />
+	        <UploadTool text="Import as JSON" handleFile={uploadStateFromObject} />
 	        <div className="clickable tool" onClick={downloadStateAsObject}>
-	          Export JSON file
+	          Export as JSON
 	        </div>
+					<div className="clickable tool" onClick={createSchemaImage}>
+						Export as PNG
+					</div>
 					<div className="clickable tool" onClick={showUid}>
 	          Show User ID
 	        </div>
@@ -229,7 +233,11 @@ export default function Toolbar({
 		          Show ERD ID
 		        </div>
 					: null}
-					<div className="clickable tool" onClick={() => setUser(null)}>
+					<div className="clickable tool" onClick={() => {
+							setUser(null);
+							localStorage.removeItem('user');
+							localStorage.removeItem('state');
+						}}>
 						Log out
 					</div>
 	      </div>
