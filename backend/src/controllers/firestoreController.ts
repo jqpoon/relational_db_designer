@@ -14,10 +14,12 @@ import {
 	DocumentSnapshot,
 	arrayRemove,
 	deleteDoc,
+	increment,
 } from "firebase/firestore"
+import asyncLock from "async-lock";
 
 interface ERDSchema {
-	owner: string;
+	counter: number;
 	name: string;
 	data: string;
 }
@@ -28,17 +30,20 @@ interface ERDMeta {
 }
 
 interface UserPermission {
-	uid: string;
+	uid?: string;
 	permission: string;
+	email?: string;
 }
 
 class FirestoreController {
 
   private static instance: FirestoreController;
   private db: Firestore;
+	private lock: asyncLock;
 
   private constructor(firebaseApp: FirebaseApp) {
     this.db = getFirestore(firebaseApp);
+		this.lock = new asyncLock();
   }
 
   public static getInstance(firebaseApp: FirebaseApp): FirestoreController {
@@ -49,16 +54,18 @@ class FirestoreController {
   }
 
 	// New doc for user to store ERDs it can access
-	public createDocumentForNewUser(uid: string): void {
-		const docRef: DocumentReference = doc(this.db, `user_erds/${uid}`);
-		setDoc(docRef, {});
+	public async createDocumentForNewUser(uid: string, email: string): Promise<void> {
+		let docRef: DocumentReference = doc(this.db, `user_erds/${uid}`);
+		await setDoc(docRef, {email});
+		docRef = doc(this.db, `email_uid/${email}`);
+		await setDoc(docRef, {uid});
 	}
 
-	public async createERD(uid: string, json: string): Promise<void> {
+	public async createERD(uid: string, json: string): Promise<string> {
 		// Store ERD
 		const parsedJson = JSON.parse(json);
 		const data: ERDSchema = {
-			owner: uid,
+			counter: 1,
 			name: parsedJson.name,
 			data: parsedJson.data,
 		}
@@ -69,22 +76,24 @@ class FirestoreController {
 		
 		// create doc to store list of users that can access it
 		docRef = doc(this.db, `erd_users/${erid}`);
-		setDoc(docRef, {});
+		await setDoc(docRef, {});
 
 		// Give access to user
 		docRef = doc(this.db, `user_erds/${uid}`);
-		updateDoc(docRef, {
+		await updateDoc(docRef, {
 			erds: arrayUnion(erid)
 		});
 
 		// Update user as owner on ERD
 		docRef = doc(this.db, `erd_users/${erid}`);
-		updateDoc(docRef, {
+		await updateDoc(docRef, {
 			users: arrayUnion({
 				uid,
 				permission: "OWNER"
 			})
 		});
+
+		return erid;
 	}
 
 	public async checkERDExists(erid: string): Promise<boolean> {
@@ -129,17 +138,29 @@ class FirestoreController {
 		return false;
 	}
 
-	public async getERD(erid: string): Promise<string> {
+	public getERD(erid: string): Promise<string> {
 		const docRef: DocumentReference = doc(this.db, `erds_list/${erid}`);
-		const docData: DocumentSnapshot = await getDoc(docRef);
-		return JSON.stringify(docData.get("data"));
+		return this.lock.acquire(erid, () => {
+			return getDoc(docRef)
+		}, {}).then((res) => {
+			return JSON.stringify(res.data());
+		}) as Promise<string>;
 	}
 
-	public async updateERD(erid: string, json: string): Promise<void> {
+	public canUpdateERD(erid: string, counter: number): Promise<boolean> {
 		const docRef: DocumentReference = doc(this.db, `erds_list/${erid}`);
-		await setDoc(docRef, JSON.parse(json));
+		return this.lock.acquire(erid, () => {
+			return getDoc(docRef)
+		}, {}).then((res) => {
+			return counter === res.get("counter");
+		}) as Promise<boolean>;
+	}
 
-		// TODO: concurrent update?
+	public updateERD(erid: string, json: string): Promise<void> {
+		const docRef: DocumentReference = doc(this.db, `erds_list/${erid}`);
+		return this.lock.acquire(erid, () => {
+			updateDoc(docRef, {...JSON.parse(json), counter: increment(1)});
+		}, {}) as Promise<void>;
 	}
 
 	public async deleteERD(erid: string): Promise<void> {
@@ -148,20 +169,26 @@ class FirestoreController {
 		const users: UserPermission[] = erdData.get("users");
 		for (const x of users) {
 			const usersRef: DocumentReference = doc(this.db, `user_erds/${x.uid}`);
-			updateDoc(usersRef, {
+			await updateDoc(usersRef, {
 				erds: arrayRemove(erid)
 			});
 		}
-		deleteDoc(erdRef);
+		await deleteDoc(erdRef);
 		const dataRef: DocumentReference = doc(this.db, `erds_list/${erid}`);
-		deleteDoc(dataRef);
+		await deleteDoc(dataRef);
 	}
 
 	public async getERDAccessList(erid: string): Promise<string> {
 		const docRef: DocumentReference = doc(this.db, `erd_users/${erid}`);
 		const docData: DocumentSnapshot = await getDoc(docRef);
 		const users: UserPermission[] = docData.get("users");
-		return JSON.stringify(users);
+		const res: UserPermission[] = [];
+		for (const x of users) {
+			const userRef: DocumentReference = doc(this.db, `user_erds/${x.uid}`);
+			const userData = await getDoc(userRef);
+			res.push({email: userData.get("email"), permission: x.permission});
+		}
+		return JSON.stringify(res);
 	}
 
 	public async getUserAccessList(uid: string): Promise<string> {
@@ -177,16 +204,31 @@ class FirestoreController {
 		return JSON.stringify(erdsMeta);
 	}
 
+	public async getUidFromEmail(email: string): Promise<string | null> {
+		const docRef: DocumentReference = doc(this.db, `email_uid/${email}`);
+		const docData: DocumentSnapshot = await getDoc(docRef);
+		if (!docData.exists()) return null;
+		return docData.get("uid");
+	}
+
 	public isValidPermission(permission: string): boolean {
-		return permission === "READ" || permission === "READ-WRITE";		
+		return permission === "REMOVE" || 
+			permission === "READ" || 
+			permission === "READ-WRITE";		
 	}
 
 	public async updateAccess(uid: string, erid: string, permission: string): Promise<void> {
-		// Give access to user
+		// Update user access
 		const userRef: DocumentReference = doc(this.db, `user_erds/${uid}`);
-		await updateDoc(userRef, {
-			erds: arrayUnion(erid)
-		});
+		if (permission !== "REMOVE") {
+			await updateDoc(userRef, {
+				erds: arrayUnion(erid)
+			});
+		} else {
+			await updateDoc(userRef, {
+				erds: arrayRemove(erid)
+			});
+		}
 
 		// Update permission of user
 		const erdRef: DocumentReference = doc(this.db, `erd_users/${erid}`);
@@ -200,22 +242,23 @@ class FirestoreController {
 				break;
 			}
 		}
-		await updateDoc(erdRef, {
-			users: arrayUnion({
-				uid,
-				permission
-			})
-		});
+		if (permission !== "REMOVE") {
+			await updateDoc(erdRef, {
+				users: arrayUnion({
+					uid,
+					permission
+				})
+			});
+		}
 	}
 
 	public async createDuplicate(uid: string, erid: string): Promise<string> {
 		const erdRef: DocumentReference = doc(this.db, `erds_list/${erid}`);
 		const erdData: DocumentSnapshot = await getDoc(erdRef);
 		const data = erdData.get("data");
-		const name = erdData.get("name");
+		const name = "Copy of " + erdData.get("name");
 		const result = JSON.stringify({name, data});
-		await this.createERD(uid, result);
-		return result;
+		return await this.createERD(uid, result);
 	}
 }
 

@@ -1,6 +1,6 @@
 import {Router} from "express";
-import ErrorBuilder from "src/controllers/errorBuilder";
-import FirebaseController from "src/controllers/firebaseController";
+import ErrorBuilder from "../controllers/errorBuilder";
+import FirebaseController from "../controllers/firebaseController";
 
 const router = Router();
 
@@ -13,7 +13,7 @@ const router = Router();
 */
 router.get("/", function (req, res) {
 	if (req.query.Uid === undefined || req.query.ERid === undefined) {
-		return res.sendStatus(400);
+		return res.status(400).send("Uid and ERid have to be defined.");
 	}
 	const uid: string = req.query.Uid as string;
 	const erid: string = req.query.ERid as string;
@@ -36,14 +36,17 @@ router.get("/", function (req, res) {
 	- We need to know which user (Uid) created it
 */
 router.post("/", function (req, res) {
-	if (req.query.Uid === undefined || req.body.data === undefined) {
-		return res.sendStatus(400);
+	if (req.query.Uid === undefined 
+		|| req.body.data === undefined
+		|| req.body.name === undefined) {
+		return res.status(400).send(
+			"Uid has to be defined as query. ERD name and data have to be defined in request body.");
 	}
 	const uid: string = req.query.Uid as string;
 	const data: string = JSON.stringify(req.body as string);
 	FirebaseController.getInstance().createERD(uid, data)
-		.then(() => {
-			res.status(200).send(`ERD created for ${uid}`);
+		.then((erid: string) => {
+			res.status(200).send(erid);
 		})
 		.catch((error) => {
 			if (error instanceof ErrorBuilder) {
@@ -62,12 +65,15 @@ router.post("/", function (req, res) {
 router.put('/', function (req, res) {
 	if (req.query.Uid === undefined || 
 		req.query.ERid === undefined || 
-		req.body.data === undefined) {
-		return res.sendStatus(400);
+		req.body.data === undefined ||
+		req.body.name === undefined ||
+		req.body.counter === undefined) {
+		return res.status(400).send(
+			"Uid and ERid have to be defined as queries. ERD name, counter and data have to be defined in request body.");
 	}
 	const uid: string = req.query.Uid as string;
 	const erid: string = req.query.ERid as string;
-	const data: string = JSON.stringify(req.body.data as string);
+	const data: string = JSON.stringify(req.body as string);
 
 	FirebaseController.getInstance().updateERD(uid, erid, data)
 		.then(() => {
@@ -90,7 +96,7 @@ router.put('/', function (req, res) {
 */
 router.delete('/', function (req, res) {
 	if (req.query.Uid === undefined || req.query.ERid === undefined) {
-		return res.sendStatus(400);
+		return res.status(400).send("Uid and ERid have to be defined as queries.");
 	}
 	const uid: string = req.query.Uid as string;
 	const erid: string = req.query.ERid as string;

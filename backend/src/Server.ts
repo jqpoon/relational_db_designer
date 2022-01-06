@@ -8,17 +8,8 @@ import StatusCodes from 'http-status-codes';
 import 'express-async-errors';
 import dotenv from "dotenv";
 
-import BaseRouter from './routes';
-import SchemaRouter from './routes/schema';
-import AuthRouter from './routes/auth';
-import ERDRouter from "./routes/erd";
-import CollabRouter from "./routes/collab"
-import TranslationRouter from './routes/translation'
-import logger from '@shared/Logger';
-
-import swaggerUi from 'swagger-ui-express';
-import * as swaggerDocument from './config/swagger.json';
-import { parse } from 'querystring';
+import APIRouter from "./routes"
+import logger from './shared/Logger';
 
 const app = express();
 const { BAD_REQUEST } = StatusCodes;
@@ -44,18 +35,8 @@ if (process.env.NODE_ENV === 'production') {
     app.use(helmet());
 }
 
-// Add APIs
-app.use('/api', BaseRouter);
-app.use('/schema', SchemaRouter);
-app.use('/erd', ERDRouter);
-app.use('/collab', CollabRouter);
-app.use('/auth', AuthRouter);
-app.use('/translation', TranslationRouter);
-app.use(
-    "/docs",
-    swaggerUi.serve,
-    swaggerUi.setup(swaggerDocument)
-);
+// Add API
+app.use("/api", APIRouter);
 
 // Print API errors
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

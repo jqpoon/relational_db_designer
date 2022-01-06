@@ -2,6 +2,7 @@ import Attribute from "../models/attribute";
 import Entity from "../models/entity";
 import TranslatedTable, { Table, TableSource, Column, ForeignKey } from "./models/translatedTable";
 import Translator from "./translator";
+import { getPrimaryKey } from './foreignKeyTranslator';
 
 class EntityTranslator implements Translator {
 
@@ -23,6 +24,17 @@ class EntityTranslator implements Translator {
                     isMultiValued: a.isMultiValued
                     }
                 })
+        }
+        if (this.entity.subsets !== undefined) {
+            for (var e of this.entity.subsets) {
+                var a: Attribute = getPrimaryKey(e);
+                columns.push({
+                    columnName: a.text,
+                    isPrimaryKey: a.isPrimaryKey,
+                    isOptional: a.isOptional,
+                    isMultiValued: a.isMultiValued
+                });
+            }
         }
         var entityTable: Table = {
             source: TableSource.ENTITY,

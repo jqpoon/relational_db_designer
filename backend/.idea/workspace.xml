@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="8831a24e-c530-42c3-b735-e013b436dcff" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/auth.mocha.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/collab.mocha.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/erd.mocha.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/erdExample.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/testparams.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/tests/translation.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../client/src/components/auth/auth.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../client/src/components/auth/index.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../client/src/components/editor/right_toolbar/load.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../client/src/components/editor/right_toolbar/share.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../client/src/components/index.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../client/src/fonts/Ubuntu-Bold.ttf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../client/src/fonts/Ubuntu-Regular.ttf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.env.example" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/spec/index.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/spec/loadEnv.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/spec/nodemon.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/spec/support/jasmine.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/spec/support/types.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/spec/tests/Users.spec.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/@types/express/index.d.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/Server.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/controllers/firebaseController.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/firebaseController.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/controllers/firestoreController.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/firestoreController.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/daos/MockDb/MockDao.mock.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/daos/MockDb/MockDb.backup.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/daos/MockDb/MockDb.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/daos/User/UserDao.mock.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/daos/User/UserDao.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/entities/User.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models/generalisation.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/generalisation.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pre-start/env/development.env" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pre-start/env/production.env" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pre-start/env/test.env" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pre-start/index.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/scripts/index.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/stylesheets/style.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/Users.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/auth.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/auth.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/collab.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/collab.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/erd.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/erd.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/schema.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/translation.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/translation.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/shared/constants.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/shared/functions.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/schema.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/schema.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/translators/entityTranslator.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/translators/entityTranslator.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/translators/foreignKeyTranslator.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/translators/foreignKeyTranslator.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/translators/relationshipTranslator.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/translators/relationshipTranslator.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/views/index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../client/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../client/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/src/App.css" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/App.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/src/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/App.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/src/components/editor/editor.js" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/components/editor/editor.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/src/components/editor/nodes/node.js" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/components/editor/nodes/node.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/src/components/editor/nodes/stylesheets/node.css" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/components/editor/nodes/stylesheets/node.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/src/components/editor/right_toolbar/toolbar-right.css" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/components/editor/right_toolbar/toolbar-right.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/src/components/editor/stylesheets/editor.css" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/components/editor/stylesheets/editor.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/src/components/editor/stylesheets/toolbar.css" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/components/editor/stylesheets/toolbar.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/src/components/editor/toolbar.js" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/components/editor/toolbar.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/src/components/editor/types.js" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/components/editor/types.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/src/components/editor/utilities/uploadTool.js" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/components/editor/utilities/uploadTool.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/yarn.lock" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="package.json" />
+        <option value="TypeScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
+  </component>
+  <component name="ProjectId" id="1zjmTB9BiG2NhG4r3qr8zzZDtSr" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="ts.external.directory.path" value="$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external" />
+    <property name="vue.rearranger.settings.migration" value="true" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/" />
+      <recent name="$PROJECT_DIR$/src" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="8831a24e-c530-42c3-b735-e013b436dcff" name="Changes" comment="" />
+      <created>1634669876917</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1634669876917</updated>
+      <workItem from="1634669878257" duration="4202000" />
+      <workItem from="1634764680823" duration="10000" />
+      <workItem from="1634764719531" duration="3373000" />
+      <workItem from="1634768111674" duration="667000" />
+      <workItem from="1634775071364" duration="4013000" />
+      <workItem from="1634983561509" duration="1868000" />
+      <workItem from="1635079756025" duration="3432000" />
+      <workItem from="1635168593950" duration="6421000" />
+      <workItem from="1635417476100" duration="945000" />
+      <workItem from="1635519929615" duration="2644000" />
+      <workItem from="1635633495550" duration="5251000" />
+      <workItem from="1635766531279" duration="745000" />
+      <workItem from="1635777959950" duration="3838000" />
+      <workItem from="1635895196760" duration="233000" />
+      <workItem from="1635942709948" duration="348000" />
+      <workItem from="1636026838324" duration="651000" />
+      <workItem from="1636633196091" duration="5928000" />
+      <workItem from="1636981688654" duration="1317000" />
+      <workItem from="1636991815521" duration="4563000" />
+      <workItem from="1637004711371" duration="104000" />
+      <workItem from="1637104298972" duration="1606000" />
+      <workItem from="1637170117585" duration="2520000" />
+      <workItem from="1637188695197" duration="3351000" />
+      <workItem from="1637234862649" duration="782000" />
+      <workItem from="1637598865964" duration="357000" />
+      <workItem from="1637792810915" duration="101000" />
+      <workItem from="1638233046596" duration="619000" />
+      <workItem from="1638235097082" duration="457000" />
+      <workItem from="1638290220726" duration="5266000" />
+      <workItem from="1638296506028" duration="5485000" />
+      <workItem from="1638446015042" duration="1120000" />
+      <workItem from="1640642506272" duration="3322000" />
+      <workItem from="1640651625717" duration="338000" />
+      <workItem from="1640714464328" duration="266000" />
+      <workItem from="1640728102255" duration="910000" />
+      <workItem from="1640924863149" duration="800000" />
+      <workItem from="1640925845647" duration="412000" />
+      <workItem from="1640926292172" duration="508000" />
+      <workItem from="1640927091025" duration="2130000" />
+      <workItem from="1641059868469" duration="4332000" />
+      <workItem from="1641069116663" duration="233000" />
+      <workItem from="1641331691547" duration="71000" />
+      <workItem from="1641337366779" duration="271000" />
+      <workItem from="1641416279817" duration="1072000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+</project>

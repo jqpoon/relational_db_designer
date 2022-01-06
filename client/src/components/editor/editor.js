@@ -4,9 +4,10 @@ import { actions, types } from "./types";
 import Edge, { AttributeEdge, HierarchyEdge } from "./edges/edge";
 import { Xarrow, Xwrapper } from "react-xarrows";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
+import { TestEntity, TestRelationship } from "./nodes/node";
 import Toolbar from "./toolbar";
 import "./stylesheets/editor.css";
-import { TestEntity, TestRelationship } from "./nodes/node";
+import 'react-confirm-alert/src/react-confirm-alert.css'; 
 
 import SelectEntity from "./right_toolbar/selectEntity";
 import SelectRelationship from "./right_toolbar/selectRelationship";
@@ -16,8 +17,9 @@ import EdgeToRelationship from "./right_toolbar/edgeRelationship";
 import SelectGeneralisation from "./right_toolbar/selectGeneralisation";
 import { ContextMenu } from "./contextMenus/contextMenu";
 import DisplayTranslation from "./right_toolbar/translationDisplay";
-// import { relationalSchema } from "./right_toolbar/relationalSchemaExample";
 import { getId } from "./idGenerator";
+import Load from "./right_toolbar/load";
+import Share from "./right_toolbar/share";
 
 // TODO: update left,right toolbar to match new data structures
 // TODO: add initial attributes to initial.js + implement position update based on parent node of the attribute
@@ -28,7 +30,7 @@ import { getId } from "./idGenerator";
 
 const STACK_LIMIT = 25;
 
-export default function Editor() {
+export default function Editor({user, setUser}) {
   // Canvas states: passed to children for metadata (eg width and height of main container)
   const parentRef = useRef(null);
   const [render, setRender] = useState(false);
@@ -37,11 +39,15 @@ export default function Editor() {
   const [editableId, setEditableId] = useState(0);
 
   // List of components that will be rendered
-  const [entities, setEntities] = useState(initialEntities);
-  const [relationships, setRelationships] = useState(initialRelationships);
-  const [edges, setEdges] = useState(initialEdges);
+	const [entities, setEntities] = useState({});
+  const [relationships, setRelationships] = useState({});
+  const [edges, setEdges] = useState({});
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
+
+	const [name, setName] = useState("Untitled");
+	const [erid, setErid] = useState(null);
+	const [counter, setCounter] = useState(0);
 
   const [context, setContext] = useState({ action: actions.NORMAL });
 
@@ -248,6 +254,9 @@ export default function Editor() {
 
   // Resets the state of the whiteboard and deletes the current schema.
   const resetState = () => {
+		setName("Untitled");
+		setErid(null);
+		setCounter(0);
     setEntities({});
     setRelationships({});
     setEdges({});
@@ -345,90 +354,38 @@ export default function Editor() {
   };
 
   // Translates entire model state from backend JSON into client components.
-  const importStateFromObject = (state) => {
-    let entitiesToAdd = {};
-    let edgesToAdd = [];
-
-    state.entities.forEach((e) => {
-      // Set type
-      e.type = types.ENTITY;
-
-      // Add json for edges
-      e.edges = {};
-
-      // Turn attributes into json
-      let attributesMap = {};
-      e.attributes.forEach((a) => {
-        a.parent = {
-          id: e.id,
-          type: types.ENTITY,
-        };
-        a.type = types.ATTRIBUTE;
-        attributesMap[a.id] = a;
-      });
-      e.attributes = attributesMap;
-
-      // rename subsets to generalisations
-      e.generalisations = e.subsets;
-      delete e.subsets;
-
-      entitiesToAdd[e.id] = e;
-    });
-
-    state.relationships.forEach((r) => {
-      // Set type
-      r.type = types.RELATIONSHIP;
-
-      // Add json for edges
-      r.edges = {};
-      for (let key of Object.keys(r["lHConstraints"])) {
-        let edge = {};
-        edge["start"] = key;
-        edge["end"] = r.id;
-        edge["id"] = key + r.id;
-        edge["cardinality"] = r["lHConstraints"][key];
-        edge["type"] = types.EDGE.RELATIONSHIP;
-        r.edges[edge["id"]] = { type: types.EDGE.RELATIONSHIP };
-        entitiesToAdd[key].edges[edge["id"]] = {
-          type: types.EDGE.RELATIONSHIP,
-        };
-        // TODO: Can source be other types?
-        edge["source_type"] = types.ENTITY;
-        edge["target_type"] = types.RELATIONSHIP;
-        edgesToAdd.push(edge);
-      }
-
-      // Turn attributes into json
-      let attributesMap = {};
-      r.attributes.forEach((a) => {
-        a.parent = {
-          id: r.id,
-          type: types.RELATIONSHIP,
-        };
-        a.type = types.ATTRIBUTE;
-        attributesMap[a.id] = a;
-      });
-      r.attributes = attributesMap;
-
-      delete r["lHConstraints"];
-
-      addElement(types.RELATIONSHIP, r);
-    });
-
-    for (let e of Object.values(entitiesToAdd)) {
-      addElement(types.ENTITY, e);
-    }
-    for (let e of edgesToAdd) {
-      addElement(types.EDGE.RELATIONSHIP, e);
-    }
+  const importStateFromObject = (obj) => {
+		setName(obj.name);
+		setErid(obj.erid);
+		setCounter(obj.counter);
+    setEntities(obj.data.entities);
+    setRelationships(obj.data.relationships);
+    setEdges(obj.data.edges);
+		setUndoStack([]);
+    setRedoStack([]);
   };
 
-  // Translates entire model state into a JSON object for backend.
+  // Translates entire schema state into a single JSON object.
   const exportStateToObject = () => {
+		const obj = {
+			data: {
+				entities: entities,
+				relationships: relationships,
+				edges: edges
+			}
+    };
+		obj["name"] = name;
+		if (counter !== 0) obj["counter"] = counter;
+		return obj;
+  };
+
+  // Translates entire schema state into a JSON object that fits backend format.
+  // TODO: Move this function to backend after working out Firebase stuff.
+  const translateStateToBackend = () => {
     let state = {
       entities: [],
       relationships: [],
-      disjoints: [],
+      generalisations: [],
     };
 
     let entitiesClone = { ...entities };
@@ -441,16 +398,31 @@ export default function Editor() {
         id: entity.id,
         text: entity.text,
         pos: entity.pos,
-        isWeak: false,
+        isWeak: entity.isWeak.length !== 0,
         attributes: [],
-        subsets: [], // TODO
+        subsets: [],
       };
 
+      // Attributes associated with entity.
       Object.values(entity.attributes).forEach(({ parent, type, ...attr }) => {
         entityState.attributes.push(attr);
       });
 
       state.entities.push(entityState);
+    });
+
+    // Populate subsets array for each entity.
+    state.entities.forEach((entityState) => {
+      let entity = entitiesClone[entityState.id];
+      for (const [edgeID, edgeData] of Object.entries(entity.edges)) {
+        // Ensure is a subset edge.
+        if (edgeData.type !== types.EDGE.HIERARCHY) continue;
+        // Find corresponding child entity object and add to the subsets array.
+        const childEntityState = state.entities.filter((e) => {
+          return e.id === edgesClone[edgeID].child;
+        })[0];
+        entityState.subsets.push(childEntityState);
+      }
     });
 
     // Relationships and linking with entities.
@@ -463,26 +435,49 @@ export default function Editor() {
         lHConstraints: {},
       };
 
+      // Attributes associated with relationship.
       Object.values(relationship.attributes).forEach(
         ({ parent, type, ...attr }) => {
           relationshipState.attributes.push(attr);
         }
       );
 
+      // Populate lHConstraints mapping.
       let links = Object.values(edgesClone).filter(
         (edge) => edge.start === relationship.id || edge.end === relationship.id
       );
-      for (let i in links) {
-        let link = links[i];
-        let entityID = link.start === relationship.id ? link.end : link.start;
+      for (const i in links) {
+        const link = links[i];
+        const entityID = link.start === relationship.id ? link.end : link.start;
         relationshipState.lHConstraints[entityID] = link.cardinality;
       }
 
       state.relationships.push(relationshipState);
     });
 
+    // Generalisations.
+    Object.values(entitiesClone).forEach((entity) => {
+      Object.values(entity.generalisations).forEach((gen) => {
+        let genState = {
+          id: gen.id,
+          text: gen.text,
+          pos: gen.pos,
+          parent: state.entities.filter((e) => { return e.id === gen.parent.id })[0],
+          entities: Object.keys(gen.edges).map((edgeID) => {
+            const edge = edgesClone[edgeID];
+            // Find the corresponding child entity object by its ID.
+            const childEntity = state.entities.filter((e) => { return e.id === edge.child })[0];
+            // Add the child to the list of subsets of the parent.
+            state.entities.filter((e) => { return e.id === edge.parent })[0].subsets.push(childEntity);
+            return childEntity;
+          })
+        };
+        state.generalisations.push(genState);
+      });
+    });
+
     return state;
-  };
+  }
 
   const uploadStateFromObject = file => {
     const fileReader = new FileReader();
@@ -533,18 +528,29 @@ export default function Editor() {
         target: null,
       });
     },
-    importStateFromObject: importStateFromObject,
-    exportStateToObject: exportStateToObject,
-    uploadStateFromObject: uploadStateFromObject,
-    downloadStateAsObject: downloadStateAsObject,
+    importStateFromObject,
+    exportStateToObject,
+    uploadStateFromObject,
+    downloadStateAsObject,
     translate: (schema) => {
       setContext({
         action: actions.TRANSLATE,
         tables: schema.translatedtables.tables,
       });
     },
-    undo: undo,
-    redo: redo,
+    undo,
+    redo,
+		user,
+		setUser,
+		name,
+		setName,
+		erid,
+		setErid,
+		counter,
+		setCounter,
+		load: () => setContext({ action: actions.LOAD }),
+		share: () => setContext({ action: actions.SHARE }),
+		resetState,
   };
 
   const rightToolBarActions = {
@@ -566,7 +572,7 @@ export default function Editor() {
     alignmentAnimation: { animationTime: 0 },
     onAlignBound: forceRerender,
     doubleClick: { disabled: true },
-    minScale: 0.25,
+    minScale: 0.3,
     limitToBounds: false,
   };
 
@@ -630,6 +636,18 @@ export default function Editor() {
             {...generalFunctions}
           />
         );
+			case actions.LOAD:
+				return <Load 
+					user={user} 
+					importStateFromObject={importStateFromObject} 
+					backToNormal={() => setContext({action: actions.NORMAL})}
+				/>
+			case actions.SHARE:	
+				return <Share 
+					user={user}
+					erid={erid}
+					backToNormal={() => setContext({action: actions.NORMAL})}
+				/>
       default:
         // TODO
         return <Normal />;

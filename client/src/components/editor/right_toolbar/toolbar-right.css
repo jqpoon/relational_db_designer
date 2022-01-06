@@ -101,3 +101,63 @@ input[type=text]:hover {
   display: inline-block;
   font-size: 12px
 }
+
+.erid-block {
+	padding: 5px;
+	margin: 2px 0;
+	height: 35px;
+	cursor: pointer;
+	border: 1px solid gray;
+}
+
+.erid-block:hover {
+	border: 2px solid purple;
+}
+
+.share-form-wrapper {
+	margin-bottom: 10px;
+}
+
+.share-form {
+	display: flex;
+	height: 30px;
+}
+
+.share-email {
+	flex-grow: 1;
+}
+
+.share-permission {
+	flex-grow: 0;
+}
+
+.share-btn-wrapper {
+	text-align: center;
+	margin: 5px auto;
+}
+
+.share-btn-wrapper button {
+	width: 100px;
+	font-size: large;
+}
+
+.permission-block {
+	display: flex;
+}
+
+.user-block {
+	flex-grow: 1;
+	overflow-x: hidden;
+	text-align: center;
+	padding: 3px;
+	margin: 2px 0;
+	height: 30px;
+	border: 1px solid gray;
+	border-radius: 3px;
+}
+
+.remove-permission-btn {
+	height: 30px;
+	padding: 3px;
+	margin: 2px;
+}

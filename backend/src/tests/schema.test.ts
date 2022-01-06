@@ -5,7 +5,6 @@ import Relationship from "../models/relationship";
 import Attribute from "../models/attribute";
 import {LHConstraint} from "../models/relationship";
 
-import {mockDriver} from 'neo-forgery'
 import { QueryResult } from "neo4j-driver";
 import _ from "lodash";
 import dotenv from 'dotenv';
@@ -40,49 +39,19 @@ test('instantiation', () => {
 test('adding-entities-with-attributes', async () => {    
     // await DatabaseController.getInstance().clearDB();
     const entities:Entity[] = [
-        {
-            identifier: 1,
-            positionX: 1,
-            positionY: 2,
-            shapeWidth: 4,
-            shapeHeight: 4,
-            name: 'Mock Entity 1',
-            isWeak: true,
-            attributes: [
-                {
-                    identifier: 1,
-                    positionX: 2,
-                    positionY: 4,
-                    shapeWidth: 4,
-                    shapeHeight: 4,
-                    name: 'Mock Attribute 1',
-                    isPrimaryKey: false,
-                    isOptional: false,
-                }
-            ]
-        },
-        {
-            identifier: 2,
-            positionX: 1,
-            positionY: 2,
-            shapeWidth: 4,
-            shapeHeight: 4,
-            name: 'Mock Entity 2',
-            isWeak: true,
-            attributes: [
-                {
-                    identifier: 2,
-                    positionX: 2,
-                    positionY: 4,
-                    shapeWidth: 4,
-                    shapeHeight: 4,
-                    name: 'Mock Attribute 2',
-                    isPrimaryKey: false,
-                    isOptional: false,
-                }
-            ]
-        }
-    ];
+        {id: "0", text: "swipe card", pos: {x: 0, y: 0}, isWeak: false, attributes: [
+            {id: "00", text: "issue", relativePos: {x: 0, y: 0}, 
+                isMultiValued: false, isPrimaryKey: true, isOptional: false},
+            {id: "01", text: "date", relativePos: {x: 0, y: 0}, 
+                isMultiValued: false, isPrimaryKey: false, isOptional: false}
+        ]},
+        {id: "1", text: "person", pos: {x: 0, y: 0}, isWeak: false, attributes: [
+            {id: "10", text: "bonus", relativePos: {x: 0, y: 0}, 
+                isMultiValued: false, isPrimaryKey: false, isOptional: true},
+            {id: "11", text: "salary number", relativePos: {x: 0, y: 0}, 
+                isMultiValued: false, isPrimaryKey: true, isOptional: false},
+            {id: "12", text: "name", relativePos: {x: 0, y: 0}, 
+                isMultiValued: false, isPrimaryKey: false, isOptional: false}]}];
 
     for (var entity of entities) {
         await DatabaseController.getInstance().createEntity(entity);
@@ -109,7 +78,7 @@ test('adding-entities-with-attributes', async () => {
             (e: { properties: any; }) => e.properties
         )
         for (var queriedEntity of queriedEntities) {
-            if (queriedEntity.identifier == nodeID) {
+            if (queriedEntity.id == nodeID) {
                 queriedEntity.attributes = entityAttributesList
             }
         }
@@ -118,7 +87,7 @@ test('adding-entities-with-attributes', async () => {
     for (var entity of entities) {
         var match:boolean = false;
         for (var queriedEntity of queriedEntities) {
-            var entityMatch:boolean = entity.identifier == queriedEntity.identifier;
+            var entityMatch:boolean = entity.id == queriedEntity.id;
             var attributeMatch:boolean = _.isEqual((entity.attributes ?? []), (queriedEntity.attributes ?? []));
             match = entityMatch && attributeMatch
             if (match) break;
@@ -130,31 +99,11 @@ test('adding-entities-with-attributes', async () => {
 
 // Tests if relationships can be added to/retrieved from database
 test('adding-relationships', async () => {    
-    const relationships:Relationship[] = [{
-        identifier: 1,
-        positionX: 1,
-        positionY: 2,
-        shapeWidth: 4,
-        shapeHeight: 4,
-        name: 'Mock Relationship',
-        attributes: [
-            {
-                identifier: 3,
-                positionX: 2,
-                positionY: 4,
-                shapeWidth: 4,
-                shapeHeight: 4,
-                name: 'Mock Attribute Relationship',
-                isPrimaryKey: false,
-                isOptional: false,
-            }
-        ],
-        lHConstraints: new Map([
-                [1, LHConstraint.ONE_TO_MANY],
-                [2, LHConstraint.ONE_TO_MANY],
-            ],
-        ),
-    }];
+    let map = new Map<string, LHConstraint>();
+    map.set("0", LHConstraint.ONE_TO_ONE);
+    map.set("1", LHConstraint.ZERO_TO_MANY);
+    var relationships: Relationship[] = [
+        {id: "2", text: "for", pos: {x: 0, y: 0}, attributes: [], lHConstraints: map}];
     for (var relationship of relationships) {
         await DatabaseController.getInstance().addRelationship(relationship);
         for (var attribute of relationship.attributes ?? []) {
@@ -179,7 +128,7 @@ test('adding-relationships', async () => {
         )
 
         for (var queriedRS of queriedRelationships) {
-            if (queriedRS.identifier == relationshipID) {
+            if (queriedRS.id == relationshipID) {
                 queriedRS.attributes = relationshipAttributeList
             }
         }
@@ -187,7 +136,7 @@ test('adding-relationships', async () => {
     for (var relationship of relationships) {
         var match:boolean = false;
         for (var queriedRelationship of queriedRelationships) {
-            var rsMatch:boolean = relationship.identifier == queriedRelationship.identifier;
+            var rsMatch:boolean = relationship.id == queriedRelationship.id;
             var attributeMatch:boolean = _.isEqual((relationship.attributes ?? []), (queriedRelationship.attributes ?? []));
             match = rsMatch && attributeMatch
             if (match) break;
@@ -196,9 +145,5 @@ test('adding-relationships', async () => {
     }
 });
 
-/*------------ Integration testing: adding/retrieving from frontend ----------*/
 
-/*------------ Unit testing: TBD -----------*/
-
-// TODO: add more tests
 // https://basarat.gitbook.io/typescript/intro-1/jest
