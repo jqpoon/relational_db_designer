@@ -233,7 +233,11 @@ export default function Toolbar({
 		          Show ERD ID
 		        </div>
 					: null}
-					<div className="clickable tool" onClick={() => setUser(null)}>
+					<div className="clickable tool" onClick={() => {
+							setUser(null);
+							localStorage.removeItem('user');
+							localStorage.removeItem('state');
+						}}>
 						Log out
 					</div>
 	      </div>
