@@ -102,7 +102,7 @@ export default function Editor({ user, setUser }) {
     setName(obj?.name || "Untitled");
     setErid(obj?.erid || null);
     setCounter(obj?.counter || 0);
-    setElements(obj?.state || { entities: {}, relationships: {}, edges: {} });
+    setElements(obj?.data || { entities: {}, relationships: {}, edges: {} });
     setHistory({ store: [], position: -1 });
   };
   useEffect(() => {
@@ -163,7 +163,7 @@ export default function Editor({ user, setUser }) {
 
   // Translates entire schema state into a single JSON object.
   const exportStateToObject = () => {
-    return { name: name, state: elements, counter: saveCounter() };
+    return { name: name, data: elements, counter: saveCounter() };
   };
 
   // Translates entire schema state into a JSON object that fits backend format.

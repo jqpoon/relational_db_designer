@@ -28,25 +28,9 @@ export const deleteERDInBackEnd = async ({ user, erid, resetERD }) => {
   }
 };
 
-export const saveERDToBackEnd = async ({
-  user,
-  erid,
-  exportERD,
-  setErid,
-}) => {
-  try {
-    const req = `/api/erd?Uid=${user}` + erid ? `&ERid=${erid}` : ``;
-    const res = await axios.put(req, exportERD());
-    const data = await res.data;
-    if (!erid) {
-      setErid(data);
-      alert(`ERD succesfully created: ${data}`);
-    } else {
-      alert(`ERD succesfully saved: ${data}`);
-    }
-  } catch (error) {
-    alert(error.response.data);
-  }
+export const saveERDToBackEnd = async (data) => {
+  const save = data.erid ? updateERD : createERD;
+  save(data);
 };
 
 const createERD = async ({ user, exportERD, setErid }) => {
