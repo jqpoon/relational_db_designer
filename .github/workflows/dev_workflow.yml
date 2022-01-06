@@ -56,14 +56,14 @@ jobs:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         run: |
           cd backend
-          heroku container:push -a relational-db-designer web 
+          heroku container:push -a relational-db-designer-backend web 
 
       - name: Release
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         run: |
           cd backend
-          heroku container:release -a relational-db-designer web 
+          heroku container:release -a relational-db-designer-backend web 
 
   frontend_deploy:
     runs-on: ubuntu-latest
