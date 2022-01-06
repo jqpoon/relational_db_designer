@@ -192,9 +192,6 @@ export default function Attribute({
       ref={attributeEndRef}
       className="attribute-end"
       style={chosenStyle}
-      onDoubleClick={() => {
-        setEditable(true);
-      }}
     >
       <div style={textStyle}>{editingMode()}</div>
     </div>

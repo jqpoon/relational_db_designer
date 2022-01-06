@@ -3,6 +3,12 @@ import { IconButton, Tooltip } from "@mui/material";
 import UndoIcon from '@mui/icons-material/Undo';
 import RedoIcon from '@mui/icons-material/Redo';
 import ClearIcon from '@mui/icons-material/Clear';
+import CachedIcon from '@mui/icons-material/Cached';
+import SaveIcon from '@mui/icons-material/Save';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import ShareIcon from '@mui/icons-material/Share';
+import RuleIcon from '@mui/icons-material/Rule';
 import { types } from "../types";
 import "./toolbar-left.css";
 import { useRef, useState } from "react";
@@ -55,21 +61,57 @@ export function ClickAction({ title, action, tooltip }) {
   if(title === "Undo"){
     return (<Tooltip title={tooltip ? tooltip : ""} placement="bottom">
              <div className="edit-buttons left" onClick={action}>
-               <UndoIcon />
+               <UndoIcon style={{ fontSize: 35 }} />
             </div>
             </Tooltip>);
   } else if(title === "Redo"){
     return (<Tooltip title={tooltip ? tooltip : ""} placement="bottom">
               <div className="edit-buttons" onClick={action}>
-                <RedoIcon />
+                <RedoIcon style={{ fontSize: 35 }} />
               </div>
              </Tooltip>);
   } else if(title === "Clear"){
     return (<Tooltip title={tooltip ? tooltip : ""} placement="bottom">
               <div className="edit-buttons" onClick={action}>
-                 <ClearIcon />
+                 <ClearIcon style={{ fontSize: 35 }} />
               </div>
             </Tooltip>);
+  } else if(title === "Save"){
+    return (<Tooltip title={tooltip ? tooltip : ""}     placement="bottom">
+              <div className="file-buttons" onClick={action}>
+                 <SaveIcon style={{ fontSize: 35 }}/>
+              </div>
+            </Tooltip>);
+  } else if(title === "Load"){
+    return (<Tooltip title={tooltip ? tooltip : ""}     placement="bottom">
+    <div className="file-buttons" onClick={action}>
+       <CachedIcon style={{ fontSize: 35 }} />
+    </div>
+  </Tooltip>);
+  } else if(title === "Share"){
+    return (<Tooltip title={tooltip ? tooltip : ""}     placement="bottom">
+    <div className="file-buttons" onClick={action}>
+       <ShareIcon style={{ fontSize: 35 }}/>
+    </div>
+  </Tooltip>);
+  } else if(title === "Duplicate"){
+    return (<Tooltip title={tooltip ? tooltip : ""}     placement="bottom">
+    <div className="file-buttons" onClick={action}>
+       <ContentCopyIcon style={{ fontSize: 35 }}/>
+    </div>
+  </Tooltip>);
+  } else if(title === "Delete"){
+    return (<Tooltip title={tooltip ? tooltip : ""}     placement="bottom">
+    <div className="file-buttons" onClick={action}>
+       <DeleteForeverIcon style={{ fontSize: 35 }}/>
+    </div>
+  </Tooltip>);
+  } else if(title === "Validate"){
+    return (<Tooltip title={tooltip ? tooltip : ""}     placement="bottom">
+    <div className="file-buttons" onClick={action}>
+       <RuleIcon style={{ fontSize: 35 }}/>
+    </div>
+  </Tooltip>);
   }
   return  (
     <Tooltip title={tooltip ? tooltip : ""} placement="right">
@@ -95,9 +137,10 @@ export default function LeftToolbar({ info, functions }) {
   return (
     <div
       className="toolbar-left"
-      style={{ overflow: scrollable ? "scroll" : "visible" }}
+      // style={{ overflow: scrollable ? "scroll" : "visible" }}
+      style={{overflow: "visible"}}
     >
-      <div className="group">
+      <div className="group" >
         <Tooltip title="Edit name of diagram" placement="right">
           <input
             className="section"
@@ -106,7 +149,7 @@ export default function LeftToolbar({ info, functions }) {
           />
         </Tooltip>
       </div>
-      <div className="group">
+      <div className="group" >
         <div className="group-header">File:</div>
         <div className="group-content">
           <ClickAction
@@ -121,22 +164,12 @@ export default function LeftToolbar({ info, functions }) {
             }
             tooltip="Save diagram to storage"
           />
-          <UploadTool
-            display={{ title: "Import", tooltip: "Import diagram from JSON" }}
-            handleFile={functions.importFromJSON}
-          />
-          <ClickAction
-            title="Export"
+           <ClickAction
+            title="Validate"
             action={functions.exportToJSON}
-            tooltip="Export diagram to JSON"
+            tooltip="Validate ER diagram"
           />
-          <ClickAction
-            title="Translate"
-            action={functions.translateERtoRelational}
-            tooltip="Translate ERD to relational schema"
-          />
-
-          {info.erid ? (
+           {info.erid ? (
             <>
               <ClickAction
                 title="Share"
@@ -165,6 +198,28 @@ export default function LeftToolbar({ info, functions }) {
               />
             </>
           ) : null}
+          <UploadTool
+            display={{ title: "Import", tooltip: "Import diagram from JSON" }}
+            handleFile={functions.importFromJSON}
+          />
+          <ClickAction
+            title="Export to JSON"
+            action={functions.exportToJSON}
+            tooltip="Export diagram to JSON"
+          />
+           <ClickAction
+            title="Export to PNG"
+            action={functions.exportToJSON}
+            tooltip="Export diagram to PNG"
+          />
+
+          <ClickAction
+            title="Translate"
+            action={functions.translateERtoRelational}
+            tooltip="Translate ERD to relational schema"
+          />
+
+
         </div>
       </div>
       <div className="group">

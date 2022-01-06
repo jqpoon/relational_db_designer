@@ -85,4 +85,12 @@
   margin-left: 8%;
 }
 
+.file-buttons{
+ 
+  float:left;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
 
