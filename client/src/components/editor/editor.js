@@ -343,7 +343,7 @@ export default function Editor({ user, setUser }) {
 
   const nodeConfig = {
     parentRef: parentRef,
-    scale: 1,
+    scale: scale,
   };
 
   const showRightToolbar = () => {
