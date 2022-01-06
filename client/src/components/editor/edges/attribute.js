@@ -1,7 +1,6 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import "./stylesheets/attribute.css";
 import { types } from "../types";
-import { AttributeContextMenu } from "../contextMenus/attributeContextMenu";
 import { getId } from "../idGenerator";
 
 export default function Attribute({
@@ -16,30 +15,47 @@ export default function Attribute({
   // Ref of lollipop end
   const attributeEndRef = useRef(null);
 
-  const updateAttribute = (change) => {
-    let attr = getElement(types.ATTRIBUTE, attribute.id, attribute.parent);
-    change(attr);
-    updateElement(types.ATTRIBUTE, attr);
-  };
+  const updateAttribute = useCallback(
+    () => (change) => {
+      let attr = getElement(types.ATTRIBUTE, attribute.id, attribute.parent);
+      change(attr);
+      updateElement(types.ATTRIBUTE, attr);
+    },
+    [attribute, getElement, updateElement]
+  );
 
-  // Toggles key attribute feature
-  const toggleKeyAttribute = () =>
-    updateAttribute((attr) => (attr.isPrimaryKey = !attr.isPrimaryKey));
+  const contextMenuActions = useMemo(() => {
+    // Toggles key attribute feature
+    const toggleKeyAttribute = () =>
+      updateAttribute((attr) => {
+        attr.isPrimaryKey = !attr.isPrimaryKey;
+        if (attr.isPrimaryKey) {
+          // Key attributes are mandatory and unique
+          attr.isOptional = false;
+          attr.isMultiValued = false;
+        }
+      });
 
-  // Toggles optional attribute feature
-  const toggleOptionalAttribute = () =>
-    updateAttribute((attr) => (attr.isOptional = !attr.isOptional));
+    // Toggles optional attribute feature
+    const toggleOptionalAttribute = () =>
+      updateAttribute((attr) => {
+        attr.isOptional = !attr.isOptional;
+        attr.isPrimaryKey = false;
+      });
 
-  // Toggles multi-valued attribute feature
-  const toggleMultiValuedAttribute = () =>
-    updateAttribute((attr) => (attr.isMultiValued = !attr.isMultiValued));
-
-  const contextMenuActions = {
-    "Edit Label": () => setEditable(true),
-    "Toggle Key Attribute": toggleKeyAttribute,
-    "Toggle Optional Attribute": toggleOptionalAttribute,
-    "Toggle Multi-valued Attribute": toggleMultiValuedAttribute,
-  };
+    // Toggles multi-valued attribute feature
+    const toggleMultiValuedAttribute = () =>
+      updateAttribute((attr) => {
+        attr.isMultiValued = !attr.isMultiValued;
+        attr.isPrimaryKey = false;
+      });
+    return {
+      "Edit Label": () => setEditable(true),
+      "Toggle Key Attribute": toggleKeyAttribute,
+      "Toggle Optional Attribute": toggleOptionalAttribute,
+      "Toggle Multi-valued Attribute": toggleMultiValuedAttribute,
+    };
+  }, [updateAttribute]);
 
   // Hides the context menu if we left click again
   const handleClick = useCallback(() => {
@@ -47,13 +63,16 @@ export default function Attribute({
   }, [setContextMenu]);
 
   // Show context menu
-  const handleContextMenu = useCallback((event) => {
-    event.preventDefault();
-    setContextMenu({
-      actions: contextMenuActions,
-      anchor: { x: event.pageX, y: event.pageY },
-    });
-  }, [setContextMenu]);
+  const handleContextMenu = useCallback(
+    (event) => {
+      event.preventDefault();
+      setContextMenu({
+        actions: contextMenuActions,
+        anchor: { x: event.pageX, y: event.pageY },
+      });
+    },
+    [setContextMenu, contextMenuActions]
+  );
 
   // Handle context menus callbacks on mount
   useEffect(() => {
@@ -65,7 +84,7 @@ export default function Attribute({
       document?.removeEventListener("click", handleClick);
       curAttr?.removeEventListener("contextmenu", handleContextMenu);
     };
-  }, []);
+  }, [handleClick, handleContextMenu]);
 
   // Calculate position of entity end
   const calculateEntityEndPos = () => {
@@ -173,24 +192,12 @@ export default function Attribute({
       ref={attributeEndRef}
       className="attribute-end"
       style={chosenStyle}
-      onDoubleClick={() => {
-        setEditable(true);
-      }}
     >
       <div style={textStyle}>{editingMode()}</div>
     </div>
   );
 
   return <div>{attributeEnd}</div>;
-}
-
-// Class to store global count of attributes, so that we can generate
-// new attribute ids
-class idCounter {
-  static counter = 1;
-  static getCount() {
-    return idCounter.counter++;
-  }
 }
 
 export function addAttributeToNode({
@@ -230,7 +237,6 @@ export function addAttributeToNode({
     isOptional: false,
     type: types.ATTRIBUTE,
   };
-  console.log(attributeEntry);
 
   addElement(types.ATTRIBUTE, attributeEntry);
 }

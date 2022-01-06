@@ -7,9 +7,7 @@
 // Cardinality: "0:N"
 // -------
 // ....
-import Divider from "./divider";
 import { cardinality, types } from "../../types";
-import { typeToString } from "./general";
 
 import "../toolbar-right.css";
 import { EditOnIcon } from "./components";

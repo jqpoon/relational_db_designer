@@ -68,15 +68,6 @@ function Relationship({
                 let newEdge = { ...edge }; // TODO: should we use getElement instead?
                 newEdge.isKey = !newEdge.isKey;
                 updateElement(types.EDGE.RELATIONSHIP, newEdge);
-                let newNode = getElement(selected.type, selected.id);
-                if (newEdge.isKey) {
-                  newNode.isWeak.push(relationship);
-                } else {
-                  newNode.isWeak = newNode.isWeak.filter((id) => {
-                    return id !== relationship;
-                  });
-                }
-                updateElement(selected.type, newNode);
               }}
             />
             <label style={{ fontWeight: "normal" }}>Toggle as key</label>

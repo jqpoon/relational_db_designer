@@ -1,5 +1,5 @@
 import { actions, cardinality, types } from "../../types";
-import { generateID, typeToString } from "./general";
+import { getId } from "../../idGenerator";
 import CardinalityChoices from "./cardinality";
 import { MdCheck, MdClear } from "react-icons/md";
 
@@ -24,40 +24,10 @@ function AddingEdge({
     });
   };
 
-  const updateNodeWithEdge = (nodeID, nodeType, edge, parent) => {
-    console.log(`updatenodewithedge(${nodeID}, ${nodeType})`);
-    console.log(edge);
-    console.log(parent);
-    let node = getElement(nodeType, nodeID, parent);
-    node.edges[edge.id] = { type: edge.type };
-    updateElement(nodeType, node);
-  };
   const addEdge = () => {
     if (!validate || validate(target)) {
       const edge = createEdge(selected, target);
       addElement(edge.type, edge);
-      switch (edge.type) {
-        case types.EDGE.RELATIONSHIP:
-          updateNodeWithEdge(edge.start, edge.source_type, edge);
-          updateNodeWithEdge(edge.end, edge.target_type, edge);
-          break;
-        case types.EDGE.HIERARCHY:
-          updateNodeWithEdge(edge.child, types.ENTITY, edge);
-          if (edge.generalisation) {
-            updateNodeWithEdge(
-              edge.generalisation,
-              types.GENERALISATION,
-              edge,
-              { id: edge.parent }
-            );
-          } else {
-            updateNodeWithEdge(edge.parent, types.ENTITY, edge);
-          }
-          break;
-        default:
-          console.log(`Invalid edge type: ${edge.type}`);
-      }
-
       reset();
     }
   };
@@ -109,6 +79,9 @@ function AddingEdge({
           </div>
         );
       }
+      break;
+    default:
+      console.assert(false);
   }
 
   if (warning !== null) {
@@ -129,7 +102,6 @@ function AddingEdge({
   }
 
   const node = getElement(target.type, target.id, target.parent);
-  const nodeType = typeToString(target.type);
 
   return (
     <div
@@ -173,7 +145,7 @@ function AddingEdge({
 export function RelationshipAdding(props) {
   const createEdge = (selected, target) => {
     const newEdge = {
-      id: generateID(target.id, selected.id),
+      id: getId(types.EDGE.RELATIONSHIP, target.id, selected.id),
       type: types.EDGE.RELATIONSHIP,
       source_type: target.type,
       target_type: selected.type,
@@ -198,7 +170,7 @@ export function RelationshipAdding(props) {
 export function AddingRelationship(props) {
   const createEdge = (selected, target) => {
     const newEdge = {
-      id: generateID(selected.id, target.id),
+      id: getId(types.EDGE.RELATIONSHIP, selected.id, target.id),
       type: types.EDGE.RELATIONSHIP,
       source_type: selected.type,
       target_type: target.type,
@@ -226,7 +198,7 @@ export function AddingRelationship(props) {
 export function AddingSuperset(props) {
   const createEdge = (selected, target) => {
     let newEdge = {
-      id: generateID(selected.id, target.id),
+      id: getId(types.EDGE.HIERARCHY, target.id, selected.id),
       type: types.EDGE.HIERARCHY,
       child: selected.id,
     };
@@ -244,7 +216,7 @@ export function AddingSuperset(props) {
 export function AddingSubset(props) {
   const createEdge = (selected, target) => {
     const newEdge = {
-      id: generateID(target.id, selected.id),
+      id: getId(types.EDGE.HIERARCHY, target.id, selected.id),
       type: types.EDGE.HIERARCHY,
       child: target.id,
       parent: selected.id,
@@ -259,7 +231,7 @@ export function AddingSubset(props) {
 export function AddingSubsetViaGeneralisation(props) {
   const createEdge = (selected, target) => {
     const newEdge = {
-      id: generateID(target.id, selected.id),
+      id: getId(types.EDGE.HIERARCHY, target.id, selected.id),
       parent: selected.parent.id,
       child: target.id,
       generalisation: selected.id,

@@ -2,11 +2,11 @@ import Xarrow from "react-xarrows";
 import { cardinality as cardinality_all, types } from "../types";
 import "./stylesheets/attribute.css";
 
-function RelationshipEdge({ start, end, cardinality, isKey }) {
-  console.log("Start:" + start + ", End: " + end);
+function RelationshipEdge({ start, end, cardinality, isKey, scale }) {
   const style = {
     backgroundColor: "white",
     padding: "2.5px",
+    fontSize: `${14 * scale}px`,
   };
   if (isKey) {
     style["textDecoration"] = "underline";
@@ -20,6 +20,7 @@ function RelationshipEdge({ start, end, cardinality, isKey }) {
       curveness={0}
       endAnchor="middle"
       startAnchor="middle"
+      strokeWidth={4 * scale}
       passProps={{
         onClick: () => {
           /*TODO */
@@ -30,7 +31,7 @@ function RelationshipEdge({ start, end, cardinality, isKey }) {
   );
 }
 
-export function HierarchyEdge({ parent, child, generalisation }) {
+export function HierarchyEdge({ parent, child, generalisation, scale }) {
   return (
     <Xarrow
       start={child.toString()}
@@ -39,6 +40,7 @@ export function HierarchyEdge({ parent, child, generalisation }) {
       curveness={0}
       endAnchor={generalisation ? "middle" : "auto"}
       startAnchor="middle"
+      strokeWidth={4 * scale}
       passProps={{
         onClick: () => {
           /*TODO */
@@ -49,7 +51,7 @@ export function HierarchyEdge({ parent, child, generalisation }) {
   );
 }
 
-export function AttributeEdge({ parent, child }) {
+export function AttributeEdge({ parent, child, scale }) {
   return (
     <Xarrow
       start={child.toString()}
@@ -60,6 +62,7 @@ export function AttributeEdge({ parent, child }) {
       curveness={0}
       endAnchor="middle"
       startAnchor="middle"
+      strokeWidth={4 * scale}
       passProps={{
         onClick: () => {
           /*TODO */
@@ -70,12 +73,12 @@ export function AttributeEdge({ parent, child }) {
   );
 }
 
-export default function Edge({ edge }) {
+export default function Edge({ edge, scale }) {
   switch (edge.type) {
     case types.EDGE.RELATIONSHIP:
-      return <RelationshipEdge {...edge} />;
+      return <RelationshipEdge {...edge} scale={scale} />;
     case types.EDGE.HIERARCHY:
-      return <HierarchyEdge {...edge} />;
+      return <HierarchyEdge {...edge} scale={scale} />;
     default:
       console.log("Invalid edge type encountered: " + edge.type);
       return null;

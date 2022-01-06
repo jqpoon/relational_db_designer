@@ -109,6 +109,7 @@ export const initialRelationships = {
     edges: {
       E0R0: { type: types.EDGE.RELATIONSHIP },
       E2R0: { type: types.EDGE.RELATIONSHIP },
+      ESwipeCardR0: { type: types.EDGE.RELATIONSHIP },
     },
   },
 };

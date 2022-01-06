@@ -79,7 +79,7 @@
 .generalisation {
   width: 120px;
   height: 75px;
-  background-color:lightblue;
+  background-color: var(--generalisation-color-var);
   display: table;
   position: relative;
   z-index: 15;
@@ -95,13 +95,13 @@
 
 .generalisation:before {
   left: -20px;
-  border-right: 20px solid lightblue;
+  border-right: 20px solid var(--generalisation-color-var)
 }
 .generalisation:after {
   top: 0px;
   bottom: 0px;
   right: -20px;
-  border-left: 20px solid lightblue;
+  border-left: 20px solid var(--generalisation-color-var);
 }
 
 .generalisation.inner {

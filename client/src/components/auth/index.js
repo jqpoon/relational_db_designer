@@ -32,6 +32,7 @@ export default function Auth({setUser}) {
 				email,
 				password
 			}, isLogin);
+			localStorage.setItem('user', uid);
 			setUser(uid);
 		} catch (error) {
 			alert(error);

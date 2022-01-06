@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MdCheck, MdModeEdit } from "react-icons/md";
+import { MdModeEdit } from "react-icons/md";
 import "./components.css";
 
 export function EditableText({ value, updateValue }) {

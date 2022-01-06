@@ -1,13 +1,11 @@
-import { useCallback, useState, useRef, useEffect } from "react";
+import { useCallback, useState, useRef, useEffect, useMemo } from "react";
 import Draggable from "react-draggable";
 import { useXarrow } from "react-xarrows";
 import Attribute, { addAttributeToNode } from "../edges/attribute";
 import { actions, types } from "../types";
-import { EntityContextMenu } from "../contextMenus/entityContextMenu";
 import "./stylesheets/node.css";
-import { HierarchyEdge } from "../edges/edge";
 
-export function TestRelationship({ relationship, general }) {
+export function Relationship({ relationship, general }) {
   const attributes = Object.values(relationship.attributes).map((attribute) => {
     return <Attribute attribute={attribute} {...general} />;
   });
@@ -21,7 +19,7 @@ export function TestRelationship({ relationship, general }) {
   );
 }
 
-export function TestEntity({ entity, general }) {
+export function Entity({ entity, general }) {
   const attributes = Object.values(entity.attributes).map((attribute) => {
     return <Attribute attribute={attribute} {...general} />;
   });
@@ -65,10 +63,10 @@ export default function Node({
   getElement,
   addElement,
   updateElement,
-  setPanDisabled,
   context,
   setContext,
   setContextMenu,
+  setPanDisabled,
   children,
   parent,
   className,
@@ -83,9 +81,12 @@ export default function Node({
 
   const [editable, setEditable] = useState(false);
 
-  const contextMenuActions = {
-    "Edit Label": () => setEditable(true),
-  };
+  const contextMenuActions = useMemo(
+    () => ({
+      "Edit Label": () => setEditable(true),
+    }),
+    []
+  );
 
   switch (type) {
     case types.ENTITY:
@@ -114,7 +115,7 @@ export default function Node({
         anchor: { x: event.pageX, y: event.pageY },
       });
     },
-    [setContextMenu]
+    [setContextMenu, contextMenuActions]
   );
 
   // Set dimensions on mount
@@ -131,7 +132,7 @@ export default function Node({
       document?.removeEventListener("click", handleClick);
       curNode?.removeEventListener("contextmenu", handleContextMenu);
     };
-  }, []);
+  }, [handleContextMenu, handleClick]);
 
   // For updating edges connected to the node
   const updateXarrow = useXarrow();
@@ -139,14 +140,17 @@ export default function Node({
   // Event handlers
   const onDrag = updateXarrow;
   const onStop = (e, data) => {
-    // Save new position of node
-    let newNode = getElement(type, id, parent);
-    newNode.pos = { x: data.x, y: data.y };
-    updateElement(type, newNode);
-    // Update arrow position
-    updateXarrow(e); // TODO: check function signature of updateXarrow(E, DATA) ?
-    // Re-enable panning of canvas
-    setPanDisabled(false);
+    // Update if position of node changed
+    if (data.x !== pos.x || data.y !== pos.y) {
+      // Save new position of node
+      let newNode = getElement(type, id, parent);
+      newNode.pos = { x: data.x, y: data.y };
+      updateElement(type, newNode);
+      // Update arrow position
+      updateXarrow(e); // TODO: check function signature of updateXarrow(E, DATA) ?
+      // Re-enable panning of canvas
+      setPanDisabled(false);
+    }
   };
   const onClick = () => {
     switch (context.action) {
@@ -177,19 +181,6 @@ export default function Node({
           return newCtx;
         });
         break;
-      case actions.RELATIONSHIP_ADD.SELECT_SOURCES: {
-        let newContext = { ...context };
-        newContext.sources[id] = { type: type, cardinality: "" };
-        setContext(newContext);
-        console.log(newContext);
-        break;
-      }
-      case actions.RELATIONSHIP_ADD.SELECT_TARGET: {
-        let newContext = { ...context };
-        newContext.target = { id: id, type: type };
-        setContext(newContext);
-        break;
-      }
       default:
     }
   };
@@ -198,13 +189,6 @@ export default function Node({
   const draggableConfig = {
     position: pos,
     scale: scale,
-    bounds: {
-      // Uncomment below to limit nodes to only be dragged within the canvas
-      // left: 5,
-      // top: 5,
-      // right: parentRef.current.clientWidth - dimensions.width - 5,
-      // bottom: parentRef.current.clientHeight - dimensions.height - 5,
-    },
     onDrag: onDrag,
     onStop: onStop,
     onMouseDown: () => setPanDisabled(true),
@@ -239,49 +223,35 @@ export default function Node({
     );
   };
 
+  const getReadableStyle = (className) => {
+    if (className === "relationship") {
+      return { backgroundColor: "rgb(216, 216, 194)" };
+    }
+    return className === "generalisation"
+      ? { "--generalisation-color-var": "rgb(111,163,179)" }
+      : { backgroundColor: "rgb(111,163,179)" };
+  };
+
   const highlightStyle = (className) => {
     if (
       context.action === actions.SELECT.NORMAL &&
       id === context.selected.id
     ) {
-      return className === "weak-entity" ? { borderColor: "orange"} : { border: "2px solid orange" };
+      return getReadableStyle(className);
     } else if (
       context.action === actions.SELECT.ADD_RELATIONSHIP &&
       id === context.selected.id
     ) {
-      return className === "weak-entity" ? { borderColor: "orange"} : { border: "2px solid orange" };
+      return getReadableStyle(className);
     } else if (
       context.action === actions.SELECT.ADD_RELATIONSHIP &&
       context.target !== null &&
       id === context.target.id
     ) {
-      return className === "weak-entity" ? { borderColor: "orange"} : { border: "2px solid orange" };
-    } else if (
-      (context.action === actions.RELATIONSHIP_ADD.SELECT_SOURCES ||
-        context.action === actions.RELATIONSHIP_ADD.SELECT_TARGET) &&
-      context.sources != null &&
-      idIsInSelectedRelationship(Object.keys(context.sources))
-    ) {
-      return className === "weak-entity" ? { borderColor: "orange"} : { border: "2px solid orange" };
-    } else if (
-      (context.action === actions.RELATIONSHIP_ADD.SELECT_SOURCES ||
-        context.action === actions.RELATIONSHIP_ADD.SELECT_TARGET) &&
-      context.target != null &&
-      id === context.target.id
-    ) {
-      return className === "weak-entity" ? { borderColor: "orange"} : { border: "2px solid orange" };
+      return getReadableStyle(className);
     } else {
-      return null;
+      return { "--generalisation-color-var": "lightblue" };
     }
-  };
-
-  const idIsInSelectedRelationship = (sources) => {
-    for (const x of sources) {
-      if (x === id) {
-        return true;
-      }
-    }
-    return false;
   };
 
   const normalMode = (
@@ -293,19 +263,6 @@ export default function Node({
       )}
     </div>
   );
-
-  const generalisation = (
-    <div className={className} style={highlightStyle(className)}>
-      <div className="generalisation inner">
-      {editable ? (
-        editingMode()
-      ) : (
-        <div className={className + "-label"}>{text}</div>
-      )}
-      </div>
-    </div>
-  );
-  // TODO:conditional rendering
 
   return (
     <>

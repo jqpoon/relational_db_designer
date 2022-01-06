@@ -1,4 +1,5 @@
 import Draggable from "react-draggable";
+import { Tooltip } from "@mui/material";
 import axios from "axios";
 import {useRef} from "react";
 import {types} from "./types";
@@ -47,7 +48,6 @@ export default function Toolbar({
       attributes: {},
       generalisations: {},
     };
-    // console.log("id in addEntity" + newEntity.id);
     addElement(types.ENTITY, newEntity);
   };
 
@@ -233,7 +233,11 @@ export default function Toolbar({
 		          Show ERD ID
 		        </div>
 					: null}
-					<div className="clickable tool" onClick={() => setUser(null)}>
+					<div className="clickable tool" onClick={() => {
+							setUser(null);
+							localStorage.removeItem('user');
+							localStorage.removeItem('state');
+						}}>
 						Log out
 					</div>
 	      </div>
