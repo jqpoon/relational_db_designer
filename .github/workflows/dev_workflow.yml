@@ -2,8 +2,7 @@ name: Development workflow - Testing and deployment
 on: 
   push:
     branches:
-      - dev
-      - deployment
+      - main
 
 jobs:
   frontend_tests:
