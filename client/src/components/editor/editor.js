@@ -7,7 +7,8 @@ import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import { TestEntity, TestRelationship } from "./nodes/node";
 import Toolbar from "./toolbar";
 import "./stylesheets/editor.css";
-import 'react-confirm-alert/src/react-confirm-alert.css'; 
+import "react-confirm-alert/src/react-confirm-alert.css";
+import html2canvas from "html2canvas";
 
 import SelectEntity from "./right_toolbar/selectEntity";
 import SelectRelationship from "./right_toolbar/selectRelationship";
@@ -504,6 +505,14 @@ export default function Editor({user, setUser}) {
     a.remove();
   };
 
+  const createSchemaImage = () => {
+    const canvasDiv = document.getElementsByClassName("canvas")[0];
+    html2canvas(canvasDiv).then((canvas) => {
+      const newTab = window.open("about:blank", "schema");
+      newTab.document.write("<img src='" + canvas.toDataURL("image/png") + "' alt=''/>");
+    });
+  };
+
   const elementFunctions = {
     getElement: getElement,
     addElement: addElement,
@@ -532,6 +541,7 @@ export default function Editor({user, setUser}) {
     exportStateToObject,
     uploadStateFromObject,
     downloadStateAsObject,
+    createSchemaImage,
     translate: (schema) => {
       setContext({
         action: actions.TRANSLATE,
