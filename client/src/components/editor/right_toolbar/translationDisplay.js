@@ -4,7 +4,7 @@ import "./toolbar-right.css";
 export default function DisplayTranslation(props) {
   return (
     <div className="toolbar-right">
-    <div> <b>Relational Schema:</b> </div>
+    <div > <b>Relational Schema:</b> </div>
     {
         displayTables(props.relationalSchema)
     }
@@ -39,14 +39,14 @@ const displayTable = (tableName, content) => {
             cols.push(col.columnName)
         }
     })
-   return <div> {tableName}(<u>{primaryKeys.join(',')}</u>{cols.length > 0 ? ',' : null}{cols.join(',') + ')'} </div>
+   return <div className="translation"> {tableName}(<u>{primaryKeys.join(',')}</u>{cols.length > 0 ? ',' : null}{cols.join(',') + ')'} </div>
 }
 
 const displayTablesFK = (tableName, content) => {
     var fks = []
     content.foreignKeys.forEach((fk) => {
         var key = "(" + fk.columns.join(',') + ")";
-        fks.push(<div> {tableName + key +"=>" + fk.foreignTable + key} </div>)
+        fks.push(<div> {tableName + key +" => " + fk.foreignTable + key} </div>)
     })
     return <div className="translation">{fks}</div>;
 
