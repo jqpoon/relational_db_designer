@@ -92,8 +92,8 @@ export const saveChanges = (node, functions, change) => {
 };
 
 export function Node({ className, node, ctx, ctxMenuActions, functions }) {
-  // posCache is used for updating positions of child nodes
-  const [posCache, setPosCache] = useState(node.pos);
+  // posCache tracks position of node while being dragged
+  const [posCache, setPosCache] = useState(null);
   const [editing, setEditing] = useState(false);
 
   /** Initialisations and event handlers */
@@ -166,6 +166,7 @@ export function Node({ className, node, ctx, ctxMenuActions, functions }) {
         // Re-enable panning of canvas
         functions.setPanDisabled(false);
       }
+      setPosCache(null);
     },
   };
 
@@ -204,7 +205,7 @@ export function Node({ className, node, ctx, ctxMenuActions, functions }) {
         ? Object.values(node.attributes).map((attribute) => {
             return (
               <Attribute
-                parent={posCache}
+                parent={posCache || node.pos}
                 attribute={attribute}
                 ctx={ctx}
                 functions={functions}
