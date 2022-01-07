@@ -153,11 +153,11 @@ const showFile = (info, functions) =>{
         }
         tooltip="Save diagram to storage"
       />
-       <ClickAction
+       {/* <ClickAction
         title="Validate"
         action={functions.exportToJSON}
         tooltip="Validate ER diagram"
-      />
+      /> */}
        {info.erid ? (
         <>
           <ClickAction
