@@ -56,18 +56,19 @@ export function AttributeEdge({ parent, child, scale }) {
     <Xarrow
       start={child.toString()}
       end={parent.toString()}
-      // showTail
-      // tailShape="circle"
+      showTail
+      tailShape="circle"
+      tailSize={4}
       headSize="0"
       curveness={0}
       endAnchor="middle"
-      startAnchor="middle"
       strokeWidth={4 * scale}
-      passProps={{
-        onClick: () => {
-          /*TODO */
-        },
+      arrowTailProps={{
+        fill: "white",
+        strokeWidth: "0.2",
+        stroke: "black",
       }}
+      lineColor="black"
       zIndex={-1}
     />
   );

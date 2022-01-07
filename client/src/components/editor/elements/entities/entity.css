@@ -1,0 +1,43 @@
+.entity,
+.weak-entity {
+  width: 150px;
+  height: 75px;
+  z-index: 15;
+  justify-content: center;
+  align-items: center;
+  display: table;
+}
+
+.entity {
+  border: 1px solid black;
+  background-color: var(--entity-color);
+}
+
+.weak-entity {
+  border-width: 8px;
+  border-style: double ;
+  border-color: black;
+  background-color: var(--weak-entity-color);
+}
+
+.entity .edit,
+.weak-entity .edit {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  width: 100%;
+  align-items: center;
+}
+
+.entity .edit input,
+.weak-entity .edit input {
+  width: 80%;
+  margin-top: 5px;
+}
+
+.entity .view,
+.weak-entity .view {
+  height: 100%;
+  display: table-cell;
+  vertical-align: middle;
+}

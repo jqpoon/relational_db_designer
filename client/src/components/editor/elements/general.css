@@ -1,0 +1,16 @@
+.node-wrapper {
+  position: absolute;
+  /* Important Below */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  --generalisation-norm: lightblue;
+  --generalisation-darken: rgb(111, 163, 179);
+  --entity-norm: lightblue;
+  --entity-darken: rgb(111, 163, 179);
+  --weak-entity-norm: lightblue;
+  --weak-entity-darken: rgb(111, 163, 179);
+  --relationship-norm: beige;
+  --relationship-darken: rgb(216, 216, 194);
+}

@@ -4,7 +4,6 @@ import { actions, types } from "./types";
 import Edge, { AttributeEdge, HierarchyEdge } from "./edges/edge";
 import { Xwrapper } from "react-xarrows";
 import "./stylesheets/editor.css";
-import { Entity, Relationship } from "./nodes/node";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import html2canvas from "html2canvas";
@@ -17,9 +16,8 @@ import { ContextMenu } from "./contextMenu";
 import DisplayTranslation from "./right_toolbar/translationDisplay";
 import { addToUndo, redo, undo } from "./historyUtilities/history";
 import { deletes, gets, updates } from "./elementUtilities/elementFunctions";
-import { saveCounter, setCounter } from "./idGenerator";
+import { saveIdCounter, setIdCounter } from "./idGenerator";
 import LeftToolbar from "./leftToolbar/leftToolbar";
-import axios from "axios";
 import Load from "./right_toolbar/load";
 import Share from "./right_toolbar/share";
 import {
@@ -28,8 +26,20 @@ import {
   saveERDToBackEnd,
   translateERtoRelational,
 } from "./backendUtilities/backendUtils";
+import { Relationship } from "./elements/relationships/relationship";
+import { Entity } from "./elements/entities/entity";
+import axios from "axios";
 
 export default function Editor({ user, setUser, socket, setSocket }) {
+  /** ERD Metadata
+   * name - name of ERD
+   * erid - id of ERD
+   * counter - version of schema retrieved from backend, used to check for update conflicts
+   */
+  const [name, setName] = useState("Untitled");
+  const [erid, setErid] = useState(null);
+  const [counter, setCounter] = useState(0);
+
   // Canvas states: passed to children for metadata (eg width and height of main container)
   const parentRef = useRef(null);
   const [render, setRender] = useState(false);
@@ -45,18 +55,33 @@ export default function Editor({ user, setUser, socket, setSocket }) {
 
   stateRef.current = elements;
 
-  socket.on("schema updated", (data) => {
-      if (data.socketID !== socket.id) {
+  socket.on("schema updated", (res) => {
+      if (res.socketID !== socket.id) {
           console.log("schema updated")
-          setElements(data.schema);
+          setElements(res.body.data);
       }
+      setCounter(res.body.counter);
+      setIdCounter(res.body.idCounter);
   });
 
-  socket.on("error", (data) => {
+  socket.on("schema reloaded", (res) => {
+    console.log("schema reloaded")
+    console.log(res)
+    setElements(res.body.data);
+    setCounter(res.body.counter);
+    setIdCounter(res.body.idCounter);
+  })
+
+  socket.on("error", async (resp) => {
     console.log("error")
 
-    if (data.socketID === socket.id) {
-      console.log(data.error_msg)
+    if (resp.socketID === socket.id) {
+      if (resp.error_code === 409) {
+        socket.emit("reload schema", {
+          uid: user,
+          erid: erid,
+        })
+      }
     }
   });
 
@@ -66,13 +91,18 @@ export default function Editor({ user, setUser, socket, setSocket }) {
 
   const elementsAndSetter = { elements: elements, setElements: (e) => {
     setElements(e);
-    // if (erid !== null) {
-    //   socket.emit("update schema", {
-    //     uid: user,
-    //     erid: erid,
-    //     schema: stateRef.current,
-    //   })
-    // }
+    if (erid !== null) {
+      socket.emit("update schema", {
+        uid: user,
+        erid: erid,
+        body: {
+          name: name,
+          data: stateRef.current,
+          counter: counter,
+          idCounter: saveIdCounter(),
+        }
+      })
+    }
     }
   };
 
@@ -82,16 +112,13 @@ export default function Editor({ user, setUser, socket, setSocket }) {
     setHistory: setHistory,
   };
 
-  const [name, setName] = useState("Untitled");
-  const [erid, setErid] = useState(null);
-
   const [context, setContext] = useState({ action: actions.NORMAL });
 
   const [contextMenu, setContextMenu] = useState(null);
 
   const resetClick = (e) => {
-    if (e.target.classList.contains("canvas")) {
-      setContext({ action: actions.NORMAL });
+    if (e.target.classList.contains("react-transform-wrapper")) {
+      setContext({ action: actions.NORMAL, disableNodeNameEditing: true });
     }
   };
 
@@ -130,25 +157,39 @@ export default function Editor({ user, setUser, socket, setSocket }) {
     document?.addEventListener("click", resetClick);
   }, []);
 
-  // Resets the state of the whiteboard and deletes the current schema.
+  useEffect(() => {
+    if (erid !== null) {
+      socket.emit("leave all");
+      socket.emit("connect schema", {
+        erid: erid,
+      })
+      setJoinedRoom(true);
+    }
+  }, [erid])
+
+  // Resets the state of the whiteboard and deletes the current schema if obj == null.
+  // else imports state from obj
   const resetState = (obj) => {
     setName(obj?.name || "Untitled");
     setErid(obj?.erid || null);
     setCounter(obj?.counter || 0);
-    setElements(obj?.state || { entities: {}, relationships: {}, edges: {} });
+    if (obj?.idCounter) setIdCounter(obj.idCounter);
+    setElements(obj?.data || { entities: {}, relationships: {}, edges: {} });
     setHistory({ store: [], position: -1 });
   };
   useEffect(() => {
     // Loads latest ER diagram on login / refreshing the page
-    const state = JSON.parse(localStorage.getItem('state'));
+    const state = JSON.parse(localStorage.getItem("state"));
     importStateFromObject(state);
+    setErid(localStorage.getItem("erid"));
   }, [user]);
 
   useEffect(() => {
     // Loads current state into local storage whenever ER diagram changes
     const state = exportStateToObject();
-    localStorage.setItem('state', JSON.stringify(state));
-    localStorage.setItem('user', user);
+    localStorage.setItem("state", JSON.stringify(state));
+    localStorage.setItem("user", user);
+    localStorage.setItem("erid", erid);
   }, [elements, history]);
 
   // Returns a copy of the element
@@ -191,28 +232,17 @@ export default function Editor({ user, setUser, socket, setSocket }) {
 
   // Translates entire model state from backend JSON into client components.
   const importStateFromObject = (obj) => {
-    console.log(obj);
-    if (!joinedRoom && obj.erid !== undefined) {
-      socket.emit("connect schema", {
-        erid: obj.erid,
-      })
-      setJoinedRoom(true);
-    } else {
-      if (obj.erid !== erid && erid !== undefined && obj.erid !== undefined) {
-        socket.emit("leave schema", {
-          erid: erid,
-        })
-        socket.emit("connect schema", {
-          erid: obj.erid,
-        })
-      }
-    }
     resetState(obj);
   };
 
   // Translates entire schema state into a single JSON object.
   const exportStateToObject = () => {
-    return { name: name, state: elements, counter: saveCounter() };
+    let obj = { name: name, data: elements, idCounter: saveIdCounter() };
+    if (counter !== 0) {
+      // Object has already been created, save counter to check against backend
+      obj["counter"] = counter;
+    }
+    return obj;
   };
 
   // Translates entire schema state into a JSON object that fits backend format.
@@ -361,7 +391,9 @@ export default function Editor({ user, setUser, socket, setSocket }) {
     const canvasDiv = document.getElementsByClassName("canvas")[0];
     html2canvas(canvasDiv).then((canvas) => {
       const newTab = window.open("about:blank", "schema");
-      newTab.document.write("<img src='" + canvas.toDataURL("image/png") + "' alt=''/>");
+      newTab.document.write(
+        "<img src='" + canvas.toDataURL("image/png") + "' alt=''/>"
+      );
     });
   };
 
@@ -372,6 +404,7 @@ export default function Editor({ user, setUser, socket, setSocket }) {
     resetERD: resetState,
     setErid: setErid,
     setContext: setContext,
+    setCounter: setCounter,
   };
 
   const leftToolBarActions = {
@@ -385,11 +418,14 @@ export default function Editor({ user, setUser, socket, setSocket }) {
     undo: () => undo(historyAndSetter, elementsAndSetter),
     redo: () => redo(historyAndSetter, elementsAndSetter),
     logout: () => {
-      setUser(null);
       if (socket !== null) {
         socket.disconnect();
         setSocket(null);
       }
+      localStorage.removeItem('user');
+      localStorage.removeItem('state');
+      localStorage.removeItem('erid');
+      setUser(null);
     },
     deleteERD: async () => deleteERDInBackEnd(backendUtils),
     resetState: resetState,
@@ -398,7 +434,15 @@ export default function Editor({ user, setUser, socket, setSocket }) {
 
   const nodeConfig = {
     parentRef: parentRef,
-    scale: 1,
+    ctx: { scale: scale, context: context },
+    functions: {
+      getElement: getElement,
+      updateElement: updateElement,
+      addElement: addElement,
+      setContext: setContext,
+      setContextMenu: setContextMenu,
+      setPanDisabled: setPanDisabled,
+    },
   };
 
   const showRightToolbar = () => {
@@ -475,7 +519,11 @@ export default function Editor({ user, setUser, socket, setSocket }) {
     return Object.values(nodes).map((node) => {
       return Object.values(node.attributes).map((attribute) => {
         return (
-          <AttributeEdge parent={attribute.parent.id} child={attribute.id} scale={scale} />
+          <AttributeEdge
+            parent={attribute.parent.id}
+            child={attribute.id}
+            scale={scale}
+          />
         );
       });
     });
@@ -490,7 +538,11 @@ export default function Editor({ user, setUser, socket, setSocket }) {
         {/* Generalisation edges */}
         {Object.values(elements.entities).map((entity) => {
           return Object.values(entity.generalisations).map((generalisation) => (
-            <HierarchyEdge parent={entity.id} child={generalisation.id} scale={scale} />
+            <HierarchyEdge
+              parent={entity.id}
+              child={generalisation.id}
+              scale={scale}
+            />
           ));
         })}
         {/* Attribute edges */}
@@ -512,25 +564,13 @@ export default function Editor({ user, setUser, socket, setSocket }) {
                   onClick={() => setPanDisabled(false)}
                 >
                   {Object.values(elements.entities).map((entity) => (
-                    <Entity
-                      key={entity.id}
-                      entity={entity}
-                      general={{
-                        ...nodeConfig,
-                        ...elementFunctions,
-                        ...generalFunctions,
-                      }}
-                    />
+                    <Entity key={entity.id} entity={entity} {...nodeConfig} />
                   ))}
                   {Object.values(elements.relationships).map((relationship) => (
                     <Relationship
                       key={relationship.id}
                       relationship={relationship}
-                      general={{
-                        ...nodeConfig,
-                        ...elementFunctions,
-                        ...generalFunctions,
-                      }}
+                      {...nodeConfig}
                     />
                   ))}
                 </div>

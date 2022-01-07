@@ -119,6 +119,7 @@ export default function SelectEntity({
 
   const utilities = {
     ...context,
+    context: context,
     setContext: setContext,
     getElement: getElement,
     addElement: addElement,

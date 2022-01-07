@@ -1,5 +1,5 @@
 import { MdClear } from "react-icons/md";
-import { addAttributeToNode } from "../../edges/attribute";
+import { addAttributeToNode } from "../../elements/attributes/attribute";
 import { types } from "../../types";
 
 export function AddAttribute(props) {

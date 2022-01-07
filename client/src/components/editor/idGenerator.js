@@ -7,10 +7,10 @@ class IdCounter {
   }
 }
 
-export function setCounter(count) {
+export function setIdCounter(count) {
   IdCounter.counter = count;
 }
-export function saveCounter() {
+export function saveIdCounter() {
   return IdCounter.counter;
 }
 export function getId(type, parentId = null, secondaryId = null) {
