@@ -3,7 +3,7 @@ import { initialEntities, initialRelationships, initialEdges } from "./initial";
 import { actions, types } from "./types";
 import Edge, { AttributeEdge, HierarchyEdge } from "./edges/edge";
 import { Xwrapper } from "react-xarrows";
-import "./stylesheets/editor.css";
+import "./editor.css";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import html2canvas from "html2canvas";
@@ -63,7 +63,10 @@ export default function Editor({ user, setUser }) {
   const [contextMenu, setContextMenu] = useState(null);
 
   const resetClick = (e) => {
-    if (e.target.classList.contains("react-transform-wrapper")) {
+    if (
+      e.target.classList.contains("react-transform-wrapper") ||
+      e.target.classList.contains("canvas")
+    ) {
       setContext({ action: actions.NORMAL, disableNodeNameEditing: true });
     }
   };
@@ -352,8 +355,8 @@ export default function Editor({ user, setUser }) {
     undo: () => undo(historyAndSetter, elementsAndSetter),
     redo: () => redo(historyAndSetter, elementsAndSetter),
     logout: () => {
-      localStorage.removeItem('user');
-      localStorage.removeItem('state');
+      localStorage.removeItem("user");
+      localStorage.removeItem("state");
       setUser(null);
     },
     deleteERD: async () => deleteERDInBackEnd(backendUtils),
