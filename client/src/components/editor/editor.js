@@ -16,7 +16,7 @@ import { ContextMenu } from "./contextMenu";
 import DisplayTranslation from "./right_toolbar/translationDisplay";
 import { addToUndo, redo, undo } from "./historyUtilities/history";
 import { deletes, gets, updates } from "./elementUtilities/elementFunctions";
-import { saveCounter, setCounter } from "./idGenerator";
+import { saveIdCounter, setIdCounter } from "./idGenerator";
 import LeftToolbar from "./leftToolbar/leftToolbar";
 import Load from "./right_toolbar/load";
 import Share from "./right_toolbar/share";
@@ -30,6 +30,15 @@ import { Relationship } from "./elements/relationships/relationship";
 import { Entity } from "./elements/entities/entity";
 
 export default function Editor({ user, setUser }) {
+  /** ERD Metadata
+   * name - name of ERD
+   * erid - id of ERD
+   * counter - version of schema retrieved from backend, used to check for update conflicts
+   */
+  const [name, setName] = useState("Untitled");
+  const [erid, setErid] = useState(null);
+  const [counter, setCounter] = useState(0);
+
   // Canvas states: passed to children for metadata (eg width and height of main container)
   const parentRef = useRef(null);
   const [render, setRender] = useState(false);
@@ -48,9 +57,6 @@ export default function Editor({ user, setUser }) {
     history: history,
     setHistory: setHistory,
   };
-
-  const [name, setName] = useState("Untitled");
-  const [erid, setErid] = useState(null);
 
   const [context, setContext] = useState({ action: actions.NORMAL });
 
@@ -97,11 +103,13 @@ export default function Editor({ user, setUser }) {
     document?.addEventListener("click", resetClick);
   }, []);
 
-  // Resets the state of the whiteboard and deletes the current schema.
+  // Resets the state of the whiteboard and deletes the current schema if obj == null.
+  // else imports state from obj
   const resetState = (obj) => {
     setName(obj?.name || "Untitled");
     setErid(obj?.erid || null);
     setCounter(obj?.counter || 0);
+    if (obj?.idCounter) setIdCounter(obj.idCounter);
     setElements(obj?.data || { entities: {}, relationships: {}, edges: {} });
     setHistory({ store: [], position: -1 });
   };
@@ -163,7 +171,12 @@ export default function Editor({ user, setUser }) {
 
   // Translates entire schema state into a single JSON object.
   const exportStateToObject = () => {
-    return { name: name, data: elements, counter: saveCounter() };
+    let obj = { name: name, data: elements, idCounter: saveIdCounter() };
+    if (counter !== 0) {
+      // Object has already been created, save counter to check against backend
+      obj["counter"] = counter;
+    }
+    return obj;
   };
 
   // Translates entire schema state into a JSON object that fits backend format.
@@ -325,6 +338,7 @@ export default function Editor({ user, setUser }) {
     resetERD: resetState,
     setErid: setErid,
     setContext: setContext,
+    setCounter: setCounter,
   };
 
   const leftToolBarActions = {
@@ -349,6 +363,7 @@ export default function Editor({ user, setUser }) {
     functions: {
       getElement: getElement,
       updateElement: updateElement,
+      addElement: addElement,
       setContext: setContext,
       setContextMenu: setContextMenu,
       setPanDisabled: setPanDisabled,
@@ -474,11 +489,7 @@ export default function Editor({ user, setUser }) {
                   onClick={() => setPanDisabled(false)}
                 >
                   {Object.values(elements.entities).map((entity) => (
-                    <Entity
-                      key={entity.id}
-                      entity={entity}
-                      {...nodeConfig}
-                    />
+                    <Entity key={entity.id} entity={entity} {...nodeConfig} />
                   ))}
                   {Object.values(elements.relationships).map((relationship) => (
                     <Relationship

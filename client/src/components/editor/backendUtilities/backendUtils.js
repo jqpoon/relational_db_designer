@@ -33,31 +33,33 @@ export const saveERDToBackEnd = async (data) => {
   save(data);
 };
 
-const createERD = async ({ user, exportERD, setErid }) => {
+const createERD = async ({ user, exportERD, setErid, setCounter }) => {
   try {
     const res = await axios.post(`/api/erd?Uid=${user}`, exportERD());
     const erid = await res.data;
     setErid(erid);
+    setCounter((c) => c + 1);
     alert("ERD successfully created");
   } catch (error) {
     alert(error.response.data);
   }
 };
 
-const updateERD = async ({ user, erid, exportERD }) => {
+const updateERD = async ({ user, erid, exportERD, setCounter }) => {
   try {
     const res = await axios.put(
       `/api/erd?Uid=${user}&ERid=${erid}`,
       exportERD()
     );
     const data = await res.data;
+    setCounter((c) => c + 1);
     alert(data);
   } catch (error) {
     alert(error.response.data);
   }
 };
 
-export const translateERtoRelational = ({exportERD, setContext}) => {
+export const translateERtoRelational = ({ exportERD, setContext }) => {
   axios
     .post("/translation/translate", exportERD())
     .then(function (response) {
