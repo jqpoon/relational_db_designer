@@ -62,11 +62,11 @@
 }
 
 .toolbar-left input {
+  background-color: white;
   text-align: center;
 }
 
 .toolbar-left input:hover, input:focus {
-  background-color: white;
   cursor: text;
   outline: none !important;
   border: 1px solid orange !important;

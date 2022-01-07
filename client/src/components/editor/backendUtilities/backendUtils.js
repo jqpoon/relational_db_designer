@@ -75,7 +75,7 @@ const updateERD = async ({ user, erid, exportERD, setCounter }) => {
 
 export const translateERtoRelational = ({ exportERD, setContext }) => {
   axios
-    .post("/translation/translate", exportERD())
+    .post("api/translation/translate", exportERD())
     .then(function (response) {
       setContext({
         action: actions.TRANSLATE,

@@ -16,7 +16,7 @@ const displayTables = (tables) => {
     var tabs = []
     var fks = []
     Object.keys(tables).forEach((key) =>
-    {	
+    {
         tabs.push(displayTable(key, tables[key]))
         fks.push(displayTablesFK(key, tables[key]))
     })
@@ -46,7 +46,7 @@ const displayTablesFK = (tableName, content) => {
     var fks = []
     content.foreignKeys.forEach((fk) => {
         var key = "(" + fk.columns.join(',') + ")";
-        fks.push(<div>{tableName + key +"=>" + fk.foreignTable + key} </div>)
+        fks.push(<div> {tableName + key +"=>" + fk.foreignTable + key} </div>)
     })
     return <div className="translation">{fks}</div>;
 
