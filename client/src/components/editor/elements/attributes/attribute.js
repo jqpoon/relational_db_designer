@@ -1,4 +1,5 @@
-
+import { getId } from "../../idGenerator";
+import { types } from "../../types";
 import { Node, saveChanges } from "../general";
 
 // Toggles key attribute feature
@@ -25,6 +26,23 @@ const toggleMultiValuedAttribute = (attr, functions) => () =>
     attr.isMultiValued = !attr.isMultiValued;
     attr.isPrimaryKey = false;
   });
+
+export const addAttributeToNode = ({ addElement, parent }) => {
+  addElement(types.ATTRIBUTE, createAttribute(parent));
+};
+
+export const createAttribute = (parent) => {
+  return {
+    parent: { id: parent.id, type: parent.type },
+    id: getId(types.ATTRIBUTE, parent.id),
+    text: "Attribute",
+    relativePos: { x: -130, y: 15 }, // Preconfigured initial position
+    isPrimaryKey: false,
+    isMultiValued: false,
+    isOptional: false,
+    type: types.ATTRIBUTE,
+  };
+};
 
 export function Attribute({ parent, attribute, ctx, functions }) {
   /** Position calculations */

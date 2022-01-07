@@ -1,4 +1,4 @@
-import { addAttributeToNode } from "../../edges/attribute";
+import { addAttributeToNode } from "../attributes/attribute";
 import { Node } from "../general";
 
 export function Relationship({ relationship, ctx, functions }) {
