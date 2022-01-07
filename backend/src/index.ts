@@ -18,6 +18,7 @@ const ioServer = new Server(httpServer, {
 
 ioServer.on("connection", (socket) => {
     logger.info('Client connected');
+    logger.info(socket.id);
     SchemaHandler(ioServer, socket);
 
     socket.on("disconnect", (reason) => {

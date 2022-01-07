@@ -10,8 +10,22 @@ function SchemaHandler(io: Server, socket: Socket) {
         let erid: string = data.erid;
 
         // sockets join the erid room
+        logger.info(socket.id);
         logger.info("joined room");
+        logger.info(erid);
         socket.join(erid)
+    }
+
+    const leaveSchemaRoom = (data: { erid: string; }) => {
+
+        let erid: string = data.erid;
+
+        // sockets join the erid room
+        logger.info(socket.id);
+        logger.info("leave room");
+        logger.info(erid);
+
+        socket.leave(erid)
     }
 
     const updateSchema = (data: { uid: string; erid: string; schema: string; }) => {
@@ -19,7 +33,11 @@ function SchemaHandler(io: Server, socket: Socket) {
         let erid: string = data.erid;
         let schema = JSON.stringify(data.schema as string)
 
+        logger.info("updated")
         logger.info(socket.id);
+        logger.info(erid);
+        logger.info(schema);
+        logger.info(io.sockets.adapter.rooms.get(erid)!.size);
 
         FirebaseController.getInstance().updateERD(uid, erid, schema).then(() => {
 
@@ -35,6 +53,7 @@ function SchemaHandler(io: Server, socket: Socket) {
 
                     // sends to socket saying there is an error
                     socket.emit("error", {
+                        socketID: socket.id,
                         error_code: error.getCode(),
                         error_msg: error.getMsg()
                     });
@@ -42,6 +61,7 @@ function SchemaHandler(io: Server, socket: Socket) {
 
                     // sends to socket saying there is an error
                     socket.emit("error", {
+                        socketID: socket.id,
                         error_code: 501,
                         error_msg: "An error occured. Please try again later"
                     });
@@ -51,7 +71,7 @@ function SchemaHandler(io: Server, socket: Socket) {
 
     socket.on("update schema", updateSchema);
     socket.on("connect schema", joinSchemaRoom);
-
+    socket.on("leave schema", leaveSchemaRoom);
 }
 
 export default SchemaHandler
