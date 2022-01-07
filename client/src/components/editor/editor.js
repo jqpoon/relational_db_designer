@@ -351,7 +351,11 @@ export default function Editor({ user, setUser }) {
     exportToJSON: downloadStateAsObject,
     undo: () => undo(historyAndSetter, elementsAndSetter),
     redo: () => redo(historyAndSetter, elementsAndSetter),
-    logout: () => setUser(null),
+    logout: () => {
+      localStorage.removeItem('user');
+      localStorage.removeItem('state');
+      setUser(null);
+    },
     deleteERD: async () => deleteERDInBackEnd(backendUtils),
     resetState: resetState,
     setName,
