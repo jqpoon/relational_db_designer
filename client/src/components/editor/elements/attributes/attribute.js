@@ -27,8 +27,11 @@ const toggleMultiValuedAttribute = (attr, functions) => () =>
     attr.isPrimaryKey = false;
   });
 
-export const addAttributeToNode = ({ addElement, parent }) => {
-  addElement(types.ATTRIBUTE, createAttribute(parent));
+export const addAttributeToNode = ({ addElement, parentId, parentType }) => {
+  addElement(
+    types.ATTRIBUTE,
+    createAttribute({ id: parentId, type: parentType })
+  );
 };
 
 export const createAttribute = (parent) => {
