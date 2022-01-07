@@ -63,8 +63,8 @@ export default function Editor({ user, setUser }) {
   const [contextMenu, setContextMenu] = useState(null);
 
   const resetClick = (e) => {
-    if (e.target.classList.contains("canvas")) {
-      setContext({ action: actions.NORMAL, disableNodeNameEditing: true});
+    if (e.target.classList.contains("react-transform-wrapper")) {
+      setContext({ action: actions.NORMAL, disableNodeNameEditing: true });
     }
   };
 
