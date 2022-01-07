@@ -57,7 +57,6 @@ export default function Editor({ user, setUser, socket, setSocket }) {
 
   socket.on("schema updated", (res) => {
       if (res.socketID !== socket.id) {
-          console.log("schema updated")
           setElements(res.body.data);
       }
       setCounter(res.body.counter);
@@ -65,16 +64,12 @@ export default function Editor({ user, setUser, socket, setSocket }) {
   });
 
   socket.on("schema reloaded", (res) => {
-    console.log("schema reloaded")
-    console.log(res)
     setElements(res.body.data);
     setCounter(res.body.counter);
     setIdCounter(res.body.idCounter);
   })
 
   socket.on("error", async (resp) => {
-    console.log("error")
-
     if (resp.socketID === socket.id) {
       if (resp.error_code === 409) {
         socket.emit("reload schema", {
@@ -83,10 +78,6 @@ export default function Editor({ user, setUser, socket, setSocket }) {
         })
       }
     }
-  });
-
-  socket.on("disconnect", () => {
-    console.log("disconnected")
   });
 
   const elementsAndSetter = { elements: elements, setElements: (e) => {
