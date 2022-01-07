@@ -207,7 +207,7 @@ const showFile = (info, functions) =>{
       <ClickAction
         title="Save"
         action={() =>
-          submitHandler(functions.saveERDToBackEnd, "ERD will be saved")
+          submitHandler(functions.saveERD, "ERD will be saved")
         }
         tooltip="Save diagram to storage"
       />
