@@ -1,6 +1,6 @@
 import { Server, Socket } from "socket.io";
-import ErrorBuilder from "src/controllers/errorBuilder";
-import FirebaseController from "src/controllers/firebaseController";
+import ErrorBuilder from "../controllers/errorBuilder";
+import FirebaseController from "../controllers/firebaseController";
 import logger from '@shared/Logger';
 
 function SchemaHandler(io: Server, socket: Socket) {
