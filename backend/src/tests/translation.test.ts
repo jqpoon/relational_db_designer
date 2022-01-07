@@ -298,7 +298,7 @@ test("subset", async () => {
         {id: "0", text: "manager", pos: {x: 0, y: 0}, isWeak: false, attributes: [
             {id: "00", text: "mobile number", relativePos: {x: 0, y: 0}, 
                 isMultiValued: false, isPrimaryKey: false, isOptional: false}
-        ], subsets: [person]},
+        ], subsets: ["1"]},
         person];
     
     var relationships: Relationship[] = [];
