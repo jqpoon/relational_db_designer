@@ -2,13 +2,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useXarrow } from "react-xarrows";
 import Draggable from "react-draggable";
 
-import { actions } from "../types";
+import { actions, types } from "../types";
 import "./relationships/relationship.css";
 import "./attributes/attribute.css";
 import "./entities/entity.css";
 import "./generalisations/generalisation.css";
-import "./general.css"
+import "./general.css";
 import { Attribute } from "./attributes/attribute";
+import { RelationshipEdge } from "./relationshipEdges/relationshipEdge";
+import { HierarchyEdge } from "./hierarchyEdges/hierarchyEdge";
 
 function NodeView({ node }) {
   return (
@@ -136,7 +138,7 @@ export function Node({ className, node, ctx, ctxMenuActions, functions }) {
     if (ctx.context.disableNodeNameEditing === true) {
       setEditing(false);
     }
-  }, [ctx.context.disableNodeNameEditing])
+  }, [ctx.context.disableNodeNameEditing]);
 
   /** Dragging configurations */
   // Hook for rendering edges:
@@ -215,4 +217,16 @@ export function Node({ className, node, ctx, ctxMenuActions, functions }) {
         : null}
     </>
   );
+}
+
+export default function Edge({ edge, scale }) {
+  switch (edge.type) {
+    case types.EDGE.RELATIONSHIP:
+      return <RelationshipEdge {...edge} scale={scale} />;
+    case types.EDGE.HIERARCHY:
+      return <HierarchyEdge {...edge} scale={scale} />;
+    default:
+      console.log("Invalid edge type encountered: " + edge.type);
+      return null;
+  }
 }
