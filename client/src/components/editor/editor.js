@@ -29,10 +29,12 @@ import {
   translateERtoRelational,
 } from "./backendUtilities/backendUtils";
 
-export default function Editor({ user, setUser }) {
+export default function Editor({ user, setUser, socket, setSocket }) {
   // Canvas states: passed to children for metadata (eg width and height of main container)
   const parentRef = useRef(null);
   const [render, setRender] = useState(false);
+  const [joinedRoom, setJoinedRoom] = useState(false);
+  const stateRef = useRef();
 
   // List of components that will be rendered
   const [elements, setElements] = useState({
@@ -41,7 +43,38 @@ export default function Editor({ user, setUser }) {
     edges: initialEdges,
   });
 
-  const elementsAndSetter = { elements: elements, setElements: setElements };
+  stateRef.current = elements;
+
+  socket.on("schema updated", (data) => {
+      if (data.socketID !== socket.id) {
+          console.log("schema updated")
+          setElements(data.schema);
+      }
+  });
+
+  socket.on("error", (data) => {
+    console.log("error")
+
+    if (data.socketID === socket.id) {
+      console.log(data.error_msg)
+    }
+  });
+
+  socket.on("disconnect", () => {
+    console.log("disconnected")
+  });
+
+  const elementsAndSetter = { elements: elements, setElements: (e) => {
+    setElements(e);
+    // if (erid !== null) {
+    //   socket.emit("update schema", {
+    //     uid: user,
+    //     erid: erid,
+    //     schema: stateRef.current,
+    //   })
+    // }
+    }
+  };
 
   const [history, setHistory] = useState({ store: [], position: -1 });
   const historyAndSetter = {
@@ -158,6 +191,22 @@ export default function Editor({ user, setUser }) {
 
   // Translates entire model state from backend JSON into client components.
   const importStateFromObject = (obj) => {
+    console.log(obj);
+    if (!joinedRoom && obj.erid !== undefined) {
+      socket.emit("connect schema", {
+        erid: obj.erid,
+      })
+      setJoinedRoom(true);
+    } else {
+      if (obj.erid !== erid && erid !== undefined && obj.erid !== undefined) {
+        socket.emit("leave schema", {
+          erid: erid,
+        })
+        socket.emit("connect schema", {
+          erid: obj.erid,
+        })
+      }
+    }
     resetState(obj);
   };
 
@@ -335,7 +384,13 @@ export default function Editor({ user, setUser }) {
     exportToJSON: downloadStateAsObject,
     undo: () => undo(historyAndSetter, elementsAndSetter),
     redo: () => redo(historyAndSetter, elementsAndSetter),
-    logout: () => setUser(null),
+    logout: () => {
+      setUser(null);
+      if (socket !== null) {
+        socket.disconnect();
+        setSocket(null);
+      }
+    },
     deleteERD: async () => deleteERDInBackEnd(backendUtils),
     resetState: resetState,
     setName,
