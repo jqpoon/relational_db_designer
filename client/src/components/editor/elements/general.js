@@ -131,6 +131,13 @@ export function Node({ className, node, ctx, ctxMenuActions, functions }) {
     };
   }, [handleContextMenu, handleClick]);
 
+  // Disables editing-mode if right tool bar is editing name as well
+  useEffect(() => {
+    if (ctx.context.disableNodeNameEditing === true) {
+      setEditing(false);
+    }
+  }, [ctx.context.disableNodeNameEditing])
+
   /** Dragging configurations */
   // Hook for rendering edges:
   const updateXarrow = useXarrow();

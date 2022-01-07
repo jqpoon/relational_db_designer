@@ -64,7 +64,7 @@ export default function Editor({ user, setUser }) {
 
   const resetClick = (e) => {
     if (e.target.classList.contains("canvas")) {
-      setContext({ action: actions.NORMAL });
+      setContext({ action: actions.NORMAL, disableNodeNameEditing: true});
     }
   };
 
