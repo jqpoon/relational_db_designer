@@ -256,7 +256,7 @@ const showFile = (info, functions) =>{
       />
        <ClickAction
         title="Export to PNG"
-        action={functions.exportToJSON}
+        action={functions.exportToPNG}
         tooltip="Export diagram to PNG"
       />
 

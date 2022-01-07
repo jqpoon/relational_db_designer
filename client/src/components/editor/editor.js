@@ -98,6 +98,8 @@ export default function Editor({ user, setUser }) {
     limitToBounds: false,
   };
 
+  const canvasExportableCompID = "canvasExportableComp";
+
   useEffect(() => {
     setRender(true);
     document?.addEventListener("click", resetClick);
@@ -322,8 +324,14 @@ export default function Editor({ user, setUser }) {
   };
 
   const createSchemaImage = () => {
-    const canvasDiv = document.getElementsByClassName("canvas")[0];
-    html2canvas(canvasDiv).then((canvas) => {
+    const canvasDiv = document.getElementById(canvasExportableCompID);
+    html2canvas(canvasDiv, {
+      allowTaint : true,
+      foreignObjectRendering: true,
+      logging: true,
+      scrollX: -window.scrollX,
+      scrollY: -window.scrollY,
+    }).then((canvas) => {
       const newTab = window.open("about:blank", "schema");
       newTab.document.write(
         "<img src='" + canvas.toDataURL("image/png") + "' alt=''/>"
@@ -349,6 +357,7 @@ export default function Editor({ user, setUser }) {
     translateERtoRelational: () => translateERtoRelational(backendUtils),
     importFromJSON: uploadStateFromObject,
     exportToJSON: downloadStateAsObject,
+    exportToPNG: createSchemaImage,
     undo: () => undo(historyAndSetter, elementsAndSetter),
     redo: () => redo(historyAndSetter, elementsAndSetter),
     logout: () => {
@@ -486,26 +495,28 @@ export default function Editor({ user, setUser }) {
       <div className="editor" ref={parentRef}>
         {render ? (
           <>
-            <TransformWrapper {...canvasConfig}>
-              <TransformComponent>
-                <div
-                  className="canvas" // TODO: previously "dnd"
-                  onClick={() => setPanDisabled(false)}
-                >
-                  {Object.values(elements.entities).map((entity) => (
-                    <Entity key={entity.id} entity={entity} {...nodeConfig} />
-                  ))}
-                  {Object.values(elements.relationships).map((relationship) => (
-                    <Relationship
-                      key={relationship.id}
-                      relationship={relationship}
-                      {...nodeConfig}
-                    />
-                  ))}
-                </div>
-              </TransformComponent>
-            </TransformWrapper>
-            {showEdges()}
+            <div id={canvasExportableCompID}>
+              <TransformWrapper {...canvasConfig}>
+                <TransformComponent>
+                  <div
+                    className="canvas" // TODO: previously "dnd"
+                    onClick={() => setPanDisabled(false)}
+                  >
+                    {Object.values(elements.entities).map((entity) => (
+                      <Entity key={entity.id} entity={entity} {...nodeConfig} />
+                    ))}
+                    {Object.values(elements.relationships).map((relationship) => (
+                      <Relationship
+                        key={relationship.id}
+                        relationship={relationship}
+                        {...nodeConfig}
+                      />
+                    ))}
+                  </div>
+                </TransformComponent>
+              </TransformWrapper>
+              {showEdges()}
+            </div>
             <LeftToolbar
               info={erdInfo}
               functions={{ ...leftToolBarActions, ...elementFunctions }}
