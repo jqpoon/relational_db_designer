@@ -87,7 +87,6 @@ const showERid = (name, erid) => {
 const showAbout = (info, functions) => {
   return (
     <div className="group">
-        <div className="group-header">About:</div>
         <div className="group-content">
           <ClickAction
             title="User ID"
@@ -113,7 +112,6 @@ const showAbout = (info, functions) => {
 const showEdit = (info, functions, setScrollable) => {
   return (
     <div className="group">
-        <div className="group-header">Edit:</div>
         <div className="group-content">
           <DragToCreate
             nodeType={types.ENTITY}
@@ -142,7 +140,6 @@ const showEdit = (info, functions, setScrollable) => {
 const showFile = (info, functions) =>{
   return (
     <div className="group" >
-    <div className="group-header">File:</div>
     <div className="group-content">
       <ClickAction
         title="Load"
@@ -156,11 +153,11 @@ const showFile = (info, functions) =>{
         }
         tooltip="Save diagram to storage"
       />
-       <ClickAction
+       {/* <ClickAction
         title="Validate"
         action={functions.exportToJSON}
         tooltip="Validate ER diagram"
-      />
+      /> */}
        {info.erid ? (
         <>
           <ClickAction
@@ -201,7 +198,7 @@ const showFile = (info, functions) =>{
       />
        <ClickAction
         title="Export to PNG"
-        action={functions.exportToJSON}
+        action={functions.exportToPNG}
         tooltip="Export diagram to PNG"
       />
 
@@ -215,6 +212,37 @@ const showFile = (info, functions) =>{
   )
 }
 
+function setColors(category) {
+  var about = document.getElementById("about");
+  var edit = document.getElementById("edit");
+  var file = document.getElementById("file");
+  if (category === 0) {
+      about.style.backgroundColor = "black";
+      about.style.color = "white";
+      edit.style.backgroundColor = "rgba(51, 51, 51, 0.05)";
+      edit.style.color = "black";
+      file.style.backgroundColor = "rgba(51, 51, 51, 0.05)";
+      file.style.color = "black";
+  }
+  else if(category === 1){
+      about.style.backgroundColor = "rgba(51, 51, 51, 0.05)";
+      about.style.color = "black";
+      edit.style.backgroundColor = "black";
+      edit.style.color = "white";
+      file.style.backgroundColor = "rgba(51, 51, 51, 0.05)";
+      file.style.color = "black";
+
+  } else{
+    about.style.backgroundColor = "rgba(51, 51, 51, 0.05)";
+    about.style.color = "black";
+    edit.style.backgroundColor = "rgba(51, 51, 51, 0.05)";
+    edit.style.color = "black";
+    file.style.backgroundColor = "black";
+    file.style.color = "white";
+
+  }
+}
+
 export default function LeftToolbar({ info, functions }) {
   const [scrollable, setScrollable] = useState(true);
   const [category, setCategory] = useState(categories.ABOUT);
@@ -226,17 +254,19 @@ export default function LeftToolbar({ info, functions }) {
     >
       <div className="group" >
         <Tooltip title="Edit name of diagram" placement="right">
+          <label>
           <input
             className="section"
             value={info.name}
             onChange={(e) => functions.setName(e.target.value)}
           />
+          </label>
         </Tooltip>
       </div>
       <div className="outer">
-      <div className="inner"><button class="button-2" onClick={() => {setCategory(categories.ABOUT)}} >About</button></div>
-      <div className="inner"><button class="button-2" onClick={() => {setCategory(categories.FILE)}} >File</button></div>
-      <div className="inner"><button class="button-2" onClick={() => {setCategory(categories.EDIT)}}>Edit</button></div>
+      <div className="inner"><button id="about" class="initial button-2"  onClick={() => {setCategory(categories.ABOUT);setColors(0);}} >About</button></div>
+      <div className="inner"><button id="file" class="button-2" onClick={() => {setCategory(categories.FILE);setColors(2);}} >File</button></div>
+      <div className="inner"><button id="edit" class="button-2" onClick={() => {setCategory(categories.EDIT);setColors(1);}}>Edit</button></div>
       </div>
 
       {category === categories.ABOUT ? showAbout(info, functions) : (category === categories.EDIT ? showEdit(info, functions, setScrollable) : showFile(info, functions))}

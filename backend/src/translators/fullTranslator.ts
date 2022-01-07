@@ -21,12 +21,12 @@ class FullTranslator {
         }
 
         this.entities.forEach((entity: Entity) => { 
-            const eTranslator:EntityTranslator = new EntityTranslator(entity);
+            const eTranslator:EntityTranslator = new EntityTranslator(entity, this.entities);
             eTranslator.translateFromDiagramToTable(translatedTable);
         });
 
         this.relationships.forEach((relationship: Relationship) => { 
-            const rsTranslator:RelationshipTranslator = new RelationshipTranslator(this.entities, relationship);
+            const rsTranslator:RelationshipTranslator = new RelationshipTranslator(this.entities, relationship, this.relationships);
             rsTranslator.translateFromDiagramToTable(translatedTable);
         });
 

@@ -1,7 +1,7 @@
 .toolbar-left {
   position: fixed;
   top: 0;
-  width: 11vw;
+  width: 13vw;
   height: 100%;
   flex-direction: column;
   justify-content: space-between;
@@ -62,11 +62,11 @@
 }
 
 .toolbar-left input {
+  background-color: white;
   text-align: center;
 }
 
 .toolbar-left input:hover, input:focus {
-  background-color: white;
   cursor: text;
   outline: none !important;
   border: 1px solid orange !important;
@@ -109,7 +109,7 @@
   line-height: 20px;
   list-style: none;
   width: 50px;
-  margin: 3px;
+  margin: 1px;
   padding: 10px 5px 12px 5px;
   text-align: center;
   transition: all 200ms;
@@ -121,7 +121,13 @@
 }
 
 .button-2:hover{
-  border: 1px solid orange !important;
+  background-color: black;
+  color: white;
+}
+
+.initial{
+  background-color: black;
+  color: white;
 }
 
 .addButton:active,
