@@ -1,4 +1,4 @@
-import { confirmAlert } from 'react-confirm-alert';
+import { confirmAlert } from "react-confirm-alert";
 
 export const submitHandler = (action, message) => {
   confirmAlert({
@@ -13,5 +13,13 @@ export const submitHandler = (action, message) => {
         label: "No",
       },
     ],
+  });
+};
+
+export const notificationHandler = (title, message) => {
+  confirmAlert({
+    title: title,
+    message,
+    buttons: [{ label: "Close" }],
   });
 };
