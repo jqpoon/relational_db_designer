@@ -13,7 +13,7 @@ interface Entity {
     isWeak?: boolean;
     attributes?: Attribute[];
     // A list of all the sub-entities
-    subsets?: Entity[];
+    subsets?: string[];
 }
 
 

@@ -1,0 +1,92 @@
+name: Experimental workflow for unfinished features
+on: 
+  push:
+    branches:
+      - test-js
+
+jobs:
+  frontend_tests:
+    runs-on: ubuntu-latest
+    container: 
+      image: node:16
+    steps:
+      - name: Frontend tests
+        run: |
+          echo "Frontend test commands here"
+          node --help
+ 
+  backend_tests:
+    runs-on: ubuntu-latest
+    container: 
+      image: node:16
+    steps:
+      - uses: actions/checkout@v2
+      - name: Backend tests
+        env:
+          FIREBASE_APIKEY : ${{ secrets.FIREBASE_APIKEY }}
+          FIREBASE_APPID : ${{ secrets.FIREBASE_APPID }}
+          FIREBASE_AUTHDOMAIN : ${{ secrets.FIREBASE_AUTHDOMAIN }}
+          FIREBASE_MEASUREMENTID : ${{ secrets.FIREBASE_MEASUREMENTID }}
+          FIREBASE_MESSAGINGSENDERID : ${{ secrets.FIREBASE_MESSAGINGSENDERID }}
+          FIREBASE_PROJECTID : ${{ secrets.FIREBASE_PROJECTID }}
+          FIREBASE_STORAGEBUCKET : ${{ secrets.FIREBASE_STORAGEBUCKET }}
+        run: |
+          cd backend
+          npm ci
+          npm run test:translation
+          npm run test:api
+
+  # Deployment
+  backend_deploy:
+    runs-on: ubuntu-latest
+    needs: [frontend_tests, backend_tests]
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Login to Heroku
+        env: 
+          HEROKU_API_KEY : ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          cd backend
+          heroku container:login
+
+      - name: Build and push
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          cd backend
+          heroku container:push -a relational-db-expt-backend web 
+
+      - name: Release
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          cd backend
+          heroku container:release -a relational-db-expt-backend web 
+
+  frontend_deploy:
+    runs-on: ubuntu-latest
+    needs: [frontend_tests, backend_tests]
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Login to Heroku
+        env: 
+          HEROKU_API_KEY : ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          cd client
+          heroku container:login
+
+      - name: Build and push
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          cd client
+          heroku container:push -a relational-db-designer-expt web 
+
+      - name: Release
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          cd client
+          heroku container:release -a relational-db-designer-expt web 

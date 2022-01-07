@@ -1,4 +1,5 @@
 import axios from "axios";
+import { notificationHandler } from "../alerts/alert";
 import { actions } from "../types";
 
 export const duplicateERD = async ({ user, erid, exportERD, importERD }) => {
@@ -11,10 +12,14 @@ export const duplicateERD = async ({ user, erid, exportERD, importERD }) => {
     );
     const duplicateERid = await response.data;
     erd.erid = duplicateERid;
+    erd.counter = 1 // Reset counter
     importERD(erd);
-    alert("ERD has been succesfully duplicated and loaded");
+    notificationHandler(
+      "Success",
+      `ERD (id: ${erd.erid}) was successfully duplicated (old: ${erid}) and loaded.`
+    );
   } catch (error) {
-    alert(error.response.data);
+    notificationHandler("Error", error.response.data);
   }
 };
 
@@ -22,9 +27,12 @@ export const deleteERDInBackEnd = async ({ user, erid, resetERD }) => {
   try {
     const response = await axios.delete(`/api/erd?Uid=${user}&ERid=${erid}`);
     resetERD();
-    alert(response.data);
+    notificationHandler(
+      "Success",
+      `ERD (id: ${erid}) was successfully deleted.`
+    );
   } catch (error) {
-    alert(error.response.data);
+    notificationHandler("Error", error.response.data);
   }
 };
 
@@ -39,9 +47,12 @@ const createERD = async ({ user, exportERD, setErid, setCounter }) => {
     const erid = await res.data;
     setErid(erid);
     setCounter((c) => c + 1);
-    alert("ERD successfully created");
+    notificationHandler(
+      "Success",
+      `ERD (id: ${erid}) was successfully created and saved`
+    );
   } catch (error) {
-    alert(error.response.data);
+    notificationHandler("Error", error.response.data);
   }
 };
 
@@ -53,15 +64,18 @@ const updateERD = async ({ user, erid, exportERD, setCounter }) => {
     );
     const data = await res.data;
     setCounter((c) => c + 1);
-    alert(data);
+    notificationHandler(
+      "Success",
+      `ERD (id: ${erid}) was successfully saved. ${data}`
+    );
   } catch (error) {
-    alert(error.response.data);
+    notificationHandler("Error", error.response.data);
   }
 };
 
 export const translateERtoRelational = ({ exportERD, setContext }) => {
   axios
-    .post("/translation/translate", exportERD())
+    .post("api/translation/translate", exportERD())
     .then(function (response) {
       setContext({
         action: actions.TRANSLATE,

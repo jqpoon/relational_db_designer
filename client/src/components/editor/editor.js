@@ -3,7 +3,7 @@ import { initialEntities, initialRelationships, initialEdges } from "./initial";
 import { actions, types } from "./types";
 import Edge, { AttributeEdge, HierarchyEdge } from "./edges/edge";
 import { Xwrapper } from "react-xarrows";
-import "./stylesheets/editor.css";
+import "./editor.css";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import html2canvas from "html2canvas";
@@ -108,7 +108,10 @@ export default function Editor({ user, setUser, socket, setSocket }) {
   const [contextMenu, setContextMenu] = useState(null);
 
   const resetClick = (e) => {
-    if (e.target.classList.contains("react-transform-wrapper")) {
+    if (
+      e.target.classList.contains("react-transform-wrapper") ||
+      e.target.classList.contains("canvas")
+    ) {
       setContext({ action: actions.NORMAL, disableNodeNameEditing: true });
     }
   };
@@ -142,6 +145,8 @@ export default function Editor({ user, setUser, socket, setSocket }) {
     minScale: 0.4,
     limitToBounds: false,
   };
+
+  const canvasExportableCompID = "canvasExportableComp";
 
   useEffect(() => {
     setRender(true);
@@ -379,8 +384,14 @@ export default function Editor({ user, setUser, socket, setSocket }) {
   };
 
   const createSchemaImage = () => {
-    const canvasDiv = document.getElementsByClassName("canvas")[0];
-    html2canvas(canvasDiv).then((canvas) => {
+    const canvasDiv = document.getElementById(canvasExportableCompID);
+    html2canvas(canvasDiv, {
+      allowTaint : true,
+      foreignObjectRendering: true,
+      logging: true,
+      scrollX: -window.scrollX,
+      scrollY: -window.scrollY,
+    }).then((canvas) => {
       const newTab = window.open("about:blank", "schema");
       newTab.document.write(
         "<img src='" + canvas.toDataURL("image/png") + "' alt=''/>"
@@ -406,6 +417,7 @@ export default function Editor({ user, setUser, socket, setSocket }) {
     translateERtoRelational: () => translateERtoRelational(backendUtils),
     importFromJSON: uploadStateFromObject,
     exportToJSON: downloadStateAsObject,
+    exportToPNG: createSchemaImage,
     undo: () => undo(historyAndSetter, elementsAndSetter),
     redo: () => redo(historyAndSetter, elementsAndSetter),
     logout: () => {
@@ -548,26 +560,28 @@ export default function Editor({ user, setUser, socket, setSocket }) {
       <div className="editor" ref={parentRef}>
         {render ? (
           <>
-            <TransformWrapper {...canvasConfig}>
-              <TransformComponent>
-                <div
-                  className="canvas" // TODO: previously "dnd"
-                  onClick={() => setPanDisabled(false)}
-                >
-                  {Object.values(elements.entities).map((entity) => (
-                    <Entity key={entity.id} entity={entity} {...nodeConfig} />
-                  ))}
-                  {Object.values(elements.relationships).map((relationship) => (
-                    <Relationship
-                      key={relationship.id}
-                      relationship={relationship}
-                      {...nodeConfig}
-                    />
-                  ))}
-                </div>
-              </TransformComponent>
-            </TransformWrapper>
-            {showEdges()}
+            <div id={canvasExportableCompID}>
+              <TransformWrapper {...canvasConfig}>
+                <TransformComponent>
+                  <div
+                    className="canvas" // TODO: previously "dnd"
+                    onClick={() => setPanDisabled(false)}
+                  >
+                    {Object.values(elements.entities).map((entity) => (
+                      <Entity key={entity.id} entity={entity} {...nodeConfig} />
+                    ))}
+                    {Object.values(elements.relationships).map((relationship) => (
+                      <Relationship
+                        key={relationship.id}
+                        relationship={relationship}
+                        {...nodeConfig}
+                      />
+                    ))}
+                  </div>
+                </TransformComponent>
+              </TransformWrapper>
+              {showEdges()}
+            </div>
             <LeftToolbar
               info={erdInfo}
               functions={{ ...leftToolBarActions, ...elementFunctions }}
