@@ -10,41 +10,41 @@ function SchemaHandler(io: Server, socket: Socket) {
         let erid: string = data.erid;
 
         // sockets join the erid room
-        logger.info(socket.id);
-        logger.info("joined room");
-        logger.info(erid);
         socket.join(erid)
     }
 
-    const leaveSchemaRoom = (data: { erid: string; }) => {
+    const leaveAllSchemaRoom = () => {
 
-        let erid: string = data.erid;
+        var rooms = io.sockets.adapter.sids.get(socket.id);
 
-        // sockets join the erid room
-        logger.info(socket.id);
-        logger.info("leave room");
-        logger.info(erid);
-
-        socket.leave(erid)
+        for (var room in rooms) {
+            socket.leave(room);
+        }
     }
 
-    const updateSchema = (data: { uid: string; erid: string; schema: string; }) => {
-        let uid: string = data.uid;
-        let erid: string = data.erid;
-        let schema = JSON.stringify(data.schema as string)
+    const reloadSchema = (json: { uid: string; erid: string; }) => {
+        let uid: string = json.uid;
+        let erid: string = json.erid;
 
-        logger.info("updated")
-        logger.info(socket.id);
-        logger.info(erid);
-        logger.info(schema);
-        logger.info(io.sockets.adapter.rooms.get(erid)!.size);
+        FirebaseController.getInstance().getERD(uid, erid).then((d) => {
+            socket.emit("schema reloaded", {
+                body: JSON.parse(d),
+            });
+        })
+    }
 
-        FirebaseController.getInstance().updateERD(uid, erid, schema).then(() => {
+    const updateSchema = (json: { uid: string; erid: string; body: any; }) => {
+        let uid: string = json.uid;
+        let erid: string = json.erid;
+        let data = JSON.stringify(json.body as string)
+
+        FirebaseController.getInstance().updateERD(uid, erid, data).then((d) => {
 
             // sends to all clients in the erid room the updated data
+            json.body.counter++;
             io.to(erid).emit("schema updated", {
                 socketID: socket.id,
-                schema: data.schema
+                body: json.body
             });
 
         })
@@ -71,7 +71,8 @@ function SchemaHandler(io: Server, socket: Socket) {
 
     socket.on("update schema", updateSchema);
     socket.on("connect schema", joinSchemaRoom);
-    socket.on("leave schema", leaveSchemaRoom);
+    socket.on("leave all", leaveAllSchemaRoom);
+    socket.on("reload schema", reloadSchema);
 }
 
 export default SchemaHandler
