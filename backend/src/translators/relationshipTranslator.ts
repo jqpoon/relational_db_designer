@@ -9,10 +9,54 @@ class RelationshipTranslator implements Translator {
 
     relationship: Relationship;
     entities: Map<string, Entity>;
+    relationships: Map<string, Relationship>;
 
-    constructor(entities: Map<string, Entity>, relationship: Relationship) {
+    constructor(entities: Map<string, Entity>, relationship: Relationship, 
+        relationships: Map<string, Relationship>) {
         this.relationship = relationship;
         this.entities = entities;
+        this.relationships = relationships
+    }
+
+    parseEntity(entityName: string, translatedTable: TranslatedTable, 
+        columns: Array<Column>, columnSources: Map<string, string>): void {
+
+        var table: Table = translatedTable.tables.get(entityName)!
+        const column: Column = getPrimaryKeyTranslated(table.columns);
+        var dupe: boolean = false;
+        columns.map((prevColumn: Column) => {
+            if (prevColumn.columnName == column.columnName) {
+                dupe = true;
+                columns = columns.filter(function(col){ 
+                    return col.columnName != column.columnName; 
+                });
+                const prevColumnSource: string = columnSources.get(column.columnName)!;
+                const newPrevColumnName: string = prevColumnSource + "_" + column.columnName;
+                const newPrevColumn: Column = {
+                    columnName: newPrevColumnName,
+                    isPrimaryKey: prevColumn.isPrimaryKey,
+                    isOptional: prevColumn.isOptional,
+                    isMultiValued: prevColumn.isMultiValued
+                }
+                columns.push(newPrevColumn)
+                columnSources.set(newPrevColumnName, prevColumnSource)
+
+                //incoming column
+                const newIncColumnName:string = entityName + "_" + column.columnName;
+                const newIncColumn: Column = {
+                    columnName: newIncColumnName,
+                    isPrimaryKey: column.isPrimaryKey,
+                    isOptional: column.isOptional,
+                    isMultiValued: column.isMultiValued
+                }
+                columns.push(newIncColumn)
+                columnSources.set(newIncColumnName, entityName)
+            }
+        });
+        if (!dupe) {
+            columns.push(column);
+            columnSources.set(column.columnName, entityName);
+        }
     }
 
     translateFromDiagramToTable(translatedTable: TranslatedTable): TranslatedTable {
@@ -28,13 +72,13 @@ class RelationshipTranslator implements Translator {
                 this.relationship.lHConstraints.forEach((lhC: LHConstraint, e: string) => {
                     if (lhC != LHConstraint.ONE_TO_ONE) {
                         otherEntity = this.entities.get(e)!;
+                        console.log(e)
                     }
                 });
-                console.log(otherEntity)
                 const otherKey: Attribute = getPrimaryKey(otherEntity);
                 const thisEntity: Entity = this.entities.get(entityID)!;
                 const entityTable: Table = translatedTable.tables.get(thisEntity.text)!;
-                entityTable.columns.set(otherKey.text, {
+                entityTable.columns.push({
                     columnName: otherKey.text,
                     isPrimaryKey: this.entities.get(entityID)!.isWeak || false,
                     isOptional: otherKey.isOptional,
@@ -42,7 +86,7 @@ class RelationshipTranslator implements Translator {
                 })
 
                 this.relationship.attributes!.map((a: Attribute) => {
-                    entityTable.columns.set(otherKey.text, {
+                    entityTable.columns.push({
                         columnName: a.text,
                         isPrimaryKey: a.isPrimaryKey,
                         isOptional: a.isOptional,
@@ -55,11 +99,10 @@ class RelationshipTranslator implements Translator {
         });
         if (!oneMany) {
             // one-many relationships should not have tables
-            //TODO: CHANGE COLUMNS TO A MAP AND CHECK FOR DUPLICATE COL NAMES
-            var columns: Map<string, Column> = new Map<string, Column>();
+            var columns: Array<Column> = new Array<Column>();
             if (this.relationship.attributes !== undefined) {
                 this.relationship.attributes!.map((a: Attribute) => {
-                    columns.set(a.text, {
+                    columns.push({
                         columnName: a.text,
                         isPrimaryKey: a.isPrimaryKey,
                         isOptional: a.isOptional,
@@ -68,39 +111,47 @@ class RelationshipTranslator implements Translator {
                 });
             }
             var columnSources: Map<string, string> = new Map<string, string>();
-            this.relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: string) => {
-                var entityName = this.entities.get(entityID)!.text
-                var table: Table = translatedTable.tables.get(entityName)!
-                const column: Column = getPrimaryKeyTranslated(table.columns);
-                if (columns.has(column.columnName)) {
-                    // previous column
-                    const prevColumn: Column = columns.get(column.columnName)!;
-                    const prevColumnSource: string = columnSources.get(column.columnName)!;
-                    const newPrevColumnName: string = prevColumnSource + "_" + column.columnName;
-                    const newPrevColumn: Column = {
-                        columnName: newPrevColumnName,
-                        isPrimaryKey: prevColumn.isPrimaryKey,
-                        isOptional: prevColumn.isOptional,
-                        isMultiValued: prevColumn.isMultiValued
-                    }
-                    columns.set(newPrevColumnName, newPrevColumn)
-                    columnSources.set(newPrevColumnName, prevColumnSource)
-
-                    //incoming column
-                    const newIncColumnName:string = entityName + "_" + column.columnName;
-                    const newIncColumn: Column = {
-                        columnName: newIncColumnName,
-                        isPrimaryKey: column.isPrimaryKey,
-                        isOptional: column.isOptional,
-                        isMultiValued: column.isMultiValued
-                    }
-                    columns.set(newIncColumnName, newIncColumn)
-                    columnSources.set(newIncColumnName, entityName)
+            this.relationship.lHConstraints.forEach((lhConstraint: LHConstraint, ID: string) => {
+                var object = this.entities.get(ID)
+                if (object != null) {
+                    //entity
+                    var entityName = object.text;
+                    this.parseEntity(entityName, translatedTable, columns, columnSources);
                 } else {
-                    columns.set(column.columnName, column);
-                    columnSources.set(column.columnName, entityName);
-                }
-                
+                    //relationship
+                    if (lhConstraint == LHConstraint.ONE_TO_ONE) {
+                        var rs = this.relationships.get(ID)!;
+                        rs.attributes!.map((a:Attribute) => {
+                            columns.push({
+                                columnName: a.text,
+                                isPrimaryKey: a.isPrimaryKey,
+                                isOptional: a.isOptional,
+                                isMultiValued: a.isMultiValued
+                                });
+                        })
+                    } else {
+                        var rs = this.relationships.get(ID)!;
+                        var rsTable: Table = translatedTable.tables.get(rs.text)!;
+                        if (rsTable != undefined) {
+                            rsTable.columns.map((c: Column) => {
+                                if (c.isPrimaryKey) {
+                                    columns.push(c)
+                                }
+                            })
+                        } else {
+                            rs.attributes!.map((a:Attribute) => {
+                                if (a.isPrimaryKey) {
+                                    columns.push({
+                                        columnName: a.text,
+                                        isPrimaryKey: a.isPrimaryKey,
+                                        isOptional: a.isOptional,
+                                        isMultiValued: a.isMultiValued
+                                        });
+                                }
+                            })
+                        }
+                    }
+                } 
             });
             var rsTable: Table = { 
                 source: TableSource.RELATIONSHIP,

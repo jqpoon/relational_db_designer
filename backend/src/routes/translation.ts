@@ -69,7 +69,11 @@ router.post('/translate', async function (req, res, next) {
         let map = new Map<string, LHConstraint>();
         for (let e in r.edges) {
             var edge = modelAsJson.edges[e]
-            map.set(edge.start, LHConstraint[edge.cardinality as keyof typeof LHConstraint])
+            if (edge.start != r.id) {
+                map.set(edge.start, LHConstraint[edge.cardinality as keyof typeof LHConstraint])
+            } else {
+                map.set(edge.end, LHConstraint[edge.cardinality as keyof typeof LHConstraint])
+            }
         }
 
         var attributes: Attribute[] = [];
@@ -98,7 +102,6 @@ router.post('/translate', async function (req, res, next) {
     const translator: FullTranslator = new FullTranslator(
         entities, relationships);
     const translatedTable: TranslatedTable = translator.translateFromDiagramToSchema();
-
     // Return translation
     return res.status(OK).json({SUCCESS: true, translatedtables: {
         tables: Object.fromEntries(translatedTable.tables),

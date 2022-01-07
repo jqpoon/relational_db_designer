@@ -15,10 +15,10 @@ class EntityTranslator implements Translator {
     }
 
     translateFromDiagramToTable(translatedTable: TranslatedTable): TranslatedTable {
-        var columns: Map<string, Column> = new Map<string, Column>();
+        var columns: Array<Column> = [];
         if (this.entity.attributes !== undefined) {
             this.entity.attributes!.map((a: Attribute) => {
-            columns.set(a.text, {
+            columns.push({
                 columnName: a.text,
                 isPrimaryKey: a.isPrimaryKey,
                 isOptional: a.isOptional,
@@ -30,7 +30,7 @@ class EntityTranslator implements Translator {
             for (var s of this.entity.subsets) {
                 var e = this.entities.get(s)!
                 var a: Attribute = getPrimaryKey(e);
-                columns.set(a.text, {
+                columns.push({
                     columnName: a.text,
                     isPrimaryKey: a.isPrimaryKey,
                     isOptional: a.isOptional,
