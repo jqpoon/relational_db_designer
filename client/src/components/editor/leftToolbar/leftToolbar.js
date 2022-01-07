@@ -16,6 +16,13 @@ import { creates } from "../elementUtilities/elementFunctions";
 import UploadTool from "../utilities/uploadTool";
 import { submitHandler } from "../alerts/alert";
 
+const categories = {
+  ABOUT: "about",
+  EDIT: "edit",
+  FILE: "file",
+};
+
+
 function DragToCreate({ nodeType, addElement, setScrollable, scale }) {
   const ref = useRef(null);
   const createAndAdd = (e, data) => {
@@ -58,61 +65,61 @@ function DragToCreate({ nodeType, addElement, setScrollable, scale }) {
 }
 
 export function ClickAction({ title, action, tooltip }) {
-  if(title === "Undo"){
-    return (<Tooltip title={tooltip ? tooltip : ""} placement="bottom">
-             <div className="edit-buttons left" onClick={action}>
-               <UndoIcon style={{ fontSize: 35 }} />
-            </div>
-            </Tooltip>);
-  } else if(title === "Redo"){
-    return (<Tooltip title={tooltip ? tooltip : ""} placement="bottom">
-              <div className="edit-buttons" onClick={action}>
-                <RedoIcon style={{ fontSize: 35 }} />
-              </div>
-             </Tooltip>);
-  } else if(title === "Clear"){
-    return (<Tooltip title={tooltip ? tooltip : ""} placement="bottom">
-              <div className="edit-buttons" onClick={action}>
-                 <ClearIcon style={{ fontSize: 35 }} />
-              </div>
-            </Tooltip>);
-  } else if(title === "Save"){
-    return (<Tooltip title={tooltip ? tooltip : ""}     placement="bottom">
-              <div className="file-buttons" onClick={action}>
-                 <SaveIcon style={{ fontSize: 35 }}/>
-              </div>
-            </Tooltip>);
-  } else if(title === "Load"){
-    return (<Tooltip title={tooltip ? tooltip : ""}     placement="bottom">
-    <div className="file-buttons" onClick={action}>
-       <CachedIcon style={{ fontSize: 35 }} />
-    </div>
-  </Tooltip>);
-  } else if(title === "Share"){
-    return (<Tooltip title={tooltip ? tooltip : ""}     placement="bottom">
-    <div className="file-buttons" onClick={action}>
-       <ShareIcon style={{ fontSize: 35 }}/>
-    </div>
-  </Tooltip>);
-  } else if(title === "Duplicate"){
-    return (<Tooltip title={tooltip ? tooltip : ""}     placement="bottom">
-    <div className="file-buttons" onClick={action}>
-       <ContentCopyIcon style={{ fontSize: 35 }}/>
-    </div>
-  </Tooltip>);
-  } else if(title === "Delete"){
-    return (<Tooltip title={tooltip ? tooltip : ""}     placement="bottom">
-    <div className="file-buttons" onClick={action}>
-       <DeleteForeverIcon style={{ fontSize: 35 }}/>
-    </div>
-  </Tooltip>);
-  } else if(title === "Validate"){
-    return (<Tooltip title={tooltip ? tooltip : ""}     placement="bottom">
-    <div className="file-buttons" onClick={action}>
-       <RuleIcon style={{ fontSize: 35 }}/>
-    </div>
-  </Tooltip>);
-  }
+  // if(title === "Undo"){
+  //   return (<Tooltip title={tooltip ? tooltip : ""} placement="bottom">
+  //            <div className="edit-buttons left" onClick={action}>
+  //              <UndoIcon style={{ fontSize: 35 }} />
+  //           </div>
+  //           </Tooltip>);
+  // } else if(title === "Redo"){
+  //   return (<Tooltip title={tooltip ? tooltip : ""} placement="bottom">
+  //             <div className="edit-buttons" onClick={action}>
+  //               <RedoIcon style={{ fontSize: 35 }} />
+  //             </div>
+  //            </Tooltip>);
+  // } else if(title === "Clear"){
+  //   return (<Tooltip title={tooltip ? tooltip : ""} placement="bottom">
+  //             <div className="edit-buttons" onClick={action}>
+  //                <ClearIcon style={{ fontSize: 35 }} />
+  //             </div>
+  //           </Tooltip>);
+  // } else if(title === "Save"){
+  //   return (<Tooltip title={tooltip ? tooltip : ""}     placement="bottom">
+  //             <div className="file-buttons" onClick={action}>
+  //                <SaveIcon style={{ fontSize: 35 }}/>
+  //             </div>
+  //           </Tooltip>);
+  // } else if(title === "Load"){
+  //   return (<Tooltip title={tooltip ? tooltip : ""}     placement="bottom">
+  //   <div className="file-buttons" onClick={action}>
+  //      <CachedIcon style={{ fontSize: 35 }} />
+  //   </div>
+  // </Tooltip>);
+  // } else if(title === "Share"){
+  //   return (<Tooltip title={tooltip ? tooltip : ""}     placement="bottom">
+  //   <div className="file-buttons" onClick={action}>
+  //      <ShareIcon style={{ fontSize: 35 }}/>
+  //   </div>
+  // </Tooltip>);
+  // } else if(title === "Duplicate"){
+  //   return (<Tooltip title={tooltip ? tooltip : ""}     placement="bottom">
+  //   <div className="file-buttons" onClick={action}>
+  //      <ContentCopyIcon style={{ fontSize: 35 }}/>
+  //   </div>
+  // </Tooltip>);
+  // } else if(title === "Delete"){
+  //   return (<Tooltip title={tooltip ? tooltip : ""}     placement="bottom">
+  //   <div className="file-buttons" onClick={action}>
+  //      <DeleteForeverIcon style={{ fontSize: 35 }}/>
+  //   </div>
+  // </Tooltip>);
+  // } else if(title === "Validate"){
+  //   return (<Tooltip title={tooltip ? tooltip : ""}     placement="bottom">
+  //   <div className="file-buttons" onClick={action}>
+  //      <RuleIcon style={{ fontSize: 35 }}/>
+  //   </div>
+  // </Tooltip>);
+  // }
   return  (
     <Tooltip title={tooltip ? tooltip : ""} placement="right">
     <div className="section click-action" onClick={action}>
@@ -132,97 +139,35 @@ const showERid = (name, erid) => {
   alert(`The ID of '${name}' is ${erid}`);
 };
 
-export default function LeftToolbar({ info, functions }) {
-  const [scrollable, setScrollable] = useState(true);
+const showAbout = (info, functions) => {
   return (
-    <div
-      className="toolbar-left"
-      // style={{ overflow: scrollable ? "scroll" : "visible" }}
-      style={{overflow: "visible"}}
-    >
-      <div className="group" >
-        <Tooltip title="Edit name of diagram" placement="right">
-          <input
-            className="section"
-            value={info.name}
-            onChange={(e) => functions.setName(e.target.value)}
-          />
-        </Tooltip>
-      </div>
-      <div className="group" >
-        <div className="group-header">File:</div>
+    <div className="group">
+        <div className="group-header">About:</div>
         <div className="group-content">
           <ClickAction
-            title="Load"
-            action={functions.loadERD}
-            tooltip="Load an diagram from storage"
+            title="User ID"
+            action={() => showUid(info.user)}
+            tooltip="Show your user ID"
           />
           <ClickAction
-            title="Save"
-            action={() =>
-              submitHandler(functions.saveERD, "ERD will be saved")
-            }
-            tooltip="Save diagram to storage"
-          />
-           <ClickAction
-            title="Validate"
-            action={functions.exportToJSON}
-            tooltip="Validate ER diagram"
-          />
-           {info.erid ? (
-            <>
-              <ClickAction
-                title="Share"
-                action={functions.shareERD}
-                tooltip="Share access to diagram"
-              />
-              <ClickAction
-                title="Duplicate"
-                action={() =>
-                  submitHandler(
-                    functions.duplicateERD,
-                    "Diagram will be duplicated"
-                  )
-                }
-                tooltip="Duplicate ERD"
-              />
-              <ClickAction
-                title="Delete"
-                action={() =>
-                  submitHandler(
-                    functions.deleteERD,
-                    "ERD will be deleted from cloud storage. This cannot be undone."
-                  )
-                }
-                tooltip="Delete diagram from storage"
-              />
-            </>
-          ) : null}
-          <UploadTool
-            display={{ title: "Import", tooltip: "Import diagram from JSON" }}
-            handleFile={functions.importFromJSON}
+            title="ERD ID"
+            action={() => showERid(info.name, info.erid)}
+            tooltip="Show ID of diagram"
           />
           <ClickAction
-            title="Export to JSON"
-            action={functions.exportToJSON}
-            tooltip="Export diagram to JSON"
+            title="Log out"
+            action={functions.logout}
+            tooltip="Log out"
           />
-           <ClickAction
-            title="Export to PNG"
-            action={functions.exportToJSON}
-            tooltip="Export diagram to PNG"
-          />
-
-          <ClickAction
-            title="Translate"
-            action={functions.translateERtoRelational}
-            tooltip="Translate ERD to relational schema"
-          />
-
-
         </div>
       </div>
-      <div className="group">
+
+  )
+}
+
+const showEdit = (info, functions, setScrollable) => {
+  return (
+    <div className="group">
         <div className="group-header">Edit:</div>
         <div className="group-content">
           <DragToCreate
@@ -245,27 +190,113 @@ export default function LeftToolbar({ info, functions }) {
           action={functions.resetState}
           tooltip="Clear canvas. This cannot be undone."
         />
-      </div>
-      <div className="group">
-        <div className="group-header">About:</div>
-        <div className="group-content">
+    </div>
+  )
+}
+
+const showFile = (info, functions) =>{
+  return (
+    <div className="group" >
+    <div className="group-header">File:</div>
+    <div className="group-content">
+      <ClickAction
+        title="Load"
+        action={functions.loadERD}
+        tooltip="Load an diagram from storage"
+      />
+      <ClickAction
+        title="Save"
+        action={() =>
+          submitHandler(functions.saveERDToBackEnd, "ERD will be saved")
+        }
+        tooltip="Save diagram to storage"
+      />
+       <ClickAction
+        title="Validate"
+        action={functions.exportToJSON}
+        tooltip="Validate ER diagram"
+      />
+       {info.erid ? (
+        <>
           <ClickAction
-            title="User ID"
-            action={() => showUid(info.user)}
-            tooltip="Show your user ID"
+            title="Share"
+            action={functions.shareERD}
+            tooltip="Share access to diagram"
           />
           <ClickAction
-            title="ERD ID"
-            action={() => showERid(info.name, info.erid)}
-            tooltip="Show ID of diagram"
+            title="Duplicate"
+            action={() =>
+              submitHandler(
+                functions.duplicateERD,
+                "Diagram will be duplicated"
+              )
+            }
+            tooltip="Duplicate ERD"
           />
           <ClickAction
-            title="Log out"
-            action={functions.logout}
-            tooltip="Log out"
+            title="Delete"
+            action={() =>
+              submitHandler(
+                functions.deleteERD,
+                "ERD will be deleted from cloud storage. This cannot be undone."
+              )
+            }
+            tooltip="Delete diagram from storage"
           />
-        </div>
+        </>
+      ) : null}
+      <UploadTool
+        display={{ title: "Import", tooltip: "Import diagram from JSON" }}
+        handleFile={functions.importFromJSON}
+      />
+      <ClickAction
+        title="Export to JSON"
+        action={functions.exportToJSON}
+        tooltip="Export diagram to JSON"
+      />
+       <ClickAction
+        title="Export to PNG"
+        action={functions.exportToJSON}
+        tooltip="Export diagram to PNG"
+      />
+
+      <ClickAction
+        title="Translate"
+        action={functions.translateERtoRelational}
+        tooltip="Translate ERD to relational schema"
+      />
       </div>
     </div>
+  )
+}
+
+export default function LeftToolbar({ info, functions }) {
+  const [scrollable, setScrollable] = useState(true);
+  const [category, setCategory] = useState(categories.ABOUT);
+  return (
+    <div
+      className="toolbar-left"
+      // style={{ overflow: scrollable ? "scroll" : "visible" }}
+      style={{overflow: "visible"}}
+    >
+      <div className="group" >
+        <Tooltip title="Edit name of diagram" placement="right">
+          <input
+            className="section"
+            value={info.name}
+            onChange={(e) => functions.setName(e.target.value)}
+          />
+        </Tooltip>
+      </div>
+      <div className="outer">
+      <div className="inner"><button class="button-2" onClick={() => {setCategory(categories.ABOUT)}} >About</button></div>
+      <div className="inner"><button class="button-2" onClick={() => {setCategory(categories.FILE)}} >File</button></div>
+      <div className="inner"><button class="button-2" onClick={() => {setCategory(categories.EDIT)}}>Edit</button></div>
+      </div>
+
+      {category === categories.ABOUT ? showAbout(info, functions) : (category === categories.EDIT ? showEdit(info, functions, setScrollable) : showFile(info, functions))}
+
+
+      </div>
   );
 }

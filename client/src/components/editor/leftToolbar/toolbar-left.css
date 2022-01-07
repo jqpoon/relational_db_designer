@@ -3,7 +3,6 @@
   top: 0;
   width: 11vw;
   height: 100%;
-  display: flex;
   flex-direction: column;
   justify-content: space-between;
   background-color: antiquewhite;
@@ -86,11 +85,61 @@
 }
 
 .file-buttons{
- 
+
   float:left;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+}
+
+
+/* CSS */
+.button-2 {
+  float:left;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(51, 51, 51, 0.05);
+  border-radius: 8px;
+  border-width: 1px;
+  /* color: #333333; */
+  cursor: pointer;
+  font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  list-style: none;
+  width: 50px;
+  margin: 3px;
+  padding: 10px 5px 12px 5px;
+  text-align: center;
+  transition: all 200ms;
+  vertical-align: baseline;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.button-2:hover{
+  border: 1px solid orange !important;
+}
+
+.addButton:active,
+.addButton:focus
+{
+    border:0.5em solid #00c; /* here configure as your needs */
+    color:#00c;
+ }
+
+.outer
+{
+    width:100%;
+    text-align: center;
+}
+
+.inner
+{
+    display: inline-block;
 }
 
 
