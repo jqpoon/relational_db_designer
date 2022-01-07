@@ -65,61 +65,6 @@ function DragToCreate({ nodeType, addElement, setScrollable, scale }) {
 }
 
 export function ClickAction({ title, action, tooltip }) {
-  // if(title === "Undo"){
-  //   return (<Tooltip title={tooltip ? tooltip : ""} placement="bottom">
-  //            <div className="edit-buttons left" onClick={action}>
-  //              <UndoIcon style={{ fontSize: 35 }} />
-  //           </div>
-  //           </Tooltip>);
-  // } else if(title === "Redo"){
-  //   return (<Tooltip title={tooltip ? tooltip : ""} placement="bottom">
-  //             <div className="edit-buttons" onClick={action}>
-  //               <RedoIcon style={{ fontSize: 35 }} />
-  //             </div>
-  //            </Tooltip>);
-  // } else if(title === "Clear"){
-  //   return (<Tooltip title={tooltip ? tooltip : ""} placement="bottom">
-  //             <div className="edit-buttons" onClick={action}>
-  //                <ClearIcon style={{ fontSize: 35 }} />
-  //             </div>
-  //           </Tooltip>);
-  // } else if(title === "Save"){
-  //   return (<Tooltip title={tooltip ? tooltip : ""}     placement="bottom">
-  //             <div className="file-buttons" onClick={action}>
-  //                <SaveIcon style={{ fontSize: 35 }}/>
-  //             </div>
-  //           </Tooltip>);
-  // } else if(title === "Load"){
-  //   return (<Tooltip title={tooltip ? tooltip : ""}     placement="bottom">
-  //   <div className="file-buttons" onClick={action}>
-  //      <CachedIcon style={{ fontSize: 35 }} />
-  //   </div>
-  // </Tooltip>);
-  // } else if(title === "Share"){
-  //   return (<Tooltip title={tooltip ? tooltip : ""}     placement="bottom">
-  //   <div className="file-buttons" onClick={action}>
-  //      <ShareIcon style={{ fontSize: 35 }}/>
-  //   </div>
-  // </Tooltip>);
-  // } else if(title === "Duplicate"){
-  //   return (<Tooltip title={tooltip ? tooltip : ""}     placement="bottom">
-  //   <div className="file-buttons" onClick={action}>
-  //      <ContentCopyIcon style={{ fontSize: 35 }}/>
-  //   </div>
-  // </Tooltip>);
-  // } else if(title === "Delete"){
-  //   return (<Tooltip title={tooltip ? tooltip : ""}     placement="bottom">
-  //   <div className="file-buttons" onClick={action}>
-  //      <DeleteForeverIcon style={{ fontSize: 35 }}/>
-  //   </div>
-  // </Tooltip>);
-  // } else if(title === "Validate"){
-  //   return (<Tooltip title={tooltip ? tooltip : ""}     placement="bottom">
-  //   <div className="file-buttons" onClick={action}>
-  //      <RuleIcon style={{ fontSize: 35 }}/>
-  //   </div>
-  // </Tooltip>);
-  // }
   return  (
     <Tooltip title={tooltip ? tooltip : ""} placement="right">
     <div className="section click-action" onClick={action}>
@@ -207,7 +152,7 @@ const showFile = (info, functions) =>{
       <ClickAction
         title="Save"
         action={() =>
-          submitHandler(functions.saveERDToBackEnd, "ERD will be saved")
+          submitHandler(functions.saveERD, "ERD will be saved")
         }
         tooltip="Save diagram to storage"
       />
