@@ -1,0 +1,42 @@
+.node-wrapper {
+  position: absolute;
+  /* Important Below */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.relationship,
+.relationship-selected {
+  width: 100px;
+  height: 100px;
+  border: 1px solid black;
+  transform: rotate(45deg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.relationship {
+  background-color: beige;
+}
+
+.relationship-selected {
+  background-color: rgb(216, 216, 194);
+}
+
+.relationship .content,
+.relationship-selected .content {
+  transform: rotate(-45deg);
+}
+
+.relationship .edit {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.relationship input {
+  width: 90%;
+}

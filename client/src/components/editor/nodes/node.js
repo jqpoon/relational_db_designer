@@ -5,9 +5,57 @@ import Attribute, { addAttributeToNode } from "../edges/attribute";
 import { actions, types } from "../types";
 import "./stylesheets/node.css";
 
-export function Relationship({ relationship, general }) {
+export function TestAttribute({
+  parent,
+  attribute,
+  scale,
+  setPanDisabled,
+  updateElement,
+}) {
+  const [name, setName] = useState(attribute.text);
+  const updateXarrow = useXarrow();
+
+  const onStop = (e, data) => {
+    let newAttr = { ...attribute };
+    newAttr.relativePos = {
+      x: data.x - parent.x,
+      y: data.y - parent.y,
+    };
+    updateElement(types.ATTRIBUTE, newAttr);
+    updateXarrow(e);
+    setPanDisabled(false);
+  };
+  const draggableConfig = {
+    position: {
+      x: parent.x + attribute.relativePos.x,
+      y: parent.y + attribute.relativePos.y,
+    },
+    scale: scale,
+    onDrag: updateXarrow,
+    onStop: onStop,
+    onMouseDown: () => setPanDisabled(true),
+  };
+  return (
+    <Draggable {...draggableConfig}>
+      <div id={attribute.id} style={{ padding: "10px", textAlign:"right", width: "fit-content", height: "fit-content"}}>
+        {name}
+      </div>
+    </Draggable>
+  );
+}
+
+export function OldRelationship({ relationship, general }) {
   const attributes = Object.values(relationship.attributes).map((attribute) => {
-    return <Attribute attribute={attribute} {...general} />;
+    return (
+      <>
+        <TestAttribute
+          parent={relationship}
+          attribute={attribute}
+          {...general}
+        />
+        <Attribute attribute={attribute} {...general} />
+      </>
+    );
   });
   return (
     <Node
@@ -138,7 +186,12 @@ export default function Node({
   const updateXarrow = useXarrow();
 
   // Event handlers
-  const onDrag = updateXarrow;
+  const onDrag = (e, data) => {
+    let newNode = getElement(type, id, parent);
+    newNode.pos = { x: data.x, y: data.y };
+    updateElement(type, newNode);
+    updateXarrow(e);
+  };
   const onStop = (e, data) => {
     // Update if position of node changed
     if (data.x !== pos.x || data.y !== pos.y) {

@@ -4,7 +4,7 @@ import { actions, types } from "./types";
 import Edge, { AttributeEdge, HierarchyEdge } from "./edges/edge";
 import { Xwrapper } from "react-xarrows";
 import "./stylesheets/editor.css";
-import { Entity, Relationship } from "./nodes/node";
+import { Entity, OldRelationship } from "./nodes/node";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import html2canvas from "html2canvas";
@@ -28,6 +28,7 @@ import {
   saveERDToBackEnd,
   translateERtoRelational,
 } from "./backendUtilities/backendUtils";
+import { Relationship } from "./elements/relationship";
 
 export default function Editor({ user, setUser }) {
   // Canvas states: passed to children for metadata (eg width and height of main container)
@@ -107,15 +108,15 @@ export default function Editor({ user, setUser }) {
   };
   useEffect(() => {
     // Loads latest ER diagram on login / refreshing the page
-    const state = JSON.parse(localStorage.getItem('state'));
+    const state = JSON.parse(localStorage.getItem("state"));
     importStateFromObject(state);
   }, [user]);
 
   useEffect(() => {
     // Loads current state into local storage whenever ER diagram changes
     const state = exportStateToObject();
-    localStorage.setItem('state', JSON.stringify(state));
-    localStorage.setItem('user', user);
+    localStorage.setItem("state", JSON.stringify(state));
+    localStorage.setItem("user", user);
   }, [elements, history]);
 
   // Returns a copy of the element
@@ -312,7 +313,9 @@ export default function Editor({ user, setUser }) {
     const canvasDiv = document.getElementsByClassName("canvas")[0];
     html2canvas(canvasDiv).then((canvas) => {
       const newTab = window.open("about:blank", "schema");
-      newTab.document.write("<img src='" + canvas.toDataURL("image/png") + "' alt=''/>");
+      newTab.document.write(
+        "<img src='" + canvas.toDataURL("image/png") + "' alt=''/>"
+      );
     });
   };
 
@@ -420,7 +423,11 @@ export default function Editor({ user, setUser }) {
     return Object.values(nodes).map((node) => {
       return Object.values(node.attributes).map((attribute) => {
         return (
-          <AttributeEdge parent={attribute.parent.id} child={attribute.id} scale={scale} />
+          <AttributeEdge
+            parent={attribute.parent.id}
+            child={attribute.id}
+            scale={scale}
+          />
         );
       });
     });
@@ -435,7 +442,11 @@ export default function Editor({ user, setUser }) {
         {/* Generalisation edges */}
         {Object.values(elements.entities).map((entity) => {
           return Object.values(entity.generalisations).map((generalisation) => (
-            <HierarchyEdge parent={entity.id} child={generalisation.id} scale={scale} />
+            <HierarchyEdge
+              parent={entity.id}
+              child={generalisation.id}
+              scale={scale}
+            />
           ));
         })}
         {/* Attribute edges */}
@@ -470,7 +481,15 @@ export default function Editor({ user, setUser }) {
                   {Object.values(elements.relationships).map((relationship) => (
                     <Relationship
                       key={relationship.id}
-                      relationship={relationship}
+                      node={relationship}
+                      ctx={{ scale: scale, context: context }}
+                      functions={{
+                        updateElement: updateElement,
+                        setPanDisabled: setPanDisabled,
+                        getElement: getElement,
+                        setContextMenu: setContextMenu,
+                        setContext: setContext,
+                      }}
                       general={{
                         ...nodeConfig,
                         ...elementFunctions,
