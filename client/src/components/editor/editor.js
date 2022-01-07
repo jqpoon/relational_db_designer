@@ -4,7 +4,6 @@ import { actions, types } from "./types";
 import Edge, { AttributeEdge, HierarchyEdge } from "./edges/edge";
 import { Xwrapper } from "react-xarrows";
 import "./stylesheets/editor.css";
-import { Entity, OldRelationship } from "./nodes/node";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import html2canvas from "html2canvas";
@@ -19,7 +18,6 @@ import { addToUndo, redo, undo } from "./historyUtilities/history";
 import { deletes, gets, updates } from "./elementUtilities/elementFunctions";
 import { saveCounter, setCounter } from "./idGenerator";
 import LeftToolbar from "./leftToolbar/leftToolbar";
-import axios from "axios";
 import Load from "./right_toolbar/load";
 import Share from "./right_toolbar/share";
 import {
@@ -28,7 +26,8 @@ import {
   saveERDToBackEnd,
   translateERtoRelational,
 } from "./backendUtilities/backendUtils";
-import { Relationship } from "./elements/relationship";
+import { Relationship } from "./elements/relationships/relationship";
+import { Entity } from "./elements/entities/entity";
 
 export default function Editor({ user, setUser }) {
   // Canvas states: passed to children for metadata (eg width and height of main container)
@@ -346,7 +345,14 @@ export default function Editor({ user, setUser }) {
 
   const nodeConfig = {
     parentRef: parentRef,
-    scale: scale,
+    ctx: { scale: scale, context, context },
+    functions: {
+      getElement: getElement,
+      updateElement: updateElement,
+      setContext: setContext,
+      setContextMenu: setContextMenu,
+      setPanDisabled: setPanDisabled,
+    },
   };
 
   const showRightToolbar = () => {
@@ -471,30 +477,14 @@ export default function Editor({ user, setUser }) {
                     <Entity
                       key={entity.id}
                       entity={entity}
-                      general={{
-                        ...nodeConfig,
-                        ...elementFunctions,
-                        ...generalFunctions,
-                      }}
+                      {...nodeConfig}
                     />
                   ))}
                   {Object.values(elements.relationships).map((relationship) => (
                     <Relationship
                       key={relationship.id}
-                      node={relationship}
-                      ctx={{ scale: scale, context: context }}
-                      functions={{
-                        updateElement: updateElement,
-                        setPanDisabled: setPanDisabled,
-                        getElement: getElement,
-                        setContextMenu: setContextMenu,
-                        setContext: setContext,
-                      }}
-                      general={{
-                        ...nodeConfig,
-                        ...elementFunctions,
-                        ...generalFunctions,
-                      }}
+                      relationship={relationship}
+                      {...nodeConfig}
                     />
                   ))}
                 </div>

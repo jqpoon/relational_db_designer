@@ -1,5 +1,5 @@
 
-import { Node, saveChanges } from "./general";
+import { Node, saveChanges } from "../general";
 
 // Toggles key attribute feature
 const toggleKeyAttribute = (attr, functions) => () =>
@@ -65,6 +65,7 @@ export function Attribute({ parent, attribute, ctx, functions }) {
 
   return (
     <Node
+      className="attribute"
       node={{ ...attribute, pos: pos, updatePos: updatePos, display: display }}
       ctxMenuActions={ctxMenuActions}
       ctx={ctx}

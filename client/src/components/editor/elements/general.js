@@ -3,13 +3,16 @@ import { useXarrow } from "react-xarrows";
 import Draggable from "react-draggable";
 
 import { actions } from "../types";
-import "./relationship.css";
-import "./attribute.css";
-import { Attribute } from "./attribute";
+import "./relationships/relationship.css";
+import "./attributes/attribute.css";
+import "./entities/entity.css";
+import "./generalisations/generalisation.css";
+import "./general.css"
+import { Attribute } from "./attributes/attribute";
 
 function NodeView({ node }) {
   return (
-    <div className="content">
+    <div className="content view">
       {node.display ? node.display(node) : node.text}
     </div>
   );
@@ -88,7 +91,7 @@ export const saveChanges = (node, functions, change) => {
   functions.updateElement(newNode.type, newNode);
 };
 
-export function Node({ node, ctx, ctxMenuActions, functions }) {
+export function Node({ className, node, ctx, ctxMenuActions, functions }) {
   // posCache is used for updating positions of child nodes
   const [posCache, setPosCache] = useState(node.pos);
   const [editing, setEditing] = useState(false);
@@ -145,7 +148,7 @@ export function Node({ node, ctx, ctxMenuActions, functions }) {
       // If position of node changed, save and update
       if (data.x !== node.pos.x || data.y !== node.pos.y) {
         // Save new position of node
-        const setPosition = node.parent
+        const setPosition = node.updatePos
           ? node.updatePos(data)
           : (node) => {
               node.pos = { x: data.x, y: data.y };
@@ -170,12 +173,13 @@ export function Node({ node, ctx, ctxMenuActions, functions }) {
           onClick={() => selectNode(node, ctx.context, functions.setContext)}
         >
           <div
-            className={
-              nodeSelected(node.id, ctx.context)
-                ? `${node.type}-selected`
-                : `${node.type}`
-            }
-            style={{cursor: "grab"}}
+            className={className}
+            style={{
+              cursor: "grab",
+              [`--${className}-color`]: `var(--${className}-${
+                nodeSelected(node.id, ctx.context) ? `darken` : `norm`
+              })`,
+            }}
           >
             {editing ? (
               <NodeInEdit
