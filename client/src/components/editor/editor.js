@@ -6,18 +6,18 @@ import "./editor.css";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import html2canvas from "html2canvas";
-import SelectEntity from "./right_toolbar/selectEntity";
-import SelectRelationship from "./right_toolbar/selectRelationship";
-import SelectEdge from "./right_toolbar/selectEdge";
-import SelectGeneralisation from "./right_toolbar/selectGeneralisation";
+import SelectEntity from "./rightToolbar/selectEntity";
+import SelectRelationship from "./rightToolbar/selectRelationship";
+import SelectEdge from "./rightToolbar/selectEdge";
+import SelectGeneralisation from "./rightToolbar/selectGeneralisation";
 import { ContextMenu } from "./contextMenu";
-import DisplayTranslation from "./right_toolbar/translationDisplay";
+import DisplayTranslation from "./rightToolbar/translationDisplay";
 import { addToUndo, redo, undo } from "./historyUtilities/history";
 import { deletes, gets, updates } from "./elements/elementFunctions";
 import { saveIdCounter, setIdCounter } from "./idGenerator";
 import LeftToolbar from "./leftToolbar/leftToolbar";
-import Load from "./right_toolbar/load";
-import Share from "./right_toolbar/share";
+import Load from "./rightToolbar/load";
+import Share from "./rightToolbar/share";
 import {
   deleteERDInBackEnd,
   duplicateERD,
