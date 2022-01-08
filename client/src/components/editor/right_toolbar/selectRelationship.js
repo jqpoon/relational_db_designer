@@ -32,6 +32,8 @@ export default function SelectRelationship({
     getElement: getElement,
     addElement: addElement,
     updateElement: updateElement,
+    context, 
+    setContext,
   };
 
   return (

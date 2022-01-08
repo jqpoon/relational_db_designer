@@ -116,7 +116,42 @@ class RelationshipTranslator implements Translator {
                 if (object != null) {
                     //entity
                     var entityName = object.text;
-                    this.parseEntity(entityName, translatedTable, columns, columnSources);
+                    var table: Table = translatedTable.tables.get(entityName)!
+                    const column: Column = getPrimaryKeyTranslated(table.columns);
+                    var dupe: boolean = false;
+                    columns.map((prevColumn: Column) => {
+                        if (prevColumn.columnName == column.columnName) {
+                            dupe = true;
+                            columns = columns.filter(function(col){ 
+                                return col.columnName != column.columnName; 
+                            });
+                            const prevColumnSource: string = columnSources.get(column.columnName)!;
+                            const newPrevColumnName: string = prevColumnSource + "_" + column.columnName;
+                            const newPrevColumn: Column = {
+                                columnName: newPrevColumnName,
+                                isPrimaryKey: prevColumn.isPrimaryKey,
+                                isOptional: prevColumn.isOptional,
+                                isMultiValued: prevColumn.isMultiValued
+                            }
+                            columns.push(newPrevColumn)
+                            columnSources.set(newPrevColumnName, prevColumnSource)
+
+                            //incoming column
+                            const newIncColumnName:string = entityName + "_" + column.columnName;
+                            const newIncColumn: Column = {
+                                columnName: newIncColumnName,
+                                isPrimaryKey: column.isPrimaryKey,
+                                isOptional: column.isOptional,
+                                isMultiValued: column.isMultiValued
+                            }
+                            columns.push(newIncColumn)
+                            columnSources.set(newIncColumnName, entityName)
+                        }
+                    });
+                    if (!dupe) {
+                        columns.push(column);
+                        columnSources.set(column.columnName, entityName);
+                    }
                 } else {
                     //relationship
                     if (lhConstraint == LHConstraint.ONE_TO_ONE) {

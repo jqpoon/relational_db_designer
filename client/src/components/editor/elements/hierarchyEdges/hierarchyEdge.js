@@ -1,4 +1,5 @@
-import { types } from "../types";
+import { types } from "../../types";
+import Xarrow from "react-xarrows";
 
 export const getHierarchyEdge = ({ edges }, id) => {
   return edges[id] ? { ...edges[id] } : null;
@@ -58,3 +59,18 @@ export const updateHierarchyEdge = ({ elements, setElements }, edge) => {
   console.log(data);
   return data;
 };
+
+export function HierarchyEdge({ parent, child, generalisation, scale }) {
+  return (
+    <Xarrow
+      start={child.toString()}
+      end={(generalisation ? generalisation : parent).toString()}
+      showHead={!generalisation}
+      curveness={0}
+      endAnchor={generalisation ? "middle" : "auto"}
+      startAnchor="middle"
+      strokeWidth={4 * scale}
+      zIndex={-1}
+    />
+  );
+}

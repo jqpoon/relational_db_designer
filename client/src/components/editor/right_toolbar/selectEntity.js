@@ -8,7 +8,6 @@ import { actions, types } from "../types";
 import { useState } from "react";
 
 import "./toolbar-right.css";
-import Divider from "./utilities/divider";
 import { AddAttribute, Attributes } from "./utilities/attribute";
 import { getId } from "../idGenerator";
 import { Name } from "./utilities/name";
@@ -55,7 +54,7 @@ export function Generalisation({
           />
         </div>
       </div>
-      <Divider />
+      <hr className="divider" />
       {/* TODO: refactor */}
       <DisplaySubsets
         children={Object.keys(generalisation.edges)}
@@ -247,7 +246,7 @@ export default function SelectEntity({
           );
         })}
         <div>Without generalisation</div>
-        <Divider />
+        <hr className="divider" />
         <DisplaySubsets
           generalisation={null}
           children={children}

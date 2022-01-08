@@ -50,12 +50,3 @@ const displayTableFK = (tableName, content) => {
        </div>)
 }
 
-const displayTablesFK = (tableName, content) => {
-    var fks = []
-    content.foreignKeys.forEach((fk) => {
-        var key = "(" + fk.columns.join(',') + ")";
-        fks.push(<div> {tableName + key +" => " + fk.foreignTable + key} </div>)
-    })
-    return <div className="translation">{fks}</div>;
-
-}

@@ -1,4 +1,5 @@
-import { types } from "../types";
+import Xarrow from "react-xarrows";
+import { cardinality as cardinality_all, types } from "../../types";
 
 export const getRelationshipEdge = ({ edges }, id) => {
   return edges[id] ? { ...edges[id] } : null;
@@ -72,3 +73,32 @@ export const updateRelationshipEdge = ({ elements, setElements }, edge) => {
   console.log(data);
   return data;
 };
+
+export function RelationshipEdge({ start, end, cardinality, isKey, scale }) {
+  const style = {
+    backgroundColor: "white",
+    padding: "2.5px",
+    fontSize: `${14 * scale}px`,
+  };
+  if (isKey) {
+    style["textDecoration"] = "underline";
+  }
+  return (
+    <Xarrow
+      start={start.toString()}
+      end={end.toString()}
+      labels={<div style={style}>{cardinality_all[cardinality]}</div>}
+      showHead={false}
+      curveness={0}
+      endAnchor="middle"
+      startAnchor="middle"
+      strokeWidth={4 * scale}
+      passProps={{
+        onClick: () => {
+          /*TODO */
+        },
+      }}
+      zIndex={-1}
+    />
+  );
+}

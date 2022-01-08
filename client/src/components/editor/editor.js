@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { initialEntities, initialRelationships, initialEdges } from "./initial";
 import { actions, types } from "./types";
-import Edge, { AttributeEdge, HierarchyEdge } from "./edges/edge";
 import { Xwrapper } from "react-xarrows";
 import "./editor.css";
 import "react-confirm-alert/src/react-confirm-alert.css";
@@ -15,7 +14,7 @@ import SelectGeneralisation from "./right_toolbar/selectGeneralisation";
 import { ContextMenu } from "./contextMenu";
 import DisplayTranslation from "./right_toolbar/translationDisplay";
 import { addToUndo, redo, undo } from "./historyUtilities/history";
-import { deletes, gets, updates } from "./elementUtilities/elementFunctions";
+import { deletes, gets, updates } from "./elements/elementFunctions";
 import { saveIdCounter, setIdCounter } from "./idGenerator";
 import LeftToolbar from "./leftToolbar/leftToolbar";
 import Load from "./right_toolbar/load";
@@ -28,6 +27,9 @@ import {
 } from "./backendUtilities/backendUtils";
 import { Relationship } from "./elements/relationships/relationship";
 import { Entity } from "./elements/entities/entity";
+import { AttributeEdge } from "./elements/attributeEdges/attributeEdge";
+import Edge from "./elements/general";
+import { HierarchyEdge } from "./elements/hierarchyEdges/hierarchyEdge";
 
 export default function Editor({ user, setUser }) {
   /** ERD Metadata

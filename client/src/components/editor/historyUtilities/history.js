@@ -1,4 +1,4 @@
-import { deletes, updates } from "../elementUtilities/elementFunctions";
+import { deletes, updates } from "../elements/elementFunctions";
 import { types } from "../types";
 
 const STACK_LIMIT = 25;

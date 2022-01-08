@@ -12,7 +12,7 @@ import RuleIcon from '@mui/icons-material/Rule';
 import { types } from "../types";
 import "./toolbar-left.css";
 import { useRef, useState } from "react";
-import { creates } from "../elementUtilities/elementFunctions";
+import { creates } from "../elements/elementFunctions";
 import UploadTool from "../utilities/uploadTool";
 import { submitHandler } from "../alerts/alert";
 
