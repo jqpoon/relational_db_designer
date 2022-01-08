@@ -4,7 +4,7 @@ import "./toolbar-right.css";
 export default function DisplayTranslation(props) {
   return (
     <div className="toolbar-right">
-    <div > <b>Relational Schema:</b> </div>
+    <div className="title" > <b>Relational Schema:</b> </div>
     {
         displayTables(props.relationalSchema)
     }
@@ -14,18 +14,17 @@ export default function DisplayTranslation(props) {
 
 const displayTables = (tables) => {
     var tabs = []
-    var fks = []
     Object.keys(tables).forEach((key) =>
     {
-        tabs.push(displayTable(key, tables[key]))
-        fks.push(displayTablesFK(key, tables[key]))
+        tabs.push(displayTableFK(key, tables[key]))
     })
-    return <div className="translation"> {tabs} {fks} </div>;
+    return <div className="translation"> {tabs} </div>;
 }
 
-const displayTable = (tableName, content) => {
+const displayTableFK = (tableName, content) => {
     var primaryKeys = [];
     var cols = [];
+    var fks = [];
     content.columns.forEach((col) => {
         if(col.isPrimaryKey){
             primaryKeys.push(col.columnName)
@@ -39,15 +38,15 @@ const displayTable = (tableName, content) => {
             cols.push(col.columnName)
         }
     })
-   return <div className="translation"> {tableName}(<u>{primaryKeys.join(',')}</u>{cols.length > 0 ? ',' : null}{cols.join(',') + ')'} </div>
-}
-
-const displayTablesFK = (tableName, content) => {
-    var fks = []
     content.foreignKeys.forEach((fk) => {
         var key = "(" + fk.columns.join(',') + ")";
         fks.push(<div> {tableName + key +" => " + fk.foreignTable + key} </div>)
     })
-    return <div className="translation">{fks}</div>;
-
+   return (
+        <div>
+            <div className="translation"> {tableName}(<u>{primaryKeys.join(',')}</u>{cols.length > 0 ? ', ' : null}{cols.join(', ') + ')'} </div>
+            <div className="translation"> {fks} </div>
+            <br/>
+       </div>)
 }
+
