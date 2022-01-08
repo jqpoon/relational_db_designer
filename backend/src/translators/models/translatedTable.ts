@@ -10,7 +10,8 @@ interface Table {
 
 enum TableSource {
     ENTITY,
-    RELATIONSHIP
+    RELATIONSHIP,
+    MULTI_ATTRIBUTE
 }
 
 interface Column {

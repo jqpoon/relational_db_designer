@@ -88,7 +88,6 @@ router.post('/translate', async function (req, res, next) {
                 isOptional: att.isOptional
             })
         }
-        console.log(attributes)
         relationships.set(r.id, {
             id: r.id,
             text: r.text,
