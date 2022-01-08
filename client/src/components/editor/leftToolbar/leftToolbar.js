@@ -14,7 +14,7 @@ import "./toolbar-left.css";
 import { useRef, useState } from "react";
 import { creates } from "../elements/elementFunctions";
 import UploadTool from "../utilities/uploadTool";
-import { submitHandler } from "../alerts/alert";
+import { notificationHandler, submitHandler } from "../alerts/alert";
 
 const categories = {
   ABOUT: "about",
@@ -75,13 +75,14 @@ export function ClickAction({ title, action, tooltip }) {
 }
 
 const showUid = (user) => {
-  alert(
+  notificationHandler(
+		"Success",
     `Your User ID is '${user}'. It can be used to directly interact with the API. Please keep it safe and do not share it with others.`
   );
 };
 
 const showERid = (name, erid) => {
-  alert(`The ID of '${name}' is ${erid}`);
+  notificationHandler("Success", `The ID of '${name}' is ${erid}`);
 };
 
 const showAbout = (info, functions) => {
@@ -212,66 +213,68 @@ const showFile = (info, functions) =>{
   )
 }
 
-function setColors(category) {
-  var about = document.getElementById("about");
-  var edit = document.getElementById("edit");
-  var file = document.getElementById("file");
-  if (category === 0) {
-      about.style.backgroundColor = "black";
-      about.style.color = "white";
-      edit.style.backgroundColor = "rgba(51, 51, 51, 0.05)";
-      edit.style.color = "black";
-      file.style.backgroundColor = "rgba(51, 51, 51, 0.05)";
-      file.style.color = "black";
-  }
-  else if(category === 1){
-      about.style.backgroundColor = "rgba(51, 51, 51, 0.05)";
-      about.style.color = "black";
-      edit.style.backgroundColor = "black";
-      edit.style.color = "white";
-      file.style.backgroundColor = "rgba(51, 51, 51, 0.05)";
-      file.style.color = "black";
-
-  } else{
-    about.style.backgroundColor = "rgba(51, 51, 51, 0.05)";
-    about.style.color = "black";
-    edit.style.backgroundColor = "rgba(51, 51, 51, 0.05)";
-    edit.style.color = "black";
-    file.style.backgroundColor = "black";
-    file.style.color = "white";
-
-  }
-}
-
 export default function LeftToolbar({ info, functions }) {
   const [scrollable, setScrollable] = useState(true);
   const [category, setCategory] = useState(categories.ABOUT);
   return (
     <div
       className="toolbar-left"
-      // style={{ overflow: scrollable ? "scroll" : "visible" }}
-      style={{overflow: "visible"}}
     >
-      <div className="group" >
-        <Tooltip title="Edit name of diagram" placement="right">
-          <label>
-          <input
-            className="section"
-            value={info.name}
-            onChange={(e) => functions.setName(e.target.value)}
-          />
-          </label>
-        </Tooltip>
-      </div>
-      <div className="outer">
-      <div className="inner"><button id="about" class="initial button-2"  onClick={() => {setCategory(categories.ABOUT);setColors(0);}} >About</button></div>
-      <div className="inner"><button id="file" class="button-2" onClick={() => {setCategory(categories.FILE);setColors(2);}} >File</button></div>
-      <div className="inner"><button id="edit" class="button-2" onClick={() => {setCategory(categories.EDIT);setColors(1);}}>Edit</button></div>
-      </div>
+			<div>
+	      <div className="group">
+	        <Tooltip title="Edit name of diagram" placement="right">
+	          <label>
+							ERD Name
+		          <input
+		            className="section"
+		            value={info.name}
+		            onChange={(e) => functions.setName(e.target.value)}
+								/>
+	          </label>
+	        </Tooltip>
+	      </div>
+	      <div className="outer">
+		      <div className="inner">
+						<button 
+							className={`${category === categories.ABOUT ? "active " : ""}button-2`}
+							onClick={() => setCategory(categories.ABOUT)} 
+						>
+							About
+						</button>
+					</div>
+		      <div className="inner">
+						<button 
+							className={`${category === categories.FILE ? "active " : ""}button-2`} 
+							onClick={() => setCategory(categories.FILE)}
+							>
+							File
+						</button>
+					</div>
+		      <div className="inner">
+						<button 
+							className={`${category === categories.EDIT ? "active " : ""}button-2`}
+							onClick={() => setCategory(categories.EDIT)}
+						>
+							Edit
+						</button>
+					</div>
+	    	</div>
 
-      {category === categories.ABOUT ? showAbout(info, functions) : (category === categories.EDIT ? showEdit(info, functions, setScrollable) : showFile(info, functions))}
+	      {category === categories.ABOUT 
+					? showAbout(info, functions) 
+					: (category === categories.EDIT 
+						? showEdit(info, functions, setScrollable) 
+						: showFile(info, functions))}
 
-
-      </div>
+			</div>
+			<a 
+				className="bug-report"
+				href="https://docs.google.com/forms/d/e/1FAIpQLSeCgKZ7te-xfGc7XBNCFRVLWlVe6ryma-fQUGvBHnOOiSK8rQ/viewform" 
+				rel="noreferrer"
+				target="_blank"
+			>
+				Found a bug? Let us know.
+			</a>
+    </div>
   );
 }

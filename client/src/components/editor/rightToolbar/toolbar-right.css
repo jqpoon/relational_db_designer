@@ -97,11 +97,16 @@ input[type=text]:hover {
   outline: none;
 }
 
-.translation{
+.translation {
   margin-left: 3px;
   font-size: 14px;
   padding-top: 1px;
   /* padding: 1px 0px 1px 0px; */
+}
+
+.load-text {
+	padding: 10px;
+	margin-left: 5px;	
 }
 
 .erid-block {
@@ -123,6 +128,7 @@ input[type=text]:hover {
 .share-form {
 	display: flex;
 	height: 30px;
+	padding: 0 5px;
 }
 
 .share-email {
@@ -145,6 +151,7 @@ input[type=text]:hover {
 
 .permission-block {
 	display: flex;
+	padding: 0 5px;
 }
 
 .user-block {
@@ -153,13 +160,11 @@ input[type=text]:hover {
 	text-align: center;
 	padding: 3px;
 	margin: 2px 0;
-	height: 30px;
 	border: 1px solid gray;
 	border-radius: 3px;
 }
 
 .remove-permission-btn {
-	height: 30px;
 	padding: 3px;
 	margin: 2px;
 }

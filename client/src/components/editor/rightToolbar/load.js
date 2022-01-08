@@ -4,7 +4,7 @@ import { confirmAlert } from "react-confirm-alert";
 import { notificationHandler } from "../alerts/alert";
 
 export default function Load({ user, importStateFromObject, backToNormal }) {
-  const [erids, setErids] = useState([]);
+  const [erids, setErids] = useState(null);
 
   useEffect(() => {
     axios.get(`/api/collab?Uid=${user}`).then((res) => {
@@ -54,7 +54,11 @@ export default function Load({ user, importStateFromObject, backToNormal }) {
   return (
     <div className="toolbar-right">
       <h3 className="toolbar-header">Load ERD</h3>
-      {erids.length === 0 ? "Nothing to load!" : erids.map((x) => eridBlock(x))}
+      {erids === null 
+				? <p className="load-text">Loading...</p> 
+				: (erids.length === 0 
+					? <p className="load-text">Nothing to load!</p> 
+					: erids.map((x) => eridBlock(x)))}
     </div>
   );
 }

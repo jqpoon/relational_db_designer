@@ -6,19 +6,18 @@ import "./editor.css";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import html2canvas from "html2canvas";
-import SelectEntity from "./right_toolbar/selectEntity";
-import SelectRelationship from "./right_toolbar/selectRelationship";
-import Normal from "./right_toolbar/normal";
-import SelectEdge from "./right_toolbar/selectEdge";
-import SelectGeneralisation from "./right_toolbar/selectGeneralisation";
+import SelectEntity from "./rightToolbar/selectEntity";
+import SelectRelationship from "./rightToolbar/selectRelationship";
+import SelectEdge from "./rightToolbar/selectEdge";
+import SelectGeneralisation from "./rightToolbar/selectGeneralisation";
 import { ContextMenu } from "./contextMenu";
-import DisplayTranslation from "./right_toolbar/translationDisplay";
+import DisplayTranslation from "./rightToolbar/translationDisplay";
 import { addToUndo, redo, undo } from "./historyUtilities/history";
 import { deletes, gets, updates } from "./elements/elementFunctions";
 import { saveIdCounter, setIdCounter } from "./idGenerator";
 import LeftToolbar from "./leftToolbar/leftToolbar";
-import Load from "./right_toolbar/load";
-import Share from "./right_toolbar/share";
+import Load from "./rightToolbar/load";
+import Share from "./rightToolbar/share";
 import {
   deleteERDInBackEnd,
   duplicateERD,
@@ -64,15 +63,6 @@ export default function Editor({ user, setUser }) {
 
   const [contextMenu, setContextMenu] = useState(null);
 
-  const resetClick = (e) => {
-    if (
-      e.target.classList.contains("react-transform-wrapper") ||
-      e.target.classList.contains("canvas")
-    ) {
-      setContext({ action: actions.NORMAL, disableNodeNameEditing: true });
-    }
-  };
-
   // Canvas states:
   // Disable panning eg. when dragging nodes
   const [panDisabled, setPanDisabled] = useState(false);
@@ -103,13 +93,33 @@ export default function Editor({ user, setUser }) {
     limitToBounds: false,
   };
 
+	const backToNormal = () => setContext({ action: actions.NORMAL });
+
   const canvasExportableCompID = "canvasExportableComp";
 
   useEffect(() => {
     setRender(true);
-    document?.addEventListener("click", resetClick);
+		localStorage.setItem("user", user);
+		// Loads latest ER diagram on login / refreshing the page
+    const state = JSON.parse(localStorage.getItem("state"));
+    importStateFromObject(state);
   }, []);
 
+	useEffect(() => {
+		const canvas = document.getElementById(canvasExportableCompID);
+		canvas?.addEventListener("click", backToNormal);
+		return () => {
+			canvas?.removeEventListener("click", backToNormal);
+		}
+	}, [render])
+
+	useEffect(() => {
+		// Loads current state into local storage whenever ER diagram changes
+		const state = exportStateToObject();
+		if (erid) state["erid"] = erid;
+		localStorage.setItem("state", JSON.stringify(state));
+	}, [elements]);
+	
   // Resets the state of the whiteboard and deletes the current schema if obj == null.
   // else imports state from obj
   const resetState = (obj) => {
@@ -120,18 +130,7 @@ export default function Editor({ user, setUser }) {
     setElements(obj?.data || { entities: {}, relationships: {}, edges: {} });
     setHistory({ store: [], position: -1 });
   };
-  useEffect(() => {
-    // Loads latest ER diagram on login / refreshing the page
-    const state = JSON.parse(localStorage.getItem("state"));
-    importStateFromObject(state);
-  }, [user]);
 
-  useEffect(() => {
-    // Loads current state into local storage whenever ER diagram changes
-    const state = exportStateToObject();
-    localStorage.setItem("state", JSON.stringify(state));
-    localStorage.setItem("user", user);
-  }, [elements, history]);
 
   // Returns a copy of the element
   const getElement = (type, id, parent) => {
@@ -376,15 +375,18 @@ export default function Editor({ user, setUser }) {
   };
 
   const nodeConfig = {
-    parentRef: parentRef,
-    ctx: { scale: scale, context, context },
+    parentRef,
+    ctx: { 
+			scale, 
+			context 
+		},
     functions: {
-      getElement: getElement,
-      updateElement: updateElement,
-      addElement: addElement,
-      setContext: setContext,
-      setContextMenu: setContextMenu,
-      setPanDisabled: setPanDisabled,
+      getElement,
+      updateElement,
+      addElement,
+      setContext,
+      setContextMenu,
+      setPanDisabled,
     },
   };
 
@@ -393,7 +395,7 @@ export default function Editor({ user, setUser }) {
       case actions.TRANSLATE:
         return <DisplayTranslation relationalSchema={context.tables} />;
       case actions.NORMAL:
-        return <Normal />;
+        return null;
       case actions.SELECT.NORMAL:
       case actions.SELECT.ADD_RELATIONSHIP:
       case actions.SELECT.ADD_SUPERSET:
@@ -434,14 +436,14 @@ export default function Editor({ user, setUser }) {
           case types.EDGE.HIERARCHY:
             return <SelectEdge edge={elements.edges[context.selected.id]} />;
           default:
-            return <Normal />; // TODO: type not found page
+            return null; // TODO: type not found page
         }
       case actions.LOAD:
         return (
           <Load
             user={user}
             importStateFromObject={importStateFromObject}
-            backToNormal={() => setContext({ action: actions.NORMAL })}
+            backToNormal={backToNormal}
           />
         );
       case actions.SHARE:
@@ -449,12 +451,11 @@ export default function Editor({ user, setUser }) {
           <Share
             user={user}
             erid={erid}
-            backToNormal={() => setContext({ action: actions.NORMAL })}
+            backToNormal={backToNormal}
           />
         );
       default:
-        // TODO
-        return <Normal />;
+        return null;
     }
   };
 
@@ -528,7 +529,11 @@ export default function Editor({ user, setUser }) {
             />
             {/* <Toolbar {...elementFunctions} {...leftToolBarActions} /> */}
             {showRightToolbar()}
-            <ContextMenu contextMenu={contextMenu} />
+            <ContextMenu 
+							contextMenu={contextMenu} 
+							setContextMenu={setContextMenu}
+							backToNormal={backToNormal}
+						/>
           </>
         ) : null}
       </div>

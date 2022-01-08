@@ -196,10 +196,12 @@ class FirestoreController {
 		const docData: DocumentSnapshot = await getDoc(docRef);
 		const erds: string[] = await docData.get("erds");
 		const erdsMeta: ERDMeta[] = [];
-		for (const x of erds) {
-			const erdRef: DocumentReference = doc(this.db, `erds_list/${x}`);
-			const erdData = await getDoc(erdRef);
-			erdsMeta.push({erid: x, name: erdData.get("name")});
+		if (erds !== undefined) {
+			for (const x of erds) {
+				const erdRef: DocumentReference = doc(this.db, `erds_list/${x}`);
+				const erdData = await getDoc(erdRef);
+				erdsMeta.push({erid: x, name: erdData.get("name")});
+			}
 		}
 		return JSON.stringify(erdsMeta);
 	}

@@ -1,5 +1,4 @@
 import { actions, types } from "../types";
-import Normal from "./normal";
 import { AddingSubsetViaGeneralisation } from "./utilities/addEdge";
 import { DisplaySubsets } from "./utilities/listDisplay";
 import { Name } from "./utilities/name";
@@ -15,7 +14,7 @@ export default function SelectGeneralisation({
 }) {
   if (!generalisation) {
     setContext({ action: actions.NORMAL });
-    return <Normal />;
+    return null;
   }
   const updateAction = (action) => {
     setContext((ctx) => {
