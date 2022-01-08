@@ -359,12 +359,14 @@ export default function Editor({ user, setUser }) {
     loadERD: () => setContext({ action: actions.LOAD }),
     shareERD: () => setContext({ action: actions.SHARE }),
     saveERD: async () => {
-      new Validator(exportStateToObject()).validateAndAlert();
+      const validator = new Validator(exportStateToObject());
+      validator.validateAndAlert();
       await saveERDToBackEnd(backendUtils);
     },
     translateERtoRelational: () => {
-      new Validator(exportStateToObject()).validateAndAlert();
-      translateERtoRelational(backendUtils);
+      const validator = new Validator(exportStateToObject());
+      validator.validateAndAlert();
+      if (validator.valid) translateERtoRelational(backendUtils);
     },
     importFromJSON: uploadStateFromObject,
     exportToJSON: downloadStateAsObject,
