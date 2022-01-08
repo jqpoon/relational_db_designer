@@ -136,6 +136,7 @@ export function Node({ className, node, ctx, ctxMenuActions, functions }) {
       // Set actions available in context menu
       actions: { "Edit Label": () => setEditing(true), ...ctxMenuActions },
     });
+		selectNode(node, ctx.context, functions.setContext);
   }, []);
   // Set dimensions and event listeners on mount
   useEffect(() => {
