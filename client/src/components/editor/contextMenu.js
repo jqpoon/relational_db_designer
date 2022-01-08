@@ -1,10 +1,13 @@
 import { useRef, useEffect } from "react";
 
-export function ContextMenu({ contextMenu, setContextMenu }) {
+export function ContextMenu({ contextMenu, setContextMenu, backToNormal }) {
 	const ctxMenuRef = useRef(null);
 	
 	const handleClickOut = (e) => {
-		if (ctxMenuRef.current && !ctxMenuRef.current.contains(e.target)) setContextMenu(null);
+		if (ctxMenuRef.current && !ctxMenuRef.current.contains(e.target)) {
+			backToNormal();
+			setContextMenu(null);
+		}
 	}
 
 	useEffect(() => {
