@@ -126,6 +126,7 @@ input[type=text]:hover {
 .share-form {
 	display: flex;
 	height: 30px;
+	padding: 0 5px;
 }
 
 .share-email {
@@ -148,6 +149,7 @@ input[type=text]:hover {
 
 .permission-block {
 	display: flex;
+	padding: 0 5px;
 }
 
 .user-block {
@@ -156,13 +158,11 @@ input[type=text]:hover {
 	text-align: center;
 	padding: 3px;
 	margin: 2px 0;
-	height: 30px;
 	border: 1px solid gray;
 	border-radius: 3px;
 }
 
 .remove-permission-btn {
-	height: 30px;
 	padding: 3px;
 	margin: 2px;
 }

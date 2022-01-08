@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 import { confirmAlert } from 'react-confirm-alert';
+import { notificationHandler } from '../alerts/alert';
 
 export default function Share({user, erid, backToNormal}) {
 	
-	const [users, setUsers] = useState([]);
+	const [users, setUsers] = useState(null);
 
 	const [email, setEmail] = useState("");
 	const [permission, setPermission] = useState("READ");
@@ -24,7 +25,7 @@ export default function Share({user, erid, backToNormal}) {
 		try {
 			await axios.put(`/api/collab?owner=${user}&email=${email}&ERid=${erid}&permission=${permission}`);
 			getSharedList();
-			alert("Permission updated");
+			notificationHandler("Success", "Permission updated");
 		} catch (error) {
 			alert(error.response.data);
 		}
@@ -64,7 +65,8 @@ export default function Share({user, erid, backToNormal}) {
 		return (
 			<div className="permission-block">
 				<div className="user-block">
-					<p>{email} - {permission}</p>
+					<p>{email}</p>
+					<p>{permission}</p>
 				</div>
 				{permission !== "OWNER" 
 					? <button className="remove-permission-btn" onClick={() => givePermission(email, "REMOVE")}>Remove</button> 
@@ -88,7 +90,9 @@ export default function Share({user, erid, backToNormal}) {
 					<button>Update</button>
 				</div>
 			</form>
-			{users.map((x) => userBlock(x))}
+			{users === null 
+				? <p className="load-text">Loading...</p>
+				: users.map((x) => userBlock(x))}
 		</div>
 	)
 }
