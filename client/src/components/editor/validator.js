@@ -15,6 +15,12 @@ export class Validator {
     this.errors.push(error);
   }
 
+  findNodeName(node) {
+    return (node.text === "") ? node.id : node.text;
+  }
+
+  // Entities.
+
   checkForEntityText(e) {
     if (e.text === "") this.flagInvalid("Entity " + e.id + " has no name.");
     Object.values(e.attributes).forEach(a => {
@@ -25,13 +31,36 @@ export class Validator {
     });
   }
 
+  checkForEntityPrimaryKey(e) {
+    const attributes = Object.values(e.attributes);
+
+    // Guard statement. Only process if entity has attributes.
+    if (attributes.isEmpty()) return;
+
+    let nPrimaryKeys = 0;
+    attributes.forEach(a => {
+      if (a.isPrimaryKey) nPrimaryKeys++;
+    });
+
+    if (nPrimaryKeys === 0) {
+      this.flagInvalid("Entity " + this.findNodeName(e) + " has no primary key.");
+    } else if (nPrimaryKeys > 1) {
+      this.flagInvalid("Entity " + this.findNodeName(e) + " has multiple primary keys.");
+    }
+  }
+
+  // Relationships.
+
   checkForRelationshipText(r) {
     if (r.text === "") this.flagInvalid("Relationship " + r.id + " has no name.");
   }
 
+  // Public methods.
+
   validate() {
     this.entities.forEach(e => {
       this.checkForEntityText(e);
+      this.checkForEntityPrimaryKey(e);
     });
 
     this.relationships.forEach(r => {
