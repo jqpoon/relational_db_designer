@@ -90,7 +90,7 @@ export const updateEntity = ({ elements, setElements }, entity) => {
 
 export function Entity({ entity, ctx, functions }) {
   const ctxMenuActions = {
-    ["Add Attribute"]: () =>
+    "Add Attribute": () =>
       addAttributeToNode({
         addElement: functions.addElement,
         getElement: functions.getElement,
