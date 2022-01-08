@@ -82,7 +82,7 @@ const showUid = (user) => {
 };
 
 const showERid = (name, erid) => {
-  notificationHandler("Success, "`The ID of '${name}' is ${erid}`);
+  notificationHandler("Success", `The ID of '${name}' is ${erid}`);
 };
 
 const showAbout = (info, functions) => {
