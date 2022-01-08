@@ -1,5 +1,4 @@
 import { actions, types } from "../types";
-import Normal from "./normal";
 import "./toolbar-right.css";
 import { RelationshipAdding } from "./utilities/addEdge";
 import { AddAttribute, Attributes } from "./utilities/attribute";
@@ -17,7 +16,7 @@ export default function SelectRelationship({
 }) {
   if (!relationship) {
     setContext({ action: actions.NORMAL });
-    return <Normal />;
+    return null;
   }
   const addConnection = () => {
     setContext((ctx) => {

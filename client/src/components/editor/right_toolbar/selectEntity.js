@@ -13,7 +13,6 @@ import { getId } from "../idGenerator";
 import { Name } from "./utilities/name";
 import { Relationships } from "./utilities/relationship";
 import { MdClear } from "react-icons/md";
-import Normal from "./normal";
 
 export function Generalisation({
   generalisation,
@@ -78,7 +77,7 @@ export default function SelectEntity({
 
   if (!entity) {
     setContext({ action: actions.NORMAL });
-    return <Normal />;
+    return null;
   }
 
   const updateAction = (action) => {

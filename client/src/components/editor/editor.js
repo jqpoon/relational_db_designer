@@ -8,7 +8,6 @@ import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import html2canvas from "html2canvas";
 import SelectEntity from "./right_toolbar/selectEntity";
 import SelectRelationship from "./right_toolbar/selectRelationship";
-import Normal from "./right_toolbar/normal";
 import SelectEdge from "./right_toolbar/selectEdge";
 import SelectGeneralisation from "./right_toolbar/selectGeneralisation";
 import { ContextMenu } from "./contextMenu";
@@ -393,7 +392,7 @@ export default function Editor({ user, setUser }) {
       case actions.TRANSLATE:
         return <DisplayTranslation relationalSchema={context.tables} />;
       case actions.NORMAL:
-        return <Normal />;
+        return null;
       case actions.SELECT.NORMAL:
       case actions.SELECT.ADD_RELATIONSHIP:
       case actions.SELECT.ADD_SUPERSET:
@@ -434,7 +433,7 @@ export default function Editor({ user, setUser }) {
           case types.EDGE.HIERARCHY:
             return <SelectEdge edge={elements.edges[context.selected.id]} />;
           default:
-            return <Normal />; // TODO: type not found page
+            return null; // TODO: type not found page
         }
       case actions.LOAD:
         return (
@@ -453,8 +452,7 @@ export default function Editor({ user, setUser }) {
           />
         );
       default:
-        // TODO
-        return <Normal />;
+        return null;
     }
   };
 
