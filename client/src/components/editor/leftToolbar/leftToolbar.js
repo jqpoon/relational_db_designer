@@ -225,11 +225,12 @@ export default function LeftToolbar({ info, functions }) {
       <div className="group">
         <Tooltip title="Edit name of diagram" placement="right">
           <label>
-          <input
-            className="section"
-            value={info.name}
-            onChange={(e) => functions.setName(e.target.value)}
-          />
+						ERD Name
+	          <input
+	            className="section"
+	            value={info.name}
+	            onChange={(e) => functions.setName(e.target.value)}
+	          />
           </label>
         </Tooltip>
       </div>
