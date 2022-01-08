@@ -11,7 +11,7 @@ services:
   client:
     build: ./client
     environment:
-      - PORT=3001
+      - PORT=3000
       - RELATIONAL_DB_DESIGNER_BACKEND_URL=http://backend:4000
     ports:
       - '3000:3000'
