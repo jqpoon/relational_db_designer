@@ -1,26 +1,31 @@
-export function ContextMenu({ contextMenu }) {
-  if (contextMenu === null) {
-    return null;
-  }
+import { useRef, useEffect } from "react";
+
+export function ContextMenu({ contextMenu, setContextMenu }) {
+	const ctxMenuRef = useRef(null);
+	
+	const handleClickOut = (e) => {
+		if (ctxMenuRef.current && !ctxMenuRef.current.contains(e.target)) setContextMenu(null);
+	}
+
+	useEffect(() => {
+		document.addEventListener("mousedown", handleClickOut);
+		return () => {
+			document.removeEventListener("mousedown", handleClickOut);
+		}
+	}, []);
+	
+	if (contextMenu === null) return null;
 
   const ctxMenuStyle = {
-    borderRadius: "2px",
-    boxShadow: "0 0 20px 0 #ccc",
-    backgroundColor: "white",
     top: contextMenu.anchor.y,
     left: contextMenu.anchor.x,
-    height: "auto",
-    width: "150px",
-    position: "absolute",
-    margin: "0",
-    padding: "5px 0 5px 0",
-    fontSize: "14px",
-    listStyle: "none",
   };
 
   const totalActions = Object.keys(contextMenu.actions).length;
+
+
   return (
-    <ul style={ctxMenuStyle}>
+    <ul style={ctxMenuStyle} className="ctx-menu">
       {Object.entries(contextMenu.actions).map(([name, action], i) => (
         <>
           <li onClick={action}>{name}</li>

@@ -9,3 +9,16 @@
 	width: 140vw;
 	height: 100vh;
 }
+
+.ctx-menu {
+	border-radius: 2px;
+  box-shadow: 0 0 20px 0 #ccc;
+  background-color: white;
+  height: auto;
+  width: 150px;
+  position: absolute;
+  margin: 0;
+  padding: 5px 0 5px 0;
+  font-size: 14px;
+  list-style: none;
+}

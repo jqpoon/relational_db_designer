@@ -516,7 +516,7 @@ export default function Editor({ user, setUser }) {
             />
             {/* <Toolbar {...elementFunctions} {...leftToolBarActions} /> */}
             {showRightToolbar()}
-            <ContextMenu contextMenu={contextMenu} />
+            <ContextMenu contextMenu={contextMenu} setContextMenu={setContextMenu}/>
           </>
         ) : null}
       </div>
