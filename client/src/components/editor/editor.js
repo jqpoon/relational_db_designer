@@ -63,15 +63,6 @@ export default function Editor({ user, setUser }) {
 
   const [contextMenu, setContextMenu] = useState(null);
 
-  const resetClick = (e) => {
-    if (
-      e.target.classList.contains("react-transform-wrapper") ||
-      e.target.classList.contains("canvas")
-    ) {
-      setContext({ action: actions.NORMAL, disableNodeNameEditing: true });
-    }
-  };
-
   // Canvas states:
   // Disable panning eg. when dragging nodes
   const [panDisabled, setPanDisabled] = useState(false);
@@ -106,7 +97,6 @@ export default function Editor({ user, setUser }) {
 
   useEffect(() => {
     setRender(true);
-    document?.addEventListener("click", resetClick);
   }, []);
 
   // Resets the state of the whiteboard and deletes the current schema if obj == null.
@@ -376,7 +366,7 @@ export default function Editor({ user, setUser }) {
 
   const nodeConfig = {
     parentRef: parentRef,
-    ctx: { scale: scale, context, context },
+    ctx: { scale: scale, context },
     functions: {
       getElement: getElement,
       updateElement: updateElement,

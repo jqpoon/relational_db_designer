@@ -62,7 +62,9 @@ const nodeSelected = (id, ctx) => {
 
 function NodeInEdit({ node, saveChanges, exitEdit }) {
   const [text, setText] = useState(node.text);
-  const saveAndExit = () => {
+	const inputRef = useRef(null);
+
+	const saveAndExit = () => {
     if (node.text !== text) {
       saveChanges((node) => {
         node.text = text;
@@ -70,9 +72,26 @@ function NodeInEdit({ node, saveChanges, exitEdit }) {
     }
     exitEdit();
   };
+
+	const handleClickOut = (e) => {
+		if (inputRef.current && !inputRef.current.contains(e.target)) saveAndExit();
+	}
+
+	useEffect(() => {
+		inputRef.current.focus();
+	}, [])
+
+	useEffect(() => {
+		document.addEventListener("mousedown", handleClickOut);
+		return () => {
+			document.removeEventListener("mousedown", handleClickOut);
+		}
+	}, [text]);
+
   return (
     <div className="content edit">
       <input
+				ref={inputRef}
         value={text}
         onChange={(e) => setText(e.target.value)}
         onClick={(e) => e.stopPropagation()}
