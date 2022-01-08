@@ -97,9 +97,14 @@ input[type=text]:hover {
   outline: none;
 }
 
-.translation{
+.translation {
   margin-left: 3px;
   font-size: 14px;
+}
+
+.load-text {
+	padding: 10px;
+	margin-left: 5px;	
 }
 
 .erid-block {
