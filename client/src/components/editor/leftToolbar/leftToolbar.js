@@ -1,14 +1,14 @@
 import Draggable from "react-draggable";
 import { IconButton, Tooltip } from "@mui/material";
-import UndoIcon from '@mui/icons-material/Undo';
-import RedoIcon from '@mui/icons-material/Redo';
-import ClearIcon from '@mui/icons-material/Clear';
-import CachedIcon from '@mui/icons-material/Cached';
-import SaveIcon from '@mui/icons-material/Save';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import ShareIcon from '@mui/icons-material/Share';
-import RuleIcon from '@mui/icons-material/Rule';
+import UndoIcon from "@mui/icons-material/Undo";
+import RedoIcon from "@mui/icons-material/Redo";
+import ClearIcon from "@mui/icons-material/Clear";
+import CachedIcon from "@mui/icons-material/Cached";
+import SaveIcon from "@mui/icons-material/Save";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import ShareIcon from "@mui/icons-material/Share";
+import RuleIcon from "@mui/icons-material/Rule";
 import { types } from "../types";
 import "./toolbar-left.css";
 import { useRef, useState } from "react";
@@ -22,7 +22,6 @@ const categories = {
   FILE: "file",
 };
 
-
 function DragToCreate({ nodeType, addElement, setScrollable, scale }) {
   const ref = useRef(null);
   const createAndAdd = (e, data) => {
@@ -31,9 +30,9 @@ function DragToCreate({ nodeType, addElement, setScrollable, scale }) {
       .getBoundingClientRect();
     const right = document
       .querySelector(".toolbar-right")
-      .getBoundingClientRect();
+      ?.getBoundingClientRect();
     const canvas = document.querySelector(".canvas").getBoundingClientRect();
-    if (e.pageX > left.right && e.pageX < right.left) {
+    if (e.pageX > left.right && (!right || e.pageX < right.left)) {
       // Create element if dropped in canvas
       const pos = {
         x: (e.pageX - canvas.left) / scale,
@@ -65,18 +64,18 @@ function DragToCreate({ nodeType, addElement, setScrollable, scale }) {
 }
 
 export function ClickAction({ title, action, tooltip }) {
-  return  (
+  return (
     <Tooltip title={tooltip ? tooltip : ""} placement="right">
-    <div className="section click-action" onClick={action}>
-      {title}
-    </div>
+      <div className="section click-action" onClick={action}>
+        {title}
+      </div>
     </Tooltip>
   );
 }
 
 const showUid = (user) => {
   notificationHandler(
-		"Success",
+    "Success",
     `Your User ID is '${user}'. It can be used to directly interact with the API. Please keep it safe and do not share it with others.`
   );
 };
@@ -88,193 +87,193 @@ const showERid = (name, erid) => {
 const showAbout = (info, functions) => {
   return (
     <div className="group">
-        <div className="group-content">
-          <ClickAction
-            title="User ID"
-            action={() => showUid(info.user)}
-            tooltip="Show your user ID"
-          />
-          <ClickAction
-            title="ERD ID"
-            action={() => showERid(info.name, info.erid)}
-            tooltip="Show ID of diagram"
-          />
-          <ClickAction
-            title="Log out"
-            action={functions.logout}
-            tooltip="Log out"
-          />
-        </div>
+      <div className="group-content">
+        <ClickAction
+          title="User ID"
+          action={() => showUid(info.user)}
+          tooltip="Show your user ID"
+        />
+        <ClickAction
+          title="ERD ID"
+          action={() => showERid(info.name, info.erid)}
+          tooltip="Show ID of diagram"
+        />
+        <ClickAction
+          title="Log out"
+          action={functions.logout}
+          tooltip="Log out"
+        />
       </div>
-
-  )
-}
+    </div>
+  );
+};
 
 const showEdit = (info, functions, setScrollable) => {
   return (
     <div className="group">
-        <div className="group-content">
-          <DragToCreate
-            nodeType={types.ENTITY}
-            {...info}
-            {...functions}
-            setScrollable={setScrollable}
-          />
-          <DragToCreate
-            nodeType={types.RELATIONSHIP}
-            {...info}
-            {...functions}
-            setScrollable={setScrollable}
-          />
-        </div>
-        <ClickAction title="Undo" action={functions.undo} tooltip="Undo" />
-        <ClickAction title="Redo" action={functions.redo} tooltip="Redo" />
-        <ClickAction
-          title="Clear"
-          action={functions.resetState}
-          tooltip="Clear canvas. This cannot be undone."
+      <div className="group-content">
+        <DragToCreate
+          nodeType={types.ENTITY}
+          {...info}
+          {...functions}
+          setScrollable={setScrollable}
         />
+        <DragToCreate
+          nodeType={types.RELATIONSHIP}
+          {...info}
+          {...functions}
+          setScrollable={setScrollable}
+        />
+      </div>
+      <ClickAction title="Undo" action={functions.undo} tooltip="Undo" />
+      <ClickAction title="Redo" action={functions.redo} tooltip="Redo" />
+      <ClickAction
+        title="Clear"
+        action={functions.resetState}
+        tooltip="Clear canvas. This cannot be undone."
+      />
     </div>
-  )
-}
+  );
+};
 
-const showFile = (info, functions) =>{
+const showFile = (info, functions) => {
   return (
-    <div className="group" >
-    <div className="group-content">
-      <ClickAction
-        title="Load"
-        action={functions.loadERD}
-        tooltip="Load an diagram from storage"
-      />
-      <ClickAction
-        title="Save"
-        action={() =>
-          submitHandler(functions.saveERD, "ERD will be saved")
-        }
-        tooltip="Save diagram to storage"
-      />
-       {/* <ClickAction
+    <div className="group">
+      <div className="group-content">
+        <ClickAction
+          title="Load"
+          action={functions.loadERD}
+          tooltip="Load an diagram from storage"
+        />
+        <ClickAction
+          title="Save"
+          action={() => submitHandler(functions.saveERD, "ERD will be saved")}
+          tooltip="Save diagram to storage"
+        />
+        {/* <ClickAction
         title="Validate"
         action={functions.exportToJSON}
         tooltip="Validate ER diagram"
       /> */}
-       {info.erid ? (
-        <>
-          <ClickAction
-            title="Share"
-            action={functions.shareERD}
-            tooltip="Share access to diagram"
-          />
-          <ClickAction
-            title="Duplicate"
-            action={() =>
-              submitHandler(
-                functions.duplicateERD,
-                "Diagram will be duplicated"
-              )
-            }
-            tooltip="Duplicate ERD"
-          />
-          <ClickAction
-            title="Delete"
-            action={() =>
-              submitHandler(
-                functions.deleteERD,
-                "ERD will be deleted from cloud storage. This cannot be undone."
-              )
-            }
-            tooltip="Delete diagram from storage"
-          />
-        </>
-      ) : null}
-      <UploadTool
-        display={{ title: "Import", tooltip: "Import diagram from JSON" }}
-        handleFile={functions.importFromJSON}
-      />
-      <ClickAction
-        title="Export to JSON"
-        action={functions.exportToJSON}
-        tooltip="Export diagram to JSON"
-      />
-       <ClickAction
-        title="Export to PNG"
-        action={functions.exportToPNG}
-        tooltip="Export diagram to PNG"
-      />
+        {info.erid ? (
+          <>
+            <ClickAction
+              title="Share"
+              action={functions.shareERD}
+              tooltip="Share access to diagram"
+            />
+            <ClickAction
+              title="Duplicate"
+              action={() =>
+                submitHandler(
+                  functions.duplicateERD,
+                  "Diagram will be duplicated"
+                )
+              }
+              tooltip="Duplicate ERD"
+            />
+            <ClickAction
+              title="Delete"
+              action={() =>
+                submitHandler(
+                  functions.deleteERD,
+                  "ERD will be deleted from cloud storage. This cannot be undone."
+                )
+              }
+              tooltip="Delete diagram from storage"
+            />
+          </>
+        ) : null}
+        <UploadTool
+          display={{ title: "Import", tooltip: "Import diagram from JSON" }}
+          handleFile={functions.importFromJSON}
+        />
+        <ClickAction
+          title="Export to JSON"
+          action={functions.exportToJSON}
+          tooltip="Export diagram to JSON"
+        />
+        <ClickAction
+          title="Export to PNG"
+          action={functions.exportToPNG}
+          tooltip="Export diagram to PNG"
+        />
 
-      <ClickAction
-        title="Translate"
-        action={functions.translateERtoRelational}
-        tooltip="Translate ERD to relational schema"
-      />
+        <ClickAction
+          title="Translate"
+          action={functions.translateERtoRelational}
+          tooltip="Translate ERD to relational schema"
+        />
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default function LeftToolbar({ info, functions }) {
   const [scrollable, setScrollable] = useState(true);
   const [category, setCategory] = useState(categories.ABOUT);
   return (
-    <div
-      className="toolbar-left"
-    >
-			<div>
-	      <div className="group">
-	        <Tooltip title="Edit name of diagram" placement="right">
-	          <label>
-							ERD Name
-		          <input
-		            className="section"
-		            value={info.name}
-		            onChange={(e) => functions.setName(e.target.value)}
-								/>
-	          </label>
-	        </Tooltip>
-	      </div>
-	      <div className="outer">
-		      <div className="inner">
-						<button 
-							className={`${category === categories.ABOUT ? "active " : ""}button-2`}
-							onClick={() => setCategory(categories.ABOUT)} 
-						>
-							About
-						</button>
-					</div>
-		      <div className="inner">
-						<button 
-							className={`${category === categories.FILE ? "active " : ""}button-2`} 
-							onClick={() => setCategory(categories.FILE)}
-							>
-							File
-						</button>
-					</div>
-		      <div className="inner">
-						<button 
-							className={`${category === categories.EDIT ? "active " : ""}button-2`}
-							onClick={() => setCategory(categories.EDIT)}
-						>
-							Edit
-						</button>
-					</div>
-	    	</div>
+    <div className="toolbar-left">
+      <div>
+        <div className="group">
+          <Tooltip title="Edit name of diagram" placement="right">
+            <label>
+              ERD Name
+              <input
+                className="section"
+                value={info.name}
+                onChange={(e) => functions.setName(e.target.value)}
+              />
+            </label>
+          </Tooltip>
+        </div>
+        <div className="outer">
+          <div className="inner">
+            <button
+              className={`${
+                category === categories.ABOUT ? "active " : ""
+              }button-2`}
+              onClick={() => setCategory(categories.ABOUT)}
+            >
+              About
+            </button>
+          </div>
+          <div className="inner">
+            <button
+              className={`${
+                category === categories.FILE ? "active " : ""
+              }button-2`}
+              onClick={() => setCategory(categories.FILE)}
+            >
+              File
+            </button>
+          </div>
+          <div className="inner">
+            <button
+              className={`${
+                category === categories.EDIT ? "active " : ""
+              }button-2`}
+              onClick={() => setCategory(categories.EDIT)}
+            >
+              Edit
+            </button>
+          </div>
+        </div>
 
-	      {category === categories.ABOUT 
-					? showAbout(info, functions) 
-					: (category === categories.EDIT 
-						? showEdit(info, functions, setScrollable) 
-						: showFile(info, functions))}
-
-			</div>
-			<a 
-				className="bug-report"
-				href="https://docs.google.com/forms/d/e/1FAIpQLSeCgKZ7te-xfGc7XBNCFRVLWlVe6ryma-fQUGvBHnOOiSK8rQ/viewform" 
-				rel="noreferrer"
-				target="_blank"
-			>
-				Found a bug? Let us know.
-			</a>
+        {category === categories.ABOUT
+          ? showAbout(info, functions)
+          : category === categories.EDIT
+          ? showEdit(info, functions, setScrollable)
+          : showFile(info, functions)}
+      </div>
+      <a
+        className="bug-report"
+        href="https://docs.google.com/forms/d/e/1FAIpQLSeCgKZ7te-xfGc7XBNCFRVLWlVe6ryma-fQUGvBHnOOiSK8rQ/viewform"
+        rel="noreferrer"
+        target="_blank"
+      >
+        Found a bug? Let us know.
+      </a>
     </div>
   );
 }
