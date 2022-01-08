@@ -14,7 +14,7 @@ import "./toolbar-left.css";
 import { useRef, useState } from "react";
 import { creates } from "../elements/elementFunctions";
 import UploadTool from "../utilities/uploadTool";
-import { submitHandler } from "../alerts/alert";
+import { notificationHandler, submitHandler } from "../alerts/alert";
 
 const categories = {
   ABOUT: "about",
@@ -75,13 +75,14 @@ export function ClickAction({ title, action, tooltip }) {
 }
 
 const showUid = (user) => {
-  alert(
+  notificationHandler(
+		"Success",
     `Your User ID is '${user}'. It can be used to directly interact with the API. Please keep it safe and do not share it with others.`
   );
 };
 
 const showERid = (name, erid) => {
-  alert(`The ID of '${name}' is ${erid}`);
+  notificationHandler("Success, "`The ID of '${name}' is ${erid}`);
 };
 
 const showAbout = (info, functions) => {
