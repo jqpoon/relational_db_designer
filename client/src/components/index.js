@@ -12,7 +12,7 @@ export default function Index() {
 	} else {
 		console.log('HELLO');
 		if (socket === null) {
-			const socketIO = io("ws://localhost:3000");
+			const socketIO = io("/");
 			setSocket(socketIO);
 
 			socketIO.on("connect", () => {
