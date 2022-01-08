@@ -30,6 +30,7 @@ import { Entity } from "./elements/entities/entity";
 import { AttributeEdge } from "./elements/attributeEdges/attributeEdge";
 import Edge from "./elements/general";
 import { HierarchyEdge } from "./elements/hierarchyEdges/hierarchyEdge";
+import {Validator} from "./validator";
 
 export default function Editor({ user, setUser }) {
   /** ERD Metadata
@@ -358,8 +359,14 @@ export default function Editor({ user, setUser }) {
     duplicateERD: async () => duplicateERD(backendUtils),
     loadERD: () => setContext({ action: actions.LOAD }),
     shareERD: () => setContext({ action: actions.SHARE }),
-    saveERD: async () => saveERDToBackEnd(backendUtils),
-    translateERtoRelational: () => translateERtoRelational(backendUtils),
+    saveERD: async () => {
+      new Validator(exportStateToObject()).validateAndAlert();
+      await saveERDToBackEnd(backendUtils);
+    },
+    translateERtoRelational: () => {
+      new Validator(exportStateToObject()).validateAndAlert();
+      translateERtoRelational(backendUtils);
+    },
     importFromJSON: uploadStateFromObject,
     exportToJSON: downloadStateAsObject,
     exportToPNG: createSchemaImage,
