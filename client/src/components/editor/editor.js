@@ -93,11 +93,21 @@ export default function Editor({ user, setUser }) {
     limitToBounds: false,
   };
 
+	const backToNormal = () => setContext({ action: actions.NORMAL });
+
   const canvasExportableCompID = "canvasExportableComp";
 
   useEffect(() => {
     setRender(true);
   }, []);
+
+	useEffect(() => {
+		const canvas = document.getElementById(canvasExportableCompID);
+		canvas?.addEventListener("click", backToNormal);
+		return () => {
+			canvas?.removeEventListener("click", backToNormal);
+		}
+	}, [render])
 
   // Resets the state of the whiteboard and deletes the current schema if obj == null.
   // else imports state from obj
@@ -430,7 +440,7 @@ export default function Editor({ user, setUser }) {
           <Load
             user={user}
             importStateFromObject={importStateFromObject}
-            backToNormal={() => setContext({ action: actions.NORMAL })}
+            backToNormal={backToNormal}
           />
         );
       case actions.SHARE:
@@ -438,7 +448,7 @@ export default function Editor({ user, setUser }) {
           <Share
             user={user}
             erid={erid}
-            backToNormal={() => setContext({ action: actions.NORMAL })}
+            backToNormal={backToNormal}
           />
         );
       default:
@@ -516,7 +526,11 @@ export default function Editor({ user, setUser }) {
             />
             {/* <Toolbar {...elementFunctions} {...leftToolBarActions} /> */}
             {showRightToolbar()}
-            <ContextMenu contextMenu={contextMenu} setContextMenu={setContextMenu}/>
+            <ContextMenu 
+							contextMenu={contextMenu} 
+							setContextMenu={setContextMenu}
+							backToNormal={backToNormal}
+						/>
           </>
         ) : null}
       </div>
