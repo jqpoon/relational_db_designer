@@ -118,7 +118,7 @@ export default function Editor({ user, setUser }) {
 		const state = exportStateToObject();
 		if (erid) state["erid"] = erid;
 		localStorage.setItem("state", JSON.stringify(state));
-	}, [elements]);
+	}, [elements, erid]);
 	
   // Resets the state of the whiteboard and deletes the current schema if obj == null.
   // else imports state from obj
