@@ -99,6 +99,10 @@ export default function Editor({ user, setUser }) {
 
   useEffect(() => {
     setRender(true);
+		localStorage.setItem("user", user);
+		// Loads latest ER diagram on login / refreshing the page
+    const state = JSON.parse(localStorage.getItem("state"));
+    importStateFromObject(state);
   }, []);
 
 	useEffect(() => {
@@ -109,6 +113,13 @@ export default function Editor({ user, setUser }) {
 		}
 	}, [render])
 
+	useEffect(() => {
+		// Loads current state into local storage whenever ER diagram changes
+		const state = exportStateToObject();
+		if (erid) state["erid"] = erid;
+		localStorage.setItem("state", JSON.stringify(state));
+	}, [elements]);
+	
   // Resets the state of the whiteboard and deletes the current schema if obj == null.
   // else imports state from obj
   const resetState = (obj) => {
@@ -119,18 +130,7 @@ export default function Editor({ user, setUser }) {
     setElements(obj?.data || { entities: {}, relationships: {}, edges: {} });
     setHistory({ store: [], position: -1 });
   };
-  useEffect(() => {
-    // Loads latest ER diagram on login / refreshing the page
-    const state = JSON.parse(localStorage.getItem("state"));
-    importStateFromObject(state);
-  }, [user]);
 
-  useEffect(() => {
-    // Loads current state into local storage whenever ER diagram changes
-    const state = exportStateToObject();
-    localStorage.setItem("state", JSON.stringify(state));
-    localStorage.setItem("user", user);
-  }, [elements, history]);
 
   // Returns a copy of the element
   const getElement = (type, id, parent) => {
@@ -375,15 +375,18 @@ export default function Editor({ user, setUser }) {
   };
 
   const nodeConfig = {
-    parentRef: parentRef,
-    ctx: { scale: scale, context },
+    parentRef,
+    ctx: { 
+			scale, 
+			context 
+		},
     functions: {
-      getElement: getElement,
-      updateElement: updateElement,
-      addElement: addElement,
-      setContext: setContext,
-      setContextMenu: setContextMenu,
-      setPanDisabled: setPanDisabled,
+      getElement,
+      updateElement,
+      addElement,
+      setContext,
+      setContextMenu,
+      setPanDisabled,
     },
   };
 
