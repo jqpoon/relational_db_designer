@@ -60,24 +60,31 @@ function Relationship({ selected, id, functions }) {
   return (
     <div className="toolbar-section-item">
       {/* Name of target */}
-      <div style={{ display: "flex", alignItems: "center" }}>
+      <div style={{ display: "flex" }}>
         <DeleteButton elem={edge} deleteElem={functions.deleteElement} />
-        <h4 style={{ padding: "0px 0px 0px 10px" }}>{target.text}</h4>
-      </div>
-      {/* Cardinality */}
-      <div>
-        <CardinalityChoices
-          value={edge.cardinality}
-          onChange={(e) => updateCardinality(e.target.value)}
-        />
-      </div>
-      {/* Option to toggle relationship as key for enabling weak entities */}
-      {[selected.type, target.type].includes(types.ENTITY) ? (
-        <div>
-          <input type="checkbox" checked={edge.isKey} onChange={toggleAsKey} />
-          <label style={{ fontWeight: "normal" }}>Toggle as key</label>
+        <div style={{ padding: "8px 0px 0px 5px" }}>
+          {target.text}
+
+          {/* Cardinality */}
+          <div>
+            <CardinalityChoices
+              value={edge.cardinality}
+              onChange={(e) => updateCardinality(e.target.value)}
+            />
+          </div>
+          {/* Option to toggle relationship as key for enabling weak entities */}
+          {[selected.type, target.type].includes(types.ENTITY) ? (
+            <div>
+              <input
+                type="checkbox"
+                checked={edge.isKey}
+                onChange={toggleAsKey}
+              />
+              <label style={{ fontWeight: "normal" }}>Toggle as key</label>
+            </div>
+          ) : null}
         </div>
-      ) : null}
+      </div>
     </div>
   );
 }

@@ -15,7 +15,11 @@ export function Attributes({ parent, attributes, functions }) {
     <>
       <h4 className="toolbar-section-header">Attribute(s)</h4>
       {attributes.map((attribute) => (
-        <Attribute parent={parent} attribute={attribute} functions={functions} />
+        <Attribute
+          parent={parent}
+          attribute={attribute}
+          functions={functions}
+        />
       ))}
       <div
         className="toolbar-text-action"
@@ -34,54 +38,59 @@ function Attribute({ parent, attribute, functions }) {
 
   return (
     <div className="toolbar-section-item">
-      <div style={{ display: "flex", alignItems: "center" }}>
+      <div style={{ display: "flex" }}>
         <DeleteButton elem={attribute} deleteElem={functions.deleteElement} />
-        <div style={{ padding: "0px 5px" }}>
-          <Name name={attribute.text} saveChanges={saveChanges} />
-        </div>
-      </div>
-      {/* Toggle attribute properties  */}
-      <div className="attributes-checkbox">
-        <div
-          style={{ display: parent.type === types.ENTITY ? "block" : "none" }}
-        >
-          <input
-            type="checkbox"
-            checked={attribute.isPrimaryKey}
-            onChange={() => toggleKeyAttribute(saveChanges)}
-          />
-          <label>Primary Key</label>
-          <br />
-        </div>
-
-        <Tooltip
-          title={
-            attribute.isPrimaryKey
-              ? "Key attributes must be mandatory and unique."
-              : ""
-          }
-          placement="left"
-        >
-          <div>
-            <input
-              disabled={attribute.isPrimaryKey}
-              type="checkbox"
-              checked={attribute.isOptional}
-              onChange={() => toggleOptionalAttribute(saveChanges)}
-            />
-            <label>Optional</label>
-            <br />
-
-            <input
-              disabled={attribute.isPrimaryKey}
-              type="checkbox"
-              checked={attribute.isMultiValued}
-              onChange={() => toggleMultiValuedAttribute(saveChanges)}
-            />
-            <label>Multi-Valued</label>
-            <br />
+        <div>
+          <div style={{ padding: "0px 5px" }}>
+            <Name name={attribute.text} saveChanges={saveChanges} />
           </div>
-        </Tooltip>
+
+          {/* Toggle attribute properties  */}
+          <div className="attributes-checkbox">
+            <div
+              style={{
+                display: parent.parentType === types.ENTITY ? "block" : "none",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={attribute.isPrimaryKey}
+                onChange={() => toggleKeyAttribute(saveChanges)}
+              />
+              <label>Primary Key</label>
+              <br />
+            </div>
+
+            <Tooltip
+              title={
+                attribute.isPrimaryKey
+                  ? "Key attributes must be mandatory and unique."
+                  : ""
+              }
+              placement="left"
+            >
+              <div>
+                <input
+                  disabled={attribute.isPrimaryKey}
+                  type="checkbox"
+                  checked={attribute.isOptional}
+                  onChange={() => toggleOptionalAttribute(saveChanges)}
+                />
+                <label>Optional</label>
+                <br />
+
+                <input
+                  disabled={attribute.isPrimaryKey}
+                  type="checkbox"
+                  checked={attribute.isMultiValued}
+                  onChange={() => toggleMultiValuedAttribute(saveChanges)}
+                />
+                <label>Multi-Valued</label>
+                <br />
+              </div>
+            </Tooltip>
+          </div>
+        </div>
       </div>
     </div>
   );

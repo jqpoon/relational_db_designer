@@ -35,7 +35,7 @@ function Superset({ id, functions }) {
     <div className="toolbar-section-item">
       <div style={{ display: "flex" }}>
         <DeleteButton elem={edge} deleteElem={functions.deleteElement} />
-        <div style={{ padding: "0px 0px 0px 10px" }}>
+        <div style={{ padding: "8px 0px 0px 0px" }}>
           {parent.text}
           <br />
           {edge.generalisation ? (

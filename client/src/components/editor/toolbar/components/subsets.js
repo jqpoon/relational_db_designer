@@ -28,7 +28,7 @@ export function GeneralisationAndSubsets({
       {generalisations.map((generalisation) => {
         return (
           <div className="toolbar-section-item">
-            <div style={{ display: "flex", alignItems: "center" }}>
+            <div style={{ display: "flex" }}>
               <DeleteButton
                 elem={generalisation}
                 deleteElem={functions.deleteElement}
@@ -40,14 +40,14 @@ export function GeneralisationAndSubsets({
                     functions.saveChanges(generalisation, change)
                   }
                 />
+                <Subsets
+                  children={Object.keys(generalisation.edges)}
+                  generalisation={generalisation}
+                  ctx={ctx}
+                  functions={functions}
+                />
               </div>
             </div>
-            <Subsets
-              children={Object.keys(generalisation.edges)}
-              generalisation={generalisation}
-              ctx={ctx}
-              functions={functions}
-            />
           </div>
         );
       })}
@@ -105,12 +105,10 @@ function Subset({ id, functions }) {
     <div
       style={{
         display: "flex",
-        alignItems: "center",
-        padding: "0px 0px 0px 18px",
       }}
     >
       <DeleteButton elem={edge} deleteElem={functions.deleteElement} />
-      <div style={{ padding: "0px 0px 5px 5px" }}>{child.text}</div>
+      <div style={{ padding: "8px 0px 0px 0px" }}>{child.text}</div>
     </div>
   );
 }

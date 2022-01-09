@@ -100,13 +100,13 @@ export default function Editor({ user, setUser }) {
   }, []);
 
   // This is causing nodes to be unable to be selected
-  useEffect(() => {
-    const canvas = document.getElementById(canvasExportableCompID);
-    canvas?.addEventListener("click", backToNormal);
-    return () => {
-      canvas?.removeEventListener("click", backToNormal);
-    };
-  }, [render]);
+  // useEffect(() => {
+  //   const canvas = document.getElementById(canvasExportableCompID);
+  //   canvas?.addEventListener("click", backToNormal);
+  //   return () => {
+  //     canvas?.removeEventListener("click", backToNormal);
+  //   };
+  // }, [render]);
 
   useEffect(() => {
     // Loads current state into local storage whenever ER diagram changes
