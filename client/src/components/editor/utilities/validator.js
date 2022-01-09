@@ -1,4 +1,5 @@
-import { notificationHandler } from "./alerts/alert";
+import { notificationHandler } from "./alert";
+
 
 // Validates a given schema in specific JSON format. See exportStateToObject in editor.js.
 export class Validator {

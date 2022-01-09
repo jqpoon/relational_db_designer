@@ -23,7 +23,7 @@ import { AttributeEdge } from "./elements/attributeEdges/attributeEdge";
 import Edge from "./elements/general";
 import { HierarchyEdge } from "./elements/hierarchyEdges/hierarchyEdge";
 import { RightToolbar } from "./toolbar/rightToolbar";
-import {Validator} from "./validator";
+import {Validator} from "./utilities/validator";
 
 export default function Editor({ user, setUser }) {
   /** ERD Metadata
