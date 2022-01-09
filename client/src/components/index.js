@@ -12,7 +12,7 @@ export default function Index() {
 	} else {
 		console.log('HELLO');
 		if (socket === null) {
-			const socketIO = io("/");
+			const socketIO = io(process.env.RELATIONAL_DB_DESIGNER_SOCKET_URL);
 			setSocket(socketIO);
 
 			socketIO.on("connect", () => {
