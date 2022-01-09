@@ -10,4 +10,8 @@ server {
         proxy_pass $RELATIONAL_DB_DESIGNER_BACKEND_URL;
     }
 
+    location /socket.io/ {
+        proxy_pass $RELATIONAL_DB_DESIGNER_BACKEND_URL;
+    }
+
 }
