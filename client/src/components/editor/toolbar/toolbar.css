@@ -67,19 +67,15 @@ input[type="text"] {
   cursor: text;
   outline: none !important;
   text-align: center;
+  background-color: white !important;
 }
 
 input[type="text"]:focus {
   text-align: left;
 }
 
-.toolbar-left input[type="text"] {
-  background-color: white !important;
-}
-
 .toolbar-right input[type="text"] {
   text-align: left;
-  background-color: transparent !important;
 }
 
 .toolbar-section {

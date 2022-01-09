@@ -1,4 +1,5 @@
 import { useRef, useEffect } from "react";
+import "./general.css"
 
 export function ContextMenu({ contextMenu, setContextMenu, backToNormal }) {
 	const ctxMenuRef = useRef(null);
@@ -31,7 +32,7 @@ export function ContextMenu({ contextMenu, setContextMenu, backToNormal }) {
     <ul style={ctxMenuStyle} className="ctx-menu">
       {Object.entries(contextMenu.actions).map(([name, action], i) => (
         <>
-          <li onClick={action}>{name}</li>
+          <li onClick={action} className="ctx-menu-item">{name}</li>
           {i === totalActions - 1 ? null : <hr />}
         </>
       ))}
