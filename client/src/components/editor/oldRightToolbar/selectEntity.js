@@ -1,9 +1,9 @@
-import { DisplaySubsets, DisplaySupersets } from "./utilities/listDisplay";
+import { DisplaySubsets, DisplaySupersets } from "../rightToolbar/components/listDisplay";
 import {
   AddingRelationship,
   AddingSubset,
   AddingSuperset,
-} from "./utilities/addEdge";
+} from "../rightToolbar/components/addEdge";
 import { actions, types } from "../types";
 import { useState } from "react";
 

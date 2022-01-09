@@ -1,0 +1,340 @@
+.toolbar-right {
+  position: fixed;
+  top: 0;
+  left: 80vw;
+  width: 20vw;
+  height: 100%;
+  background-color: antiquewhite;
+  text-align: left;
+  overflow-y: scroll;
+  /* z-index: 6; ?? */
+  padding: 10px 5px;
+}
+
+.toolbar-left {
+  position: fixed;
+  top: 0;
+  width: 13vw;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: antiquewhite;
+  text-align: left;
+  z-index: 0;
+  padding: 10px 5px;
+}
+
+.action {
+  cursor: pointer;
+  height: 40px;
+  width: 100%;
+  margin: 0px 0px 5px 0px;
+  padding: 10px;
+  border: 1px solid gray;
+  border-radius: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.action:hover,
+.action:focus {
+  border: 2px solid purple;
+}
+
+.load-text {
+  text-align: center;
+  padding: 10px;
+}
+
+.click-action {
+  cursor: pointer;
+  text-align: center;
+}
+
+.drag-to-create {
+  display: flex;
+  cursor: move !important;
+}
+
+.drag-to-create * {
+  padding: 0px 5px 0px 0px;
+  text-overflow: ellipsis;
+}
+
+input[type="text"] {
+  cursor: text;
+  outline: none !important;
+  text-align: center;
+}
+
+input[type="text"]:focus {
+  text-align: left;
+}
+
+.toolbar-left input[type="text"] {
+  background-color: white !important;
+}
+
+.toolbar-right input[type="text"] {
+  text-align: left;
+  background-color: transparent !important;
+}
+
+.toolbar-section {
+  padding: 10px 5px;
+}
+
+.toolbar-section-header {
+  padding: 0px 0px 5px 0px
+}
+
+.toolbar-text-action {
+  cursor: pointer;
+  color: gray;
+  font-size: medium;
+  padding: 5px 0px;
+}
+
+.section {
+  padding: 10px;
+  border: 1px solid navy;
+}
+
+.toolbar-header {
+  padding: 20px;
+  color: black;
+  text-align: center;
+  font-weight: bold;
+}
+
+.section-selected {
+  padding: 10px;
+  border: 3px solid navy;
+}
+
+.section-header {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.section-content {
+  padding: 10px 0;
+  /* display: flex;
+  justify-content: center;
+  align-items: center; */
+}
+
+.selected-element {
+  margin: 0;
+  padding: 0;
+  /* display: flex;
+  justify-content:space-between; */
+}
+
+/* TODO(change) */
+.tool-button {
+  padding: 8px;
+  margin: 5px;
+  width: 50%;
+  border: 2px solid navy;
+  border-radius: 9px;
+  text-align: center;
+}
+
+.forms {
+  width: 100%;
+}
+
+.divider {
+  margin: 0;
+  padding: 0;
+  height: 1px;
+  background-color: navy;
+  color: navy;
+}
+
+.section-tool {
+  color: gray;
+  margin: 5px 0;
+  padding: 0;
+}
+
+/* input[type=text] {
+  padding: 5px 5px 2px 5px;
+  margin: 0;
+  background-color: transparent;
+  border: 0;
+  outline: none !important;
+}
+
+input[type=text]:focus {
+  padding: 5px 5px 2px 5px;
+  margin: 0;
+  background-color: white;
+  border: 0;
+}
+
+input[type=text]:hover {
+  padding: 5px 5px 2px 5px;
+  margin: 0;
+  background-color: white;
+  border: 0;
+  outline: none;
+} */
+
+.translation {
+  margin-left: 3px;
+  font-size: 14px;
+  padding-top: 1px;
+  /* padding: 1px 0px 1px 0px; */
+}
+
+.share-form-wrapper {
+  margin-bottom: 10px;
+}
+
+.share-form {
+  display: flex;
+  height: 30px;
+  padding: 0 5px;
+}
+
+.share-email {
+  flex-grow: 1;
+}
+
+.share-permission {
+  flex-grow: 0;
+}
+
+.share-btn-wrapper {
+  text-align: center;
+  margin: 5px auto;
+}
+
+.share-btn-wrapper button {
+  width: 100px;
+  font-size: large;
+}
+
+.permission-block {
+  display: flex;
+  padding: 0 5px;
+}
+
+.user-block {
+  flex-grow: 1;
+  overflow-x: hidden;
+  text-align: center;
+  padding: 3px;
+  margin: 2px 0;
+  border: 1px solid gray;
+  border-radius: 3px;
+}
+
+.remove-permission-btn {
+  padding: 3px;
+  margin: 2px;
+}
+
+.title {
+  margin-left: 3px;
+  font-size: 20px;
+}
+
+.toolbar-left * {
+  background: antiquewhite;
+}
+
+.toolbar-left .group {
+  padding: 0px 0px 15px 0px;
+}
+
+.toolbar-left .group-header {
+  padding: 0px 0px 5px 0px;
+}
+.toolbar-left .group-content {
+  padding: 0;
+}
+.toolbar-left .group-content * {
+  overflow: hidden;
+}
+
+.bug-report {
+  margin: 2px;
+  text-align: center;
+}
+
+.edit-buttons {
+  padding: 0% 5% 0% 5%;
+  float: left;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.left {
+  margin-left: 8%;
+}
+
+.file-buttons {
+  float: left;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* CSS */
+.button-2 {
+  float: left;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(51, 51, 51, 0.05);
+  border-radius: 8px;
+  border-width: 1px;
+  /* color: #333333; */
+  cursor: pointer;
+  font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  list-style: none;
+  width: 50px;
+  margin: 1px;
+  padding: 10px 5px 12px 5px;
+  text-align: center;
+  transition: all 200ms;
+  vertical-align: baseline;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.button-2:hover {
+  background-color: black;
+  color: white;
+}
+
+.active {
+  background-color: black;
+  color: white;
+}
+
+.addButton:active,
+.addButton:focus {
+  border: 0.5em solid #00c; /* here configure as your needs */
+  color: #00c;
+}
+
+.outer {
+  width: 100%;
+  text-align: center;
+}
+
+.inner {
+  display: inline-block;
+}

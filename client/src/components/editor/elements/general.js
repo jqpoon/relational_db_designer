@@ -62,9 +62,9 @@ const nodeSelected = (id, ctx) => {
 
 function NodeInEdit({ node, saveChanges, exitEdit }) {
   const [text, setText] = useState(node.text);
-	const inputRef = useRef(null);
+  const inputRef = useRef(null);
 
-	const saveAndExit = () => {
+  const saveAndExit = () => {
     if (node.text !== text) {
       saveChanges((node) => {
         node.text = text;
@@ -73,25 +73,25 @@ function NodeInEdit({ node, saveChanges, exitEdit }) {
     exitEdit();
   };
 
-	const handleClickOut = (e) => {
-		if (inputRef.current && !inputRef.current.contains(e.target)) saveAndExit();
-	}
+  const handleClickOut = (e) => {
+    if (inputRef.current && !inputRef.current.contains(e.target)) saveAndExit();
+  };
 
-	useEffect(() => {
-		inputRef.current.focus();
-	}, [])
+  useEffect(() => {
+    inputRef.current.focus();
+  }, []);
 
-	useEffect(() => {
-		document.addEventListener("mousedown", handleClickOut);
-		return () => {
-			document.removeEventListener("mousedown", handleClickOut);
-		}
-	}, [text]);
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOut);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOut);
+    };
+  }, [text]);
 
   return (
     <div className="content edit">
       <input
-				ref={inputRef}
+        ref={inputRef}
         value={text}
         onChange={(e) => setText(e.target.value)}
         onClick={(e) => e.stopPropagation()}
@@ -105,17 +105,11 @@ function NodeInEdit({ node, saveChanges, exitEdit }) {
   );
 }
 
-/** Node operations */
-export const saveChanges = (node, functions, change) => {
-  let newNode = functions.getElement(node.type, node.id, node.parent);
-  change(newNode);
-  functions.updateElement(newNode.type, newNode);
-};
-
 export function Node({ className, node, ctx, ctxMenuActions, functions }) {
   // posCache tracks position of node while being dragged
   const [posCache, setPosCache] = useState(null);
   const [editing, setEditing] = useState(false);
+  const saveChanges = (change) => functions.saveChanges(node, change);
 
   /** Initialisations and event handlers */
   // TODO: check why?
@@ -128,16 +122,23 @@ export function Node({ className, node, ctx, ctxMenuActions, functions }) {
     functions.setContextMenu(null); //TODO: check
   }, [functions]);
   // Context menu
-  const handleContextMenu = useCallback((event) => {
-    event.preventDefault();
-    functions.setContextMenu({
-      // Set position of context menu
-      anchor: { x: event.pageX, y: event.pageY },
-      // Set actions available in context menu
-      actions: { "Edit Label": () => setEditing(true), ...ctxMenuActions },
-    });
-		selectNode(node, ctx.context, functions.setContext);
-  }, []);
+  const handleContextMenu = useCallback(
+    (event) => {
+      event.preventDefault();
+      functions.setContextMenu({
+        // Set position of context menu
+        anchor: { x: event.pageX, y: event.pageY },
+        // Set actions available in context menu
+        actions: {
+          "Edit Label": () => setEditing(true),
+          ...ctxMenuActions,
+          Delete: () => functions.deleteElement(node.type, node),
+        },
+      });
+      selectNode(node, ctx.context, functions.setContext);
+    },
+    [ctx, ctxMenuActions, functions, node]
+  );
   // Set dimensions and event listeners on mount
   useEffect(() => {
     const curNode = nodeRef.current;
@@ -182,7 +183,7 @@ export function Node({ className, node, ctx, ctxMenuActions, functions }) {
           : (node) => {
               node.pos = { x: data.x, y: data.y };
             };
-        saveChanges(node, functions, setPosition);
+        saveChanges(setPosition);
         // Rerender edges
         updateXarrow();
         // Re-enable panning of canvas
@@ -214,7 +215,7 @@ export function Node({ className, node, ctx, ctxMenuActions, functions }) {
             {editing ? (
               <NodeInEdit
                 node={node}
-                saveChanges={(change) => saveChanges(node, functions, change)}
+                saveChanges={saveChanges}
                 exitEdit={() => setEditing(false)}
               />
             ) : (

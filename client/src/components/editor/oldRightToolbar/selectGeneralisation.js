@@ -1,6 +1,6 @@
 import { actions, types } from "../types";
-import { AddingSubsetViaGeneralisation } from "./utilities/addEdge";
-import { DisplaySubsets } from "./utilities/listDisplay";
+import { AddingSubsetViaGeneralisation } from "../rightToolbar/components/addEdge";
+import { DisplaySubsets } from "../rightToolbar/components/listDisplay";
 import { Name } from "./utilities/name";
 
 export default function SelectGeneralisation({

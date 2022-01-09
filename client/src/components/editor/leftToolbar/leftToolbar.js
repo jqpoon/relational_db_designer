@@ -1,16 +1,7 @@
 import Draggable from "react-draggable";
-import { IconButton, Tooltip } from "@mui/material";
-import UndoIcon from "@mui/icons-material/Undo";
-import RedoIcon from "@mui/icons-material/Redo";
-import ClearIcon from "@mui/icons-material/Clear";
-import CachedIcon from "@mui/icons-material/Cached";
-import SaveIcon from "@mui/icons-material/Save";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import ShareIcon from "@mui/icons-material/Share";
-import RuleIcon from "@mui/icons-material/Rule";
+import { Tooltip } from "@mui/material";
 import { types } from "../types";
-import "./toolbar-left.css";
+import "../toolbar.css";
 import { useRef, useState } from "react";
 import { creates } from "../elements/elementFunctions";
 import UploadTool from "../utilities/uploadTool";
@@ -54,7 +45,7 @@ function DragToCreate({ nodeType, addElement, setScrollable, scale }) {
       onStop={createAndAdd}
     >
       <Tooltip title={`Drag to create new ${nodeType}`} placement="right">
-        <div className="section drag-to-create">
+        <div className="action drag-to-create">
           <div style={{ textOverflow: "clip" }}>+</div>
           <div>{nodeType[0].toUpperCase() + nodeType.slice(1)}</div>
         </div>
@@ -66,7 +57,7 @@ function DragToCreate({ nodeType, addElement, setScrollable, scale }) {
 export function ClickAction({ title, action, tooltip }) {
   return (
     <Tooltip title={tooltip ? tooltip : ""} placement="right">
-      <div className="section click-action" onClick={action}>
+      <div className="action click-action" onClick={action}>
         {title}
       </div>
     </Tooltip>
@@ -216,16 +207,18 @@ export default function LeftToolbar({ info, functions }) {
     <div className="toolbar-left">
       <div>
         <div className="group">
-          <Tooltip title="Edit name of diagram" placement="right">
-            <label>
-              ERD Name
+          <label>
+            ERD Name
+            <Tooltip title="Edit name of diagram" placement="right">
               <input
-                className="section"
+                type="text"
+                className="action"
                 value={info.name}
+                placeholder="Enter name"
                 onChange={(e) => functions.setName(e.target.value)}
               />
-            </label>
-          </Tooltip>
+            </Tooltip>
+          </label>
         </div>
         <div className="outer">
           <div className="inner">

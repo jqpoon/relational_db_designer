@@ -1,5 +1,17 @@
+import { getId } from "../../idGenerator";
 import { types } from "../../types";
 import { Node } from "../general";
+
+export const createGeneralisation = (parentId, parentPos) => {
+  return {
+    id: getId(types.GENERALISATION, parentId),
+    type: types.GENERALISATION,
+    parent: { id: parentId },
+    text: "Generalisation",
+    pos: { x: parentPos.x, y: parentPos.y + 200 },
+    edges: {},
+  };
+};
 
 export const getGeneralisation = ({ entities }, id, parent) => {
   const gen = entities[parent.id]?.generalisations[id];

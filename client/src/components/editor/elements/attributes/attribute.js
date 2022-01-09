@@ -1,10 +1,10 @@
 import { getId } from "../../idGenerator";
 import { types } from "../../types";
-import { Node, saveChanges } from "../general";
+import { Node } from "../general";
 
 // Toggles key attribute feature
-const toggleKeyAttribute = (attr, functions) => () =>
-  saveChanges(attr, functions, (attr) => {
+export const toggleKeyAttribute = (saveChanges) =>
+  saveChanges((attr) => {
     attr.isPrimaryKey = !attr.isPrimaryKey;
     if (attr.isPrimaryKey) {
       // Key attributes are mandatory and unique
@@ -14,15 +14,15 @@ const toggleKeyAttribute = (attr, functions) => () =>
   });
 
 // Toggles optional attribute feature
-const toggleOptionalAttribute = (attr, functions) => () =>
-  saveChanges(attr, functions, (attr) => {
+export const toggleOptionalAttribute = (saveChanges) =>
+  saveChanges((attr) => {
     attr.isOptional = !attr.isOptional;
     attr.isPrimaryKey = false;
   });
 
 // Toggles multi-valued attribute feature
-const toggleMultiValuedAttribute = (attr, functions) => () =>
-  saveChanges(attr, functions, (attr) => {
+export const toggleMultiValuedAttribute = (saveChanges) =>
+  saveChanges((attr) => {
     attr.isMultiValued = !attr.isMultiValued;
     attr.isPrimaryKey = false;
   });
@@ -97,6 +97,7 @@ export const updateAttribute = ({ elements, setElements }, attribute) => {
 };
 
 export function Attribute({ parent, attribute, ctx, functions }) {
+  const saveChanges = (change) => functions.saveChanges(attribute, change);
   /** Position calculations */
   const pos = {
     x: parent.x + attribute.relativePos.x,
@@ -125,12 +126,10 @@ export function Attribute({ parent, attribute, ctx, functions }) {
   };
 
   const ctxMenuActions = {
-    "Toggle Key Attribute": toggleKeyAttribute(attribute, functions),
-    "Toggle Optional Attribute": toggleOptionalAttribute(attribute, functions),
-    "Toggle Multi-valued Attribute": toggleMultiValuedAttribute(
-      attribute,
-      functions
-    ),
+    "Toggle Key Attribute": () => toggleKeyAttribute(saveChanges),
+    "Toggle Optional Attribute": () => toggleOptionalAttribute(saveChanges),
+    "Toggle Multi-valued Attribute": () =>
+      toggleMultiValuedAttribute(saveChanges),
   };
 
   return (

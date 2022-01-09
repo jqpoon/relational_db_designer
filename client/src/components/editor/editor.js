@@ -6,18 +6,18 @@ import "./editor.css";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import html2canvas from "html2canvas";
-import SelectEntity from "./rightToolbar/selectEntity";
-import SelectRelationship from "./rightToolbar/selectRelationship";
-import SelectEdge from "./rightToolbar/selectEdge";
-import SelectGeneralisation from "./rightToolbar/selectGeneralisation";
+import SelectEntity from "./oldRightToolbar/selectEntity";
+import SelectRelationship from "./oldRightToolbar/selectRelationship";
+import SelectEdge from "./oldRightToolbar/selectEdge";
+import SelectGeneralisation from "./oldRightToolbar/selectGeneralisation";
 import { ContextMenu } from "./contextMenu";
-import DisplayTranslation from "./rightToolbar/translationDisplay";
+import DisplayTranslation from "./oldRightToolbar/translationDisplay";
 import { addToUndo, redo, undo } from "./historyUtilities/history";
 import { deletes, gets, updates } from "./elements/elementFunctions";
 import { saveIdCounter, setIdCounter } from "./idGenerator";
 import LeftToolbar from "./leftToolbar/leftToolbar";
-import Load from "./rightToolbar/load";
-import Share from "./rightToolbar/share";
+import Load from "./oldRightToolbar/load";
+import Share from "./oldRightToolbar/share";
 import {
   deleteERDInBackEnd,
   duplicateERD,
@@ -29,6 +29,7 @@ import { Entity } from "./elements/entities/entity";
 import { AttributeEdge } from "./elements/attributeEdges/attributeEdge";
 import Edge from "./elements/general";
 import { HierarchyEdge } from "./elements/hierarchyEdges/hierarchyEdge";
+import { RightToolbar } from "./rightToolbar/rightToolbar";
 
 export default function Editor({ user, setUser }) {
   /** ERD Metadata
@@ -93,33 +94,34 @@ export default function Editor({ user, setUser }) {
     limitToBounds: false,
   };
 
-	const backToNormal = () => setContext({ action: actions.NORMAL });
+  const backToNormal = () => setContext({ action: actions.NORMAL });
 
   const canvasExportableCompID = "canvasExportableComp";
 
   useEffect(() => {
     setRender(true);
-		localStorage.setItem("user", user);
-		// Loads latest ER diagram on login / refreshing the page
+    localStorage.setItem("user", user);
+    // Loads latest ER diagram on login / refreshing the page
     const state = JSON.parse(localStorage.getItem("state"));
     importStateFromObject(state);
   }, []);
 
-	useEffect(() => {
-		const canvas = document.getElementById(canvasExportableCompID);
-		canvas?.addEventListener("click", backToNormal);
-		return () => {
-			canvas?.removeEventListener("click", backToNormal);
-		}
-	}, [render])
+  // This is causing nodes to be unable to be selected 
+  // useEffect(() => {
+  //   const canvas = document.getElementById(canvasExportableCompID);
+  //   canvas?.addEventListener("click", backToNormal);
+  //   return () => {
+  //     canvas?.removeEventListener("click", backToNormal);
+  //   };
+  // }, [render]);
 
-	useEffect(() => {
-		// Loads current state into local storage whenever ER diagram changes
-		const state = exportStateToObject();
-		if (erid) state["erid"] = erid;
-		localStorage.setItem("state", JSON.stringify(state));
-	}, [elements, erid]);
-	
+  useEffect(() => {
+    // Loads current state into local storage whenever ER diagram changes
+    const state = exportStateToObject();
+    if (erid) state["erid"] = erid;
+    localStorage.setItem("state", JSON.stringify(state));
+  }, [elements, erid]);
+
   // Resets the state of the whiteboard and deletes the current schema if obj == null.
   // else imports state from obj
   const resetState = (obj) => {
@@ -131,7 +133,6 @@ export default function Editor({ user, setUser }) {
     setHistory({ store: [], position: -1 });
   };
 
-
   // Returns a copy of the element
   const getElement = (type, id, parent) => {
     return gets[type](elements, id, parent);
@@ -141,6 +142,7 @@ export default function Editor({ user, setUser }) {
     const arg = JSON.parse(JSON.stringify(element));
     const data = deletes[type](elementsAndSetter, element);
     addToUndo("deleteElement", arg, data, historyAndSetter);
+    setContextMenu(null);
   };
   const addElement = (type, element) => {
     const arg = JSON.parse(JSON.stringify(element));
@@ -330,7 +332,7 @@ export default function Editor({ user, setUser }) {
   const createSchemaImage = () => {
     const canvasDiv = document.getElementById(canvasExportableCompID);
     html2canvas(canvasDiv, {
-      allowTaint : true,
+      allowTaint: true,
       foreignObjectRendering: true,
       logging: true,
       scrollX: -window.scrollX,
@@ -374,19 +376,27 @@ export default function Editor({ user, setUser }) {
     setName,
   };
 
+  const saveChanges = ({type, id, parent}, change) => {
+    let newElem = getElement(type, id, parent);
+    change(newElem);
+    updateElement(type, newElem);
+  }
+
   const nodeConfig = {
     parentRef,
-    ctx: { 
-			scale, 
-			context 
-		},
+    ctx: {
+      scale,
+      context,
+    },
     functions: {
       getElement,
       updateElement,
       addElement,
+      deleteElement,
       setContext,
       setContextMenu,
       setPanDisabled,
+      saveChanges
     },
   };
 
@@ -447,13 +457,7 @@ export default function Editor({ user, setUser }) {
           />
         );
       case actions.SHARE:
-        return (
-          <Share
-            user={user}
-            erid={erid}
-            backToNormal={backToNormal}
-          />
-        );
+        return <Share user={user} erid={erid} backToNormal={backToNormal} />;
       default:
         return null;
     }
@@ -496,6 +500,8 @@ export default function Editor({ user, setUser }) {
     );
   };
 
+
+
   return (
     <Xwrapper>
       <div className="editor" ref={parentRef}>
@@ -511,13 +517,15 @@ export default function Editor({ user, setUser }) {
                     {Object.values(elements.entities).map((entity) => (
                       <Entity key={entity.id} entity={entity} {...nodeConfig} />
                     ))}
-                    {Object.values(elements.relationships).map((relationship) => (
-                      <Relationship
-                        key={relationship.id}
-                        relationship={relationship}
-                        {...nodeConfig}
-                      />
-                    ))}
+                    {Object.values(elements.relationships).map(
+                      (relationship) => (
+                        <Relationship
+                          key={relationship.id}
+                          relationship={relationship}
+                          {...nodeConfig}
+                        />
+                      )
+                    )}
                   </div>
                 </TransformComponent>
               </TransformWrapper>
@@ -528,12 +536,13 @@ export default function Editor({ user, setUser }) {
               functions={{ ...leftToolBarActions, ...elementFunctions }}
             />
             {/* <Toolbar {...elementFunctions} {...leftToolBarActions} /> */}
-            {showRightToolbar()}
-            <ContextMenu 
-							contextMenu={contextMenu} 
-							setContextMenu={setContextMenu}
-							backToNormal={backToNormal}
-						/>
+            {/* {showRightToolbar()} */}
+            <RightToolbar context={context} user={user} functions={{importERD: importStateFromObject, backToNormal, setContext, getElement, saveChanges, deleteElement, addElement}} />
+            <ContextMenu
+              contextMenu={contextMenu}
+              setContextMenu={setContextMenu}
+              backToNormal={backToNormal}
+            />
           </>
         ) : null}
       </div>

@@ -3,7 +3,7 @@ import { cardinality } from "../../types";
 export default function CardinalityChoices({ value, onChange }) {
   return (
     <>
-      <select name="Cardinality" onChange={onChange}>
+      <select className="cardinality-selector" name="Cardinality" onChange={onChange}>
         <option value="" selected={value === ""} disabled hidden>
           Cardinality
         </option>

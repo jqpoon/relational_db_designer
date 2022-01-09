@@ -1,5 +1,20 @@
 import Xarrow from "react-xarrows";
+import { getId } from "../../idGenerator";
 import { cardinality as cardinality_all, types } from "../../types";
+
+export const createRelationshipEdge = (source, target) => {
+  const newEdge = {
+    id: getId(types.EDGE.RELATIONSHIP, source.id, target.id),
+    type: types.EDGE.RELATIONSHIP,
+    source_type: source.type,
+    target_type: target.type,
+    start: source.id,
+    end: target.id,
+    isKey: false,
+    cardinality: target.cardinality,
+  };
+  return newEdge;
+};
 
 export const getRelationshipEdge = ({ edges }, id) => {
   return edges[id] ? { ...edges[id] } : null;

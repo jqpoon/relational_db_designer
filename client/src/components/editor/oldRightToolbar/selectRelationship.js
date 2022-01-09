@@ -1,6 +1,6 @@
 import { actions, types } from "../types";
 import "./toolbar-right.css";
-import { RelationshipAdding } from "./utilities/addEdge";
+import { RelationshipAdding } from "../rightToolbar/components/addEdge";
 import { AddAttribute, Attributes } from "./utilities/attribute";
 import { Name } from "./utilities/name";
 import { Relationships } from "./utilities/relationship";

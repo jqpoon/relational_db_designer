@@ -3,40 +3,46 @@ import {
   createEntity,
   deleteEntity,
   getEntity,
-  updateEntity
+  updateEntity,
 } from "./entities/entity";
 import {
+  createGeneralisation,
   deleteGeneralisation,
   getGeneralisation,
-  updateGeneralisation
+  updateGeneralisation,
 } from "./generalisations/generalisation";
 import {
+  createHierarchyEdge,
   deleteHierarchyEdge,
   getHierarchyEdge,
-  updateHierarchyEdge
+  updateHierarchyEdge,
 } from "./hierarchyEdges/hierarchyEdge";
 import {
+  createRelationshipEdge,
   deleteRelationshipEdge,
   getRelationshipEdge,
-  updateRelationshipEdge
+  updateRelationshipEdge,
 } from "./relationshipEdges/relationshipEdge";
 import {
   createRelationship,
   deleteRelationship,
   getRelationship,
-  updateRelationship
+  updateRelationship,
 } from "./relationships/relationship";
 import {
   createAttribute,
   deleteAttribute,
   getAttribute,
-  updateAttribute
+  updateAttribute,
 } from "./attributes/attribute";
 
 export const creates = {
   [types.ENTITY]: createEntity,
   [types.RELATIONSHIP]: createRelationship,
   [types.ATTRIBUTE]: createAttribute,
+  [types.EDGE.RELATIONSHIP]: createRelationshipEdge,
+  [types.EDGE.HIERARCHY]: createHierarchyEdge,
+  [types.GENERALISATION]: createGeneralisation,
 };
 
 export const gets = {

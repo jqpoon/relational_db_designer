@@ -2,6 +2,27 @@ import axios from "axios";
 import { notificationHandler } from "../alerts/alert";
 import { actions } from "../types";
 
+export const getErids = (user, func) => {
+  axios.get(`/api/collab?Uid=${user}`).then((res) => {
+    func(res.data);
+  });
+};
+
+export const loadERD = async ({ user, erid, importERD, backToNormal }) => {
+  try {
+    const res = await axios.get(`/api/erd?Uid=${user}&ERid=${erid}`);
+    const data = await res.data;
+    importERD({ ...data, erid });
+    backToNormal(); // TODO: check if need backtonormal here and in other funcs
+    notificationHandler(
+      "Success",
+      `ERD (id: ${erid}) was successfully loaded.`
+    );
+  } catch (error) {
+    notificationHandler("Error", error.response.data);
+  }
+};
+
 export const duplicateERD = async ({ user, erid, exportERD, importERD }) => {
   try {
     const erd = exportERD();
@@ -12,7 +33,7 @@ export const duplicateERD = async ({ user, erid, exportERD, importERD }) => {
     );
     const duplicateERid = await response.data;
     erd.erid = duplicateERid;
-    erd.counter = 1 // Reset counter
+    erd.counter = 1; // Reset counter
     importERD(erd);
     notificationHandler(
       "Success",

@@ -1,6 +1,6 @@
 import { MdClear } from "react-icons/md";
 import { types } from "../../types";
-import CardinalityChoices from "./cardinality";
+import CardinalityChoices from "../../rightToolbar/components/cardinality";
 
 export function Relationships({
   relationships,
