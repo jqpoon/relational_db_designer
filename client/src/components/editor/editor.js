@@ -23,6 +23,7 @@ import { AttributeEdge } from "./elements/attributeEdges/attributeEdge";
 import Edge from "./elements/general";
 import { HierarchyEdge } from "./elements/hierarchyEdges/hierarchyEdge";
 import { RightToolbar } from "./toolbar/rightToolbar";
+import {Validator} from "./validator";
 
 export default function Editor({ user, setUser }) {
   /** ERD Metadata
@@ -99,22 +100,24 @@ export default function Editor({ user, setUser }) {
     importStateFromObject(state);
   }, []);
 
-  // This is causing nodes to be unable to be selected
-  // useEffect(() => {
-  //   const canvas = document.getElementById(canvasExportableCompID);
-  //   canvas?.addEventListener("click", backToNormal);
-  //   return () => {
-  //     canvas?.removeEventListener("click", backToNormal);
-  //   };
-  // }, [render]);
+	useEffect(() => {
+		const canvas = document.getElementById(canvasExportableCompID);
+		const backToNormalWrapper = (e) => {
+			if (e.target.className === "canvas") backToNormal();
+		};
+		canvas?.addEventListener("click", backToNormalWrapper);
+		return () => {
+			canvas?.removeEventListener("click", backToNormalWrapper);
+		}
+	}, [render])
 
-  useEffect(() => {
-    // Loads current state into local storage whenever ER diagram changes
-    const state = exportStateToObject();
-    if (erid) state["erid"] = erid;
-    localStorage.setItem("state", JSON.stringify(state));
-  }, [elements, erid]);
-
+	useEffect(() => {
+		// Loads current state into local storage whenever ER diagram changes
+		const state = exportStateToObject();
+		if (erid) state["erid"] = erid;
+		localStorage.setItem("state", JSON.stringify(state));
+	}, [elements, erid]);
+	
   // Resets the state of the whiteboard and deletes the current schema if obj == null.
   // else imports state from obj
   const resetState = (obj) => {
@@ -352,8 +355,16 @@ export default function Editor({ user, setUser }) {
     duplicateERD: async () => duplicateERD(backendUtils),
     loadERD: () => setContext({ action: actions.LOAD }),
     shareERD: () => setContext({ action: actions.SHARE }),
-    saveERD: async () => saveERDToBackEnd(backendUtils),
-    translateERtoRelational: () => translateERtoRelational(backendUtils),
+    saveERD: async () => {
+      const validator = new Validator(exportStateToObject());
+      validator.validateAndAlert();
+      await saveERDToBackEnd(backendUtils);
+    },
+    translateERtoRelational: () => {
+      const validator = new Validator(exportStateToObject());
+      validator.validateAndAlert();
+      if (validator.valid) translateERtoRelational(backendUtils);
+    },
     importFromJSON: uploadStateFromObject,
     exportToJSON: downloadStateAsObject,
     exportToPNG: createSchemaImage,
@@ -463,8 +474,6 @@ export default function Editor({ user, setUser }) {
               info={erdInfo}
               functions={{ ...leftToolBarActions, ...elementFunctions }}
             />
-            {/* <Toolbar {...elementFunctions} {...leftToolBarActions} /> */}
-            {/* {showRightToolbar()} */}
             <RightToolbar
               context={context}
               user={user}

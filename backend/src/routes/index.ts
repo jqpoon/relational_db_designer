@@ -5,7 +5,12 @@ import CollabRouter from "./collab"
 import TranslationRouter from './translation'
 
 import swaggerUi from 'swagger-ui-express';
-import * as swaggerDocument from '../config/swagger.json';
+import YAML from 'yamljs';
+
+import path from 'path';
+
+var swagger_path = path.resolve(__dirname,'../config/swagger.yaml');
+const swaggerDocument = YAML.load(swagger_path);
 
 const apiRouter = Router();
 
