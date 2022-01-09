@@ -1,7 +1,5 @@
-import { types } from "../../types";
 import { Name } from "./name";
-import "../../toolbar.css";
-import "./toolbar-components.css";
+import "../toolbar.css";
 import {
   addAttributeToNode,
   toggleKeyAttribute,
@@ -10,13 +8,14 @@ import {
 } from "../../elements/attributes/attribute";
 import { Tooltip } from "@mui/material";
 import { DeleteButton } from "./deleteButton";
+import { types } from "../../types";
 
 export function Attributes({ parent, attributes, functions }) {
   return (
     <>
       <h4 className="toolbar-section-header">Attribute(s)</h4>
       {attributes.map((attribute) => (
-        <Attribute attribute={attribute} functions={functions} />
+        <Attribute parent={parent} attribute={attribute} functions={functions} />
       ))}
       <div
         className="toolbar-text-action"
@@ -30,7 +29,7 @@ export function Attributes({ parent, attributes, functions }) {
   );
 }
 
-function Attribute({ attribute, functions }) {
+function Attribute({ parent, attribute, functions }) {
   const saveChanges = (change) => functions.saveChanges(attribute, change);
 
   return (
@@ -43,13 +42,17 @@ function Attribute({ attribute, functions }) {
       </div>
       {/* Toggle attribute properties  */}
       <div className="attributes-checkbox">
-        <input
-          type="checkbox"
-          checked={attribute.isPrimaryKey}
-          onChange={() => toggleKeyAttribute(saveChanges)}
-        />
-        <label>Primary Key</label>
-        <br />
+        <div
+          style={{ display: parent.type === types.ENTITY ? "block" : "none" }}
+        >
+          <input
+            type="checkbox"
+            checked={attribute.isPrimaryKey}
+            onChange={() => toggleKeyAttribute(saveChanges)}
+          />
+          <label>Primary Key</label>
+          <br />
+        </div>
 
         <Tooltip
           title={

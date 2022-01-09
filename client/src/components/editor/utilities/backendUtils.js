@@ -1,6 +1,24 @@
 import axios from "axios";
-import { notificationHandler } from "../alerts/alert";
+import { notificationHandler } from "./alert";
 import { actions } from "../types";
+
+export const getSharedList = (erid, func) => {
+  axios.get(`/api/collab?ERid=${erid}`).then((res) => {
+    func(res.data);
+  });
+};
+
+export const ping = async (user, erid, email, permission, refresh) => {
+  try {
+    await axios.put(
+      `/api/collab?owner=${user}&email=${email}&ERid=${erid}&permission=${permission}`
+    );
+    refresh();
+    notificationHandler("Success", "Permission updated");
+  } catch (error) {
+    notificationHandler("Error", error.response.data)
+  }
+}
 
 export const getErids = (user, func) => {
   axios.get(`/api/collab?Uid=${user}`).then((res) => {

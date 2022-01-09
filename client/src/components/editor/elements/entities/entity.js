@@ -1,4 +1,4 @@
-import { getId } from "../../idGenerator";
+import { getId } from "../../utilities/idGenerator";
 import { types } from "../../types";
 import { addAttributeToNode } from "../attributes/attribute";
 import { Node } from "../general";

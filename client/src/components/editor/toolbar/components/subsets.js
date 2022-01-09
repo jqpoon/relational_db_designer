@@ -5,47 +5,18 @@ import { AddingSubset } from "./addEdge";
 import { DeleteButton } from "./deleteButton";
 import { Name } from "./name";
 
-export function Subsets({
+export function GeneralisationAndSubsets({
   ctx,
   parent,
   generalisations,
   directChildren,
   functions,
 }) {
-  const [selectedGeneralisation, setSelectedGeneralisation] = useState(null);
-  const addSubset = (generalisation) => {
-    setSelectedGeneralisation(generalisation);
-    functions.setContext((ctx) => {
-      let newCtx = { ...ctx };
-      newCtx.action = actions.SELECT.ADD_SUBSET;
-      newCtx.target = null;
-      return newCtx;
-    });
-  };
   const addGeneralisation = () => {
     functions.addElement(
       types.GENERALISATION,
       createGeneralisation(parent.id, parent.pos)
     );
-  };
-  const addSubsetDisplay = (generalisation) => {
-    if (
-      ctx.action === actions.SELECT.ADD_SUBSET &&
-      selectedGeneralisation === generalisation
-    ) {
-      return (
-        <AddingSubset {...ctx} {...functions} generalisation={generalisation} />
-      );
-    } else {
-      return (
-        <div
-          className="toolbar-text-action"
-          onClick={() => addSubset(generalisation)}
-        >
-          + Add Subset
-        </div>
-      );
-    }
   };
   return (
     <>
@@ -71,19 +42,58 @@ export function Subsets({
                 />
               </div>
             </div>
-            {Object.keys(generalisation.edges).map((id) => (
-              <Subset id={id} functions={functions} />
-            ))}
-            {addSubsetDisplay(generalisation.id)}
+            <Subsets
+              children={Object.keys(generalisation.edges)}
+              generalisation={generalisation}
+              ctx={ctx}
+              functions={functions}
+            />
           </div>
         );
       })}
       {/* Without generalisation */}
       <div>Without generalisation:</div>
-      {directChildren.map((id) => (
+      <Subsets children={directChildren} ctx={ctx} functions={functions} />
+    </>
+  );
+}
+
+export function Subsets({ generalisation, children, functions, ctx }) {
+  const [selectedGeneralisation, setSelectedGeneralisation] = useState(null);
+  const addSubset = (generalisation) => {
+    setSelectedGeneralisation(generalisation);
+    functions.setContext((ctx) => {
+      let newCtx = { ...ctx };
+      newCtx.action = actions.SELECT.ADD_SUBSET;
+      newCtx.target = null;
+      return newCtx;
+    });
+  };
+  const addSubsetDisplay = (generalisation) => {
+    if (
+      ctx.action === actions.SELECT.ADD_SUBSET &&
+      selectedGeneralisation === generalisation
+    ) {
+      return (
+        <AddingSubset {...ctx} {...functions} generalisation={generalisation} />
+      );
+    } else {
+      return (
+        <div
+          className="toolbar-text-action"
+          onClick={() => addSubset(generalisation)}
+        >
+          + Add Subset
+        </div>
+      );
+    }
+  };
+  return (
+    <>
+      {children.map((id) => (
         <Subset id={id} functions={functions} />
       ))}
-      {addSubsetDisplay(null)}
+      {addSubsetDisplay(generalisation)}
     </>
   );
 }

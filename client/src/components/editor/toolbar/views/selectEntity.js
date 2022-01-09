@@ -1,20 +1,15 @@
-import { actions, types } from "../types";
-import "../toolbar.css";
-import { Load } from "./views/load";
-import { Name } from "./components/name";
-import { Attributes } from "./components/attributes";
 import { IconButton, Tooltip } from "@mui/material";
 import { MdClear } from "react-icons/md";
-import { Relationships } from "./components/relationships";
-import { Supersets } from "./components/supersets";
-import { Subsets } from "./components/subsets";
+import "../toolbar.css";
+import { actions, types } from "../../types";
+import { Attributes } from "../components/attributes";
+import { Name } from "../components/name";
+import { Relationships } from "../components/relationships";
+import { GeneralisationAndSubsets } from "../components/subsets";
+import { Supersets } from "../components/supersets";
 
-function EntitySelected({ entity, functions, ctx }) {
+export function SelectEntity({ entity, functions, ctx }) {
   const saveChanges = (change) => functions.saveChanges(entity, change);
-  if (!entity) {
-    functions.setContext({ action: actions.NORMAL }); // todo: replace with back to normal
-    return null;
-  }
 
   // Split edges into relevant groups
   let relationships = [];
@@ -51,12 +46,13 @@ function EntitySelected({ entity, functions, ctx }) {
         </Tooltip>
         <h3 className="toolbar-header">Entity</h3>
       </div>
-      {/* TODO: delete entity */}
+      <hr className="divider"/>
       {/* Name */}
       <div className="toolbar-section">
         <h4 className="toolbar-section-header">Name</h4>
         <Name name={entity.text} saveChanges={saveChanges} />
       </div>
+      <hr className="divider"/>
       {/* Attributes */}
       <div className="toolbar-section">
         <Attributes
@@ -65,6 +61,7 @@ function EntitySelected({ entity, functions, ctx }) {
           functions={functions}
         />
       </div>
+      <hr className="divider"/>
       {/* Relationships */}
       <div className="toolbar-section">
         <Relationships
@@ -74,13 +71,15 @@ function EntitySelected({ entity, functions, ctx }) {
           functions={functions}
         />
       </div>
+      <hr className="divider"/>
       {/* Supersets */}
       <div className="toolbar-section">
         <Supersets parents={parents} ctx={ctx} functions={functions} />
       </div>
+      <hr className="divider"/>
       {/* Subsets */}
       <div className="toolbar-section">
-        <Subsets
+        <GeneralisationAndSubsets
           parent={entity}
           generalisations={Object.values(entity.generalisations)}
           directChildren={children}
@@ -88,32 +87,8 @@ function EntitySelected({ entity, functions, ctx }) {
           functions={functions}
         />
       </div>
+      <hr className="divider"/>
+
     </div>
   );
-}
-
-export function RightToolbar({ context, user, functions }) {
-  switch (context.action) {
-    case actions.SELECT.NORMAL:
-    case actions.SELECT.ADD_RELATIONSHIP:
-    case actions.SELECT.ADD_SUPERSET:
-    case actions.SELECT.ADD_SUBSET:
-      const node = functions.getElement(
-        context.selected.type,
-        context.selected.id,
-        context.selected.parent
-      );
-      switch (context.selected.type) {
-        case types.ENTITY:
-          return (
-            <EntitySelected entity={node} functions={functions} ctx={context} />
-          );
-        default:
-          return null;
-      }
-    case actions.LOAD:
-      return <Load user={user} {...functions} />;
-    default:
-      return null;
-  }
 }

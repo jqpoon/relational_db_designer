@@ -6,30 +6,23 @@ import "./editor.css";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import html2canvas from "html2canvas";
-import SelectEntity from "./oldRightToolbar/selectEntity";
-import SelectRelationship from "./oldRightToolbar/selectRelationship";
-import SelectEdge from "./oldRightToolbar/selectEdge";
-import SelectGeneralisation from "./oldRightToolbar/selectGeneralisation";
-import { ContextMenu } from "./contextMenu";
-import DisplayTranslation from "./oldRightToolbar/translationDisplay";
-import { addToUndo, redo, undo } from "./historyUtilities/history";
+import { ContextMenu } from "./elements/contextMenu";
+import { addToUndo, redo, undo } from "./utilities/history";
 import { deletes, gets, updates } from "./elements/elementFunctions";
-import { saveIdCounter, setIdCounter } from "./idGenerator";
-import LeftToolbar from "./leftToolbar/leftToolbar";
-import Load from "./oldRightToolbar/load";
-import Share from "./oldRightToolbar/share";
+import { saveIdCounter, setIdCounter } from "./utilities/idGenerator";
+import LeftToolbar from "./toolbar/leftToolbar";
 import {
   deleteERDInBackEnd,
   duplicateERD,
   saveERDToBackEnd,
   translateERtoRelational,
-} from "./backendUtilities/backendUtils";
+} from "./utilities/backendUtils";
 import { Relationship } from "./elements/relationships/relationship";
 import { Entity } from "./elements/entities/entity";
 import { AttributeEdge } from "./elements/attributeEdges/attributeEdge";
 import Edge from "./elements/general";
 import { HierarchyEdge } from "./elements/hierarchyEdges/hierarchyEdge";
-import { RightToolbar } from "./rightToolbar/rightToolbar";
+import { RightToolbar } from "./toolbar/rightToolbar";
 
 export default function Editor({ user, setUser }) {
   /** ERD Metadata
@@ -106,14 +99,14 @@ export default function Editor({ user, setUser }) {
     importStateFromObject(state);
   }, []);
 
-  // This is causing nodes to be unable to be selected 
-  // useEffect(() => {
-  //   const canvas = document.getElementById(canvasExportableCompID);
-  //   canvas?.addEventListener("click", backToNormal);
-  //   return () => {
-  //     canvas?.removeEventListener("click", backToNormal);
-  //   };
-  // }, [render]);
+  // This is causing nodes to be unable to be selected
+  useEffect(() => {
+    const canvas = document.getElementById(canvasExportableCompID);
+    canvas?.addEventListener("click", backToNormal);
+    return () => {
+      canvas?.removeEventListener("click", backToNormal);
+    };
+  }, [render]);
 
   useEffect(() => {
     // Loads current state into local storage whenever ER diagram changes
@@ -376,11 +369,11 @@ export default function Editor({ user, setUser }) {
     setName,
   };
 
-  const saveChanges = ({type, id, parent}, change) => {
+  const saveChanges = ({ type, id, parent }, change) => {
     let newElem = getElement(type, id, parent);
     change(newElem);
     updateElement(type, newElem);
-  }
+  };
 
   const nodeConfig = {
     parentRef,
@@ -396,71 +389,8 @@ export default function Editor({ user, setUser }) {
       setContext,
       setContextMenu,
       setPanDisabled,
-      saveChanges
+      saveChanges,
     },
-  };
-
-  const showRightToolbar = () => {
-    switch (context.action) {
-      case actions.TRANSLATE:
-        return <DisplayTranslation relationalSchema={context.tables} />;
-      case actions.NORMAL:
-        return null;
-      case actions.SELECT.NORMAL:
-      case actions.SELECT.ADD_RELATIONSHIP:
-      case actions.SELECT.ADD_SUPERSET:
-      case actions.SELECT.ADD_SUBSET:
-        switch (context.selected.type) {
-          case types.ENTITY:
-            return (
-              <SelectEntity
-                entity={getElement(types.ENTITY, context.selected.id)}
-                {...elementFunctions}
-                {...generalFunctions}
-              />
-            );
-          case types.RELATIONSHIP:
-            return (
-              <SelectRelationship
-                relationship={getElement(
-                  types.RELATIONSHIP,
-                  context.selected.id
-                )}
-                {...elementFunctions}
-                {...generalFunctions}
-              />
-            );
-          case types.GENERALISATION:
-            return (
-              <SelectGeneralisation
-                generalisation={getElement(
-                  types.GENERALISATION,
-                  context.selected.id,
-                  context.selected.parent
-                )}
-                {...elementFunctions}
-                {...generalFunctions}
-              />
-            );
-          case types.EDGE.RELATIONSHIP:
-          case types.EDGE.HIERARCHY:
-            return <SelectEdge edge={elements.edges[context.selected.id]} />;
-          default:
-            return null; // TODO: type not found page
-        }
-      case actions.LOAD:
-        return (
-          <Load
-            user={user}
-            importStateFromObject={importStateFromObject}
-            backToNormal={backToNormal}
-          />
-        );
-      case actions.SHARE:
-        return <Share user={user} erid={erid} backToNormal={backToNormal} />;
-      default:
-        return null;
-    }
   };
 
   const showAttributeEdges = (nodes) => {
@@ -500,8 +430,6 @@ export default function Editor({ user, setUser }) {
     );
   };
 
-
-
   return (
     <Xwrapper>
       <div className="editor" ref={parentRef}>
@@ -537,7 +465,20 @@ export default function Editor({ user, setUser }) {
             />
             {/* <Toolbar {...elementFunctions} {...leftToolBarActions} /> */}
             {/* {showRightToolbar()} */}
-            <RightToolbar context={context} user={user} functions={{importERD: importStateFromObject, backToNormal, setContext, getElement, saveChanges, deleteElement, addElement}} />
+            <RightToolbar
+              context={context}
+              user={user}
+              erid={erid}
+              functions={{
+                importERD: importStateFromObject,
+                backToNormal,
+                setContext,
+                getElement,
+                saveChanges,
+                deleteElement,
+                addElement,
+              }}
+            />
             <ContextMenu
               contextMenu={contextMenu}
               setContextMenu={setContextMenu}

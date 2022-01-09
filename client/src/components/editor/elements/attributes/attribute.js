@@ -1,4 +1,4 @@
-import { getId } from "../../idGenerator";
+import { getId } from "../../utilities/idGenerator";
 import { types } from "../../types";
 import { Node } from "../general";
 
@@ -100,12 +100,12 @@ export function Attribute({ parent, attribute, ctx, functions }) {
   const saveChanges = (change) => functions.saveChanges(attribute, change);
   /** Position calculations */
   const pos = {
-    x: parent.x + attribute.relativePos.x,
-    y: parent.y + attribute.relativePos.y,
+    x: parent.pos.x + attribute.relativePos.x,
+    y: parent.pos.y + attribute.relativePos.y,
   };
   const updatePos = (data) => {
     return (attr) => {
-      attr.relativePos = { x: data.x - parent.x, y: data.y - parent.y };
+      attr.relativePos = { x: data.x - parent.pos.x, y: data.y - parent.pos.y };
     };
   };
   /** Styling */
@@ -125,12 +125,15 @@ export function Attribute({ parent, attribute, ctx, functions }) {
     return <div>{attribute.text}</div>;
   };
 
-  const ctxMenuActions = {
-    "Toggle Key Attribute": () => toggleKeyAttribute(saveChanges),
+  let ctxMenuActions = {
     "Toggle Optional Attribute": () => toggleOptionalAttribute(saveChanges),
     "Toggle Multi-valued Attribute": () =>
       toggleMultiValuedAttribute(saveChanges),
   };
+  if (parent.type === types.ENTITY) {
+    ctxMenuActions["Toggle Key Attribute"] = () =>
+      toggleKeyAttribute(saveChanges);
+  }
 
   return (
     <Node

@@ -33,12 +33,13 @@ function Superset({ id, functions }) {
   const parent = functions.getElement(types.ENTITY, edge.parent);
   return (
     <div className="toolbar-section-item">
-      <div style={{ display: "flex", alignItems: "" }}>
+      <div style={{ display: "flex" }}>
         <DeleteButton elem={edge} deleteElem={functions.deleteElement} />
         <div style={{ padding: "0px 0px 0px 10px" }}>
-          <h4>{parent.text}</h4>
+          {parent.text}
+          <br />
           {edge.generalisation ? (
-            <h4>- {parent.generalisations[edge.generalisation].text}</h4>
+            <>- {parent.generalisations[edge.generalisation].text}</>
           ) : null}
         </div>
       </div>

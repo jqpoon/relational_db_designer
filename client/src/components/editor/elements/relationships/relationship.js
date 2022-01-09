@@ -1,7 +1,7 @@
 import { addAttributeToNode } from "../attributes/attribute";
 import { Node } from "../general";
 import { types } from "../../types";
-import { getId } from "../../idGenerator";
+import { getId } from "../../utilities/idGenerator";
 
 export const createRelationship = ({ x, y }) => ({
   id: getId(types.RELATIONSHIP),

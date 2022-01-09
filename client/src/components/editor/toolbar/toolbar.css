@@ -97,11 +97,6 @@ input[type="text"]:focus {
   padding: 5px 0px;
 }
 
-.section {
-  padding: 10px;
-  border: 1px solid navy;
-}
-
 .toolbar-header {
   padding: 20px;
   color: black;
@@ -109,80 +104,9 @@ input[type="text"]:focus {
   font-weight: bold;
 }
 
-.section-selected {
-  padding: 10px;
-  border: 3px solid navy;
-}
-
-.section-header {
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.section-content {
-  padding: 10px 0;
-  /* display: flex;
-  justify-content: center;
-  align-items: center; */
-}
-
-.selected-element {
-  margin: 0;
-  padding: 0;
-  /* display: flex;
-  justify-content:space-between; */
-}
-
-/* TODO(change) */
-.tool-button {
-  padding: 8px;
-  margin: 5px;
-  width: 50%;
-  border: 2px solid navy;
-  border-radius: 9px;
-  text-align: center;
-}
-
 .forms {
   width: 100%;
 }
-
-.divider {
-  margin: 0;
-  padding: 0;
-  height: 1px;
-  background-color: navy;
-  color: navy;
-}
-
-.section-tool {
-  color: gray;
-  margin: 5px 0;
-  padding: 0;
-}
-
-/* input[type=text] {
-  padding: 5px 5px 2px 5px;
-  margin: 0;
-  background-color: transparent;
-  border: 0;
-  outline: none !important;
-}
-
-input[type=text]:focus {
-  padding: 5px 5px 2px 5px;
-  margin: 0;
-  background-color: white;
-  border: 0;
-}
-
-input[type=text]:hover {
-  padding: 5px 5px 2px 5px;
-  margin: 0;
-  background-color: white;
-  border: 0;
-  outline: none;
-} */
 
 .translation {
   margin-left: 3px;
@@ -338,3 +262,29 @@ input[type=text]:hover {
 .inner {
   display: inline-block;
 }
+
+.attributes-checkbox {
+  padding: 0px 0px 0px 25px
+}
+
+.attributes-checkbox * {
+  font-weight: normal;
+}
+
+.attributes-checkbox input:disabled {
+  cursor: not-allowed;
+}
+
+.toolbar-section-item {
+  padding: 8px 0px;
+}
+
+.toolbar-right label {
+  padding: 0px 0px 0px 5px
+}
+
+.cardinality-selector {
+  padding: 5px;
+  margin: 5px 0px;
+}
+

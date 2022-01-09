@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { ClickAction } from "../leftToolbar/leftToolbar";
+import { ClickAction } from "../toolbar/leftToolbar";
 
 export default function UploadTool({ display, handleFile }) {
   // Create a reference to the hidden file input element

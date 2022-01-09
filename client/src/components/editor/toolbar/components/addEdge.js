@@ -1,5 +1,5 @@
 import { actions, cardinality, types } from "../../types";
-import { getId } from "../../idGenerator";
+import { getId } from "../../utilities/idGenerator";
 import CardinalityChoices from "./cardinality";
 import { MdCheck, MdClear } from "react-icons/md";
 import { createRelationshipEdge } from "../../elements/relationshipEdges/relationshipEdge";
@@ -142,22 +142,13 @@ function AddingEdge({
   );
 }
 
-// Adding relationship to relationship node
-export function RelationshipAdding(props) {
-  const validate = (target) => {
-    if (!(target.cardinality in cardinality)) {
-      alert("Cardinality must be selected.");
-      return false;
-    }
-    return true;
-  };
-  return <AddingEdge {...props} createEdge={createRelationshipEdge} validate={validate} />;
-}
-
-// Adding relationship to entity node
+// Adding relationship to entity/relationship node
 export function AddingRelationship(props) {
   const validate = (target) => {
-    if (target.type !== types.RELATIONSHIP) {
+    if (
+      props.selected.type === types.ENTITY &&
+      target.type !== types.RELATIONSHIP
+    ) {
       alert("Target selected must be of 'Relationship' type.");
       return false;
     }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { submitHandler } from "../../alerts/alert";
-import { getErids, loadERD } from "../../backendUtilities/backendUtils";
-import "../../toolbar.css";
+import { submitHandler } from "../../utilities/alert";
+import { getErids, loadERD } from "../../utilities/backendUtils";
+import "../toolbar.css";
 
 export function Load({ user, importERD, backToNormal }) {
   // List of ERDs owned by user, retrieved from backend on mount

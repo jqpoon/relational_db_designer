@@ -1,8 +1,6 @@
-import { MdClear } from "react-icons/md";
 import CardinalityChoices from "./cardinality";
 import { actions, types } from "../../types";
-import "../../toolbar.css";
-import "./toolbar-components.css";
+import "../toolbar.css";
 import { DeleteButton } from "./deleteButton";
 import { AddingRelationship } from "./addEdge";
 

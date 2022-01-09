@@ -1,11 +1,11 @@
 import Draggable from "react-draggable";
 import { Tooltip } from "@mui/material";
 import { types } from "../types";
-import "../toolbar.css";
+import "./toolbar.css";
 import { useRef, useState } from "react";
 import { creates } from "../elements/elementFunctions";
 import UploadTool from "../utilities/uploadTool";
-import { notificationHandler, submitHandler } from "../alerts/alert";
+import { notificationHandler, submitHandler } from "../utilities/alert";
 
 const categories = {
   ABOUT: "about",

@@ -1,6 +1,6 @@
 import { types } from "../../types";
 import Xarrow from "react-xarrows";
-import { getId } from "../../idGenerator";
+import { getId } from "../../utilities/idGenerator";
 
 export const createHierarchyEdge = (child, parent, generalisation) => {
   return {

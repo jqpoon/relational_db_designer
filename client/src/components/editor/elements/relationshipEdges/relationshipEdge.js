@@ -1,5 +1,5 @@
 import Xarrow from "react-xarrows";
-import { getId } from "../../idGenerator";
+import { getId } from "../../utilities/idGenerator";
 import { cardinality as cardinality_all, types } from "../../types";
 
 export const createRelationshipEdge = (source, target) => {

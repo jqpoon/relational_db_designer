@@ -228,7 +228,7 @@ export function Node({ className, node, ctx, ctxMenuActions, functions }) {
         ? Object.values(node.attributes).map((attribute) => {
             return (
               <Attribute
-                parent={posCache || node.pos}
+                parent={{type: node.type, pos: posCache || node.pos}}
                 attribute={attribute}
                 ctx={ctx}
                 functions={functions}
