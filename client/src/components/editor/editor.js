@@ -108,9 +108,12 @@ export default function Editor({ user, setUser }) {
 
 	useEffect(() => {
 		const canvas = document.getElementById(canvasExportableCompID);
-		canvas?.addEventListener("click", backToNormal);
+		const backToNormalWrapper = (e) => {
+			if (e.target.className === "canvas") backToNormal();
+		};
+		canvas?.addEventListener("click", backToNormalWrapper);
 		return () => {
-			canvas?.removeEventListener("click", backToNormal);
+			canvas?.removeEventListener("click", backToNormalWrapper);
 		}
 	}, [render])
 
