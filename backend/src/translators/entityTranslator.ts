@@ -12,14 +12,16 @@ class EntityTranslator implements Translator {
 		this.entity = entity;
 		this.entities = entities;
 	}
-	/*  Translates entity's table and populates it with attributes. 
-        Handles multi-value attributes and subsets. */
+	
 	translateFromDiagramToTable(translatedTable: TranslatedTable): TranslatedTable {
+		// Translates entity's table and populates it with attributes. 
 		var columns: Array<Column> = [];
 		if (this.entity.attributes !== undefined) {
 			this.entity.attributes!.map((a: Attribute) => {
 				if (a.isMultiValued) {
-					// Multi-valued attribute
+					// Each multi-valued attribute is also 
+					// stored in its own table, 
+					// with the key attributes of it's entity's table.
 					var aColumns: Array<Column> = [];
 					var fColumns: Array<string> = [];
 					this.entity.attributes!.map((att: Attribute) => {
@@ -35,6 +37,8 @@ class EntityTranslator implements Translator {
 							}
 						}
 					});
+					// A foreign key is also created from 
+					// the attribute's table to the entity's table.
 					var foreignKeys: Array<ForeignKey> = new Array<ForeignKey>();
 					foreignKeys.push({
 						keyName: this.entity.text + " " + a.text,
@@ -59,7 +63,7 @@ class EntityTranslator implements Translator {
 			});
 		}
 		if (this.entity.subsets !== undefined) {
-			// Subsets
+			// Adds the primary keys of entity tables to those of their subsets
 			for (var s of this.entity.subsets) {
 				var e = this.entities.get(s)!;
 				var a: Attribute = getPrimaryKey(e);

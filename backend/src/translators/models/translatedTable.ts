@@ -1,4 +1,5 @@
 interface TranslatedTable {
+    // Map from table names to tables
 	tables: Map<string, Table>;
 }
 
@@ -22,10 +23,10 @@ interface Column {
 }
 
 interface ForeignKey {
-	keyName: string; //works_in person
-	foreignTable: string; // person
-	columns: Array<string>; //salary_number
-	//has to say which columns are affected by it
+    // keyName should be concatenation of source and foreign table names
+	keyName: string;
+	foreignTable: string;
+	columns: Array<string>; 
 }
 
 export default TranslatedTable;
