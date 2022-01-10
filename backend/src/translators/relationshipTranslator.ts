@@ -25,6 +25,7 @@ class RelationshipTranslator implements Translator {
 		this.relationship.lHConstraints.forEach((lhConstraint: LHConstraint, entityID: string) => {
 			if (lhConstraint == LHConstraint.ONE_TO_ONE) {
 				oneMany = true;
+				// One-many relationships do not have their own tables
 				var otherEntity: Entity = {
 					id: "",
 					text: "",
@@ -35,12 +36,17 @@ class RelationshipTranslator implements Translator {
 						otherEntity = this.entities.get(e)!;
 					}
 				});
+				// Assigns the primary keys of the entity table corresponding to the "many" side, 
+				// as well as the attributes of the relationship, 
+				// to the entity table corresponding to the "one" side
 				const otherKey: Attribute = getPrimaryKey(otherEntity);
 				const thisEntity: Entity = this.entities.get(entityID)!;
 				if (thisEntity != undefined) {
-					// entity
 					const entityTable: Table = translatedTable.tables.get(thisEntity.text)!;
 					var columnSources: Map<string, string> = new Map<string, string>();
+
+					// Checks for duplicate incoming attribute names and 
+					// appends the source to the front of the name if it is repeated
 					var dupe: boolean = false;
 					entityTable.columns.map((prevColumn: Column) => {
 						if (prevColumn.columnName == otherKey.text) {
@@ -95,6 +101,8 @@ class RelationshipTranslator implements Translator {
 					translatedTable.tables.set(thisEntity.text, entityTable);
 				} else {
 					// relationship
+					// In the case of nested relationships, 
+					// the connected relationship is mapped as if it were an entity. 
 					var rs = this.relationships.get(entityID)!;
 					var rsTable: Table = translatedTable.tables.get(rs.text)!;
 					if (rsTable != undefined) {
@@ -153,7 +161,9 @@ class RelationshipTranslator implements Translator {
 			}
 		});
 		if (!oneMany) {
-			// one-many relationships should not have tables
+			// Many-many relationships
+			
+			// The relationship's table is created and populated with its attributes. 
 			var columns: Array<Column> = new Array<Column>();
 			if (this.relationship.attributes !== undefined) {
 				this.relationship.attributes!.map((a: Attribute) => {
@@ -165,29 +175,31 @@ class RelationshipTranslator implements Translator {
 					});
 				});
 			}
+
+			// Primary keys of its related entities are also pushed to its table.
 			var columnSources: Map<string, string> = new Map<string, string>();
 			this.relationship.lHConstraints.forEach((lhConstraint: LHConstraint, ID: string) => {
 				var object = this.entities.get(ID);
 				if (object != null) {
-					//entity
+					// Entity
 					var entityName = object.text;
 					var table: Table = translatedTable.tables.get(entityName)!;
 
-					// push primary key of related entity to relationship's table
+					// Push primary key of related entity to relationship's table
 					const column: Column = getPrimaryKeyTranslated(table.columns);
 					var dupe: boolean = false;
 
-					// checks for duplicate objects and appends to source name
+					// Checks for duplicate objects and appends to source name
 					columns.map((prevColumn: Column) => {
 						if (prevColumn.columnName == column.columnName) {
 							dupe = true;
 
-							// remove old column
+							// Remove old column
 							columns = columns.filter(function (col) {
 								return col.columnName != column.columnName;
 							});
 
-							// previous column
+							// Previous column
 							const prevColumnSource: string = columnSources.get(column.columnName)!;
 							const newPrevColumnName: string =
 								prevColumnSource + "_" + column.columnName;
@@ -200,7 +212,7 @@ class RelationshipTranslator implements Translator {
 							columns.push(newPrevColumn);
 							columnSources.set(newPrevColumnName, prevColumnSource);
 
-							// incoming column
+							// Incoming column
 							const newIncColumnName: string = entityName + "_" + column.columnName;
 							const newIncColumn: Column = {
 								columnName: newIncColumnName,
@@ -217,11 +229,11 @@ class RelationshipTranslator implements Translator {
 						columnSources.set(column.columnName, entityName);
 					}
 				} else {
-					//relationship
+					// Relationship
 					var rs = this.relationships.get(ID)!;
 					var rsTable: Table = translatedTable.tables.get(rs.text)!;
 
-					// push primary key of related rs to relationship's table
+					// Push primary key of related rs to relationship's table
 					if (rsTable != undefined) {
 						rsTable.columns.map((c: Column) => {
 							if (c.isPrimaryKey) {

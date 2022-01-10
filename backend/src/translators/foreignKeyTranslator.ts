@@ -43,7 +43,7 @@ class ForeignKeyTranslator implements Translator {
 				}
 			});
 
-			// one-many
+			// One-many
 			if (oneMany) {
 				const source =
 					this.entities.get(oneManySource) || this.relationships.get(oneManySource);
@@ -70,18 +70,18 @@ class ForeignKeyTranslator implements Translator {
 				});
 				translatedTable.tables.set(source!.text, table);
 			} else {
-				// many-many
+				// Many-many
 				var table: Table = translatedTable.tables.get(relationship.text)!;
 				relationship.lHConstraints.forEach((lhConstraint: LHConstraint, ID: string) => {
 					var foreignTable = this.entities.get(ID)!;
 					if (foreignTable != undefined) {
-						// foreign table is entity
+						// Foreign table is entity
 						var translatedForeignTable: Table = translatedTable.tables.get(
 							foreignTable!.text
 						)!;
 						const foreignTableName = foreignTable!.text;
 
-						// get foreign keys
+						// Get foreign keys
 						const keys: string[] = [];
 						for (var col of translatedForeignTable.columns) {
 							if (col.isPrimaryKey) {
@@ -89,7 +89,7 @@ class ForeignKeyTranslator implements Translator {
 							}
 						}
 
-						// push foreign key to table
+						// Push foreign key to table
 						const foreignKey: ForeignKey = {
 							keyName: relationship.text + " " + foreignTableName,
 							foreignTable: foreignTableName,
@@ -97,14 +97,14 @@ class ForeignKeyTranslator implements Translator {
 						};
 						table.foreignKeys.push(foreignKey);
 					} else {
-						// foreign table is relationship
+						// fFreign table is relationship
 						foreignTable = this.relationships.get(ID)!;
 						const foreignTableName: string = foreignTable!.text;
 						var translatedForeignTable: Table = translatedTable.tables.get(
 							foreignTable!.text
 						)!;
 
-						// get foreign keys
+						// Get foreign keys
 						const keys: string[] = [];
 						var correctKeys = false;
 						for (var col of translatedForeignTable.columns) {
@@ -125,7 +125,7 @@ class ForeignKeyTranslator implements Translator {
 							}
 						}
 						if (correctKeys) {
-							// push foreign key to table
+							// Push foreign key to table
 							const foreignKey: ForeignKey = {
 								keyName: relationship.text + " " + foreignTableName,
 								foreignTable: foreignTableName,
@@ -139,12 +139,12 @@ class ForeignKeyTranslator implements Translator {
 			}
 		});
 
-		// foreign keys for subsets
+		// Foreign keys for subsets
 		this.entities.forEach((entity: Entity) => {
 			if (entity.subsets !== undefined && entity.subsets.length != 0) {
 				var table: Table = translatedTable.tables.get(entity.text)!;
 
-				// create foreign key with entity's primary key to its subsets
+				// Create foreign key with entity's primary key to its subsets
 				const key: string = getPrimaryKeyTranslated(table.columns).columnName;
 				entity.subsets.map((s: string) => {
 					const foreignTable = this.entities.get(s)!.text;
