@@ -10,22 +10,21 @@ import childProcess from "child_process";
 const logger = new Logger();
 logger.timestamp = false;
 
+// Build backend
 (async () => {
 	try {
 		// Remove current build
 		await remove("./dist/");
-		// Copy front-end files
+		// Copy swagger config files
 		await copy("./src/config", "./dist/config");
-		// await copy('./src/views', './dist/views');
-		// Copy production env file
-		// await copy('./src/pre-start/env/production.env', './dist/pre-start/env/production.env');
-		// Copy back-end files
+		// Build backend
 		await exec("tsc --build tsconfig.prod.json", "./");
 	} catch (err) {
 		logger.err(err);
 	}
 })();
 
+// Utility functions to copy/remove folders and to execute commands
 function remove(loc: string): Promise<void> {
 	return new Promise((res, rej) => {
 		return fs.remove(loc, (err) => {

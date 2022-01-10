@@ -7,8 +7,8 @@ RUN npm ci
 
 # Copy files
 COPY . .
-RUN [ "npm", "run", "build" ]
+RUN npm run build
 
 # Run node server
 EXPOSE $PORT
-CMD [ "npm", "run", "start" ]
+CMD npm run start
