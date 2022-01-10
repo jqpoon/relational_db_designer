@@ -280,3 +280,7 @@ input[type="checkbox"]:disabled, select:disabled {
   padding: 5px;
   margin: 5px 0px;
 }
+
+.confirm-button {
+  cursor: pointer;
+}
