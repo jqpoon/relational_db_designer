@@ -25,7 +25,7 @@ export const createRelationship = ({ x, y }) => ({
 		x: x,
 		y: y,
 	},
-	text: "",
+	text: "Relationship",
 	type: types.RELATIONSHIP,
 	edges: {},
 	attributes: {},

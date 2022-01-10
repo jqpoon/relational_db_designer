@@ -26,7 +26,7 @@ export const createEntity = ({ x, y }) => ({
 		x: x,
 		y: y,
 	},
-	text: "Enter Text",
+	text: "Entity",
 	type: types.ENTITY,
 	isWeak: [],
 	edges: {},
