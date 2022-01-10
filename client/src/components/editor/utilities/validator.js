@@ -1,4 +1,5 @@
 import { notificationHandler } from "./alert";
+import {types} from "../types";
 
 // Validates a given schema in specific JSON format. See exportStateToObject in editor.js.
 export class Validator {
@@ -11,31 +12,25 @@ export class Validator {
 		// Whether the current schema is valid.
 		this.valid = true;
 		// Keeps track of all errors until they are dumped when error message is displayed.
-		this.errors = [];
+		this.errors = new Set();
 	}
 
 	// Add an error to the error stack and mark the schema as invalid.
 	flagInvalid(error) {
 		this.valid = false;
-		this.errors.push(error);
-	}
-
-	// Generate some display name for an entity or relationship, even if the text field is empty.
-	// Used in generating error messages.
-	findNodeName(node) {
-		return node.text === "" ? node.id : node.text;
+		this.errors.add(error);
 	}
 
 	// Entities.
 
 	// Whether an entity has been given a name.
 	checkForEntityText(e) {
-		if (e.text === "") this.flagInvalid('Entity "' + e.id + '" has no name.');
+		if (e.text === "") this.flagInvalid("Make sure all your entities are named.");
 		Object.values(e.attributes).forEach((a) => {
-			if (a.text === "") this.flagInvalid('Attribute "' + a.id + '" has no name.');
+			if (a.text === "") this.flagInvalid("Make sure all your attributes are named.");
 		});
 		Object.values(e.generalisations).forEach((g) => {
-			if (g.text === "") this.flagInvalid('Generalisation "' + g.id + '" has no name.');
+			if (g.text === "") this.flagInvalid("Make sure all your generalisations are named.");
 		});
 	}
 
@@ -46,15 +41,31 @@ export class Validator {
 		// Guard statement. Only process if entity has attributes.
 		if (attributes.length === 0) return;
 
+		// Check if entity is a subset of another entity.
+		let isSubset = false;
+		Object.entries(e.edges).forEach(([edgeID, edgeData]) => {
+			if (edgeData.type === types.EDGE.HIERARCHY && this.schema.data.edges[edgeID].child === e.id) isSubset = true;
+		});
+		// Guard statement. Only process if entity is not a subset of some other entity.
+		if (isSubset) return;
+
 		let nPrimaryKeys = 0;
 		attributes.forEach((a) => {
 			if (a.isPrimaryKey) nPrimaryKeys++;
 		});
 
 		if (nPrimaryKeys === 0) {
-			this.flagInvalid('Entity "' + this.findNodeName(e) + '" has no primary key.');
+			if (e.text === "") {
+				this.flagInvalid("Some unnamed entities have no primary key.");
+			} else {
+				this.flagInvalid('Entity "' + e.text + '" has no primary key.');
+			}
 		} else if (nPrimaryKeys > 1) {
-			this.flagInvalid('Entity "' + this.findNodeName(e) + '" has multiple primary keys.');
+			if (e.text === "") {
+				this.flagInvalid("Some unnamed entities have multiple primary keys.");
+			} else {
+				this.flagInvalid('Entity "' + e.text + '" has multiple primary keys.');
+			}
 		}
 	}
 
@@ -84,7 +95,7 @@ export class Validator {
 		this.validate();
 
 		if (!this.valid) {
-			const message = this.errors.join("\n");
+			const message = Array.from(this.errors).join("\n");
 			notificationHandler("Invalid Schema", message);
 		}
 	}
