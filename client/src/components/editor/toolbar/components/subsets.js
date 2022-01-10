@@ -70,6 +70,7 @@ export function GeneralisationAndSubsets({
       {/* Without generalisation */}
       <div>Without generalisation:</div>
       <Subsets
+        generalisation={null}
         children={directChildren}
         ctx={ctx}
         functions={functions}
@@ -98,7 +99,7 @@ export function Subsets({
       return (
         <div
           className="toolbar-text-action"
-          onClick={() => select(generalisation?.id)}
+          onClick={() => select(generalisation ? generalisation.id : null)}
         >
           + Add Subset
         </div>
