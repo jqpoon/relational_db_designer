@@ -1,1345 +1,1345 @@
 openapi: 3.0.1
 info:
-  title: Relational DB Designer
-  description: Swagger API Docs
-  license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
-  version: 1.0.0
+    title: Relational DB Designer
+    description: Swagger API Docs
+    license:
+        name: MIT
+        url: https://opensource.org/licenses/MIT
+    version: 1.0.0
 tags:
-  - name: Authentication
-    description: User sign up and login
-  - name: ERD
-    description: ERD diagram
-  - name: Collaboration
-    description: User permissions on ER diagrams
-  - name: Translation
-    description: Translating from diagram to relational model
+    - name: Authentication
+      description: User sign up and login
+    - name: ERD
+      description: ERD diagram
+    - name: Collaboration
+      description: User permissions on ER diagrams
+    - name: Translation
+      description: Translating from diagram to relational model
 paths:
-  /api/auth/signup:
-    post:
-      tags:
-        - Authentication
-      description: User sign up with email and password
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                password:
-                  type: string
-      responses:
-        400:
-          description: Email or password error
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Email already used or password not strong enough
-        200:
-          description: User created, return uid
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: user uid
-  /api/auth/login:
-    post:
-      tags:
-        - Authentication
-      description: User login with email and password
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                password:
-                  type: string
-      responses:
-        400:
-          description: Email or password error
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Email already used or password not strong enough
-        200:
-          description: User logined, return uid
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: user uid
-  /api/erd:
-    get:
-      parameters:
-        - in: query
-          name: ERid
-          schema:
-            type: string
-          description: ER Diagram ID
-        - in: query
-          name: Uid
-          schema:
-            type: string
-          description: User ID
-      tags:
-        - ERD
-      description: Checks if ERID exists and if user has access to it
-      responses:
-        400:
-          description: Uid and ERid not defined
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Uid and ERid have to be defined.
-        403:
-          description: No permission
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: You do not have permission to access
-        404:
-          description: ID does not exist
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: User does not exist
-        501:
-          description: An error occured
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: An error occured.
-        200:
-          description: User has permission and can retrieve result
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  name:
+    /api/auth/signup:
+        post:
+            tags:
+                - Authentication
+            description: User sign up with email and password
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                email:
+                                    type: string
+                                password:
+                                    type: string
+            responses:
+                400:
+                    description: Email or password error
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: Email already used or password not strong enough
+                200:
+                    description: User created, return uid
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: user uid
+    /api/auth/login:
+        post:
+            tags:
+                - Authentication
+            description: User login with email and password
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                email:
+                                    type: string
+                                password:
+                                    type: string
+            responses:
+                400:
+                    description: Email or password error
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: Email already used or password not strong enough
+                200:
+                    description: User logined, return uid
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: user uid
+    /api/erd:
+        get:
+            parameters:
+                - in: query
+                  name: ERid
+                  schema:
+                      type: string
+                  description: ER Diagram ID
+                - in: query
+                  name: Uid
+                  schema:
+                      type: string
+                  description: User ID
+            tags:
+                - ERD
+            description: Checks if ERID exists and if user has access to it
+            responses:
+                400:
+                    description: Uid and ERid not defined
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: Uid and ERid have to be defined.
+                403:
+                    description: No permission
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: You do not have permission to access
+                404:
+                    description: ID does not exist
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: User does not exist
+                501:
+                    description: An error occured
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: An error occured.
+                200:
+                    description: User has permission and can retrieve result
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    name:
+                                        type: string
+                                    data:
+                                        type: object
+                                        properties:
+                                            entities:
+                                                type: object
+                                                additionalProperties:
+                                                    $ref: "#/components/schemas/Entity"
+                                            relationships:
+                                                type: object
+                                                additionalProperties:
+                                                    $ref: "#/components/schemas/Relationship"
+                                            edges:
+                                                type: object
+                                                additionalProperties:
+                                                    oneOf:
+                                                        - $ref: "#/components/schemas/Hierarchy_Edge"
+                                                        - $ref: "#/components/schemas/Relationship_Edge"
+                                    counter:
+                                        type: number
+                                example:
+                                    name: DO NOT EDIT
+                                    counter: 123
+                                    data:
+                                        entities:
+                                            E0:
+                                                attributes:
+                                                    E0A0:
+                                                        text: Name
+                                                        id: E0A0
+                                                        isPrimaryKey: false
+                                                        type: attribute
+                                                        isMultiValued: false
+                                                        parent:
+                                                            id: E0
+                                                            type: entity
+                                                        isOptional: false
+                                                        relativePos:
+                                                            x: -100
+                                                            y: -30
+                                                generalisations:
+                                                    E0G0:
+                                                        parent:
+                                                            id: E0
+                                                        type: generalisation
+                                                        edges:
+                                                            E3E0G0:
+                                                                type: hierarchy_edge
+                                                            E4E0G0:
+                                                                type: hierarchy_edge
+                                                        text: Messages
+                                                        id: E0G0
+                                                        pos:
+                                                            x: 551
+                                                            y: 528
+                                                text: Person
+                                                pos:
+                                                    x: 300
+                                                    y: 250
+                                                edges:
+                                                    E1E0:
+                                                        type: hierarchy_edge
+                                                    E0R0:
+                                                        type: relationship_edge
+                                                id: E0
+                                                type: entity
+                                                isWeak: []
+                                            E1:
+                                                type: entity
+                                                isWeak: []
+                                                id: E1
+                                                generalisations: {}
+                                                text: Manager
+                                                attributes: {}
+                                                pos:
+                                                    y: 250
+                                                    x: 100
+                                                edges:
+                                                    E1E0:
+                                                        type: hierarchy_edge
+                                            ESwipeCard:
+                                                generalisations: {}
+                                                isWeak:
+                                                    - ESwipeCardR0
+                                                attributes: {}
+                                                type: entity
+                                                id: ESwipeCard
+                                                pos:
+                                                    y: 100
+                                                    x: 550
+                                                edges:
+                                                    ESwipeCardR0:
+                                                        type: relationship_edge
+                                                text: Swipe Card
+                                            E2:
+                                                id: E2
+                                                generalisations: {}
+                                                isWeak: []
+                                                pos:
+                                                    y: 117
+                                                    x: 765
+                                                type: entity
+                                                edges:
+                                                    E2R0:
+                                                        type: relationship_edge
+                                                text: Department
+                                                attributes: {}
+                                            E3:
+                                                edges:
+                                                    E3E0G0:
+                                                        type: hierarchy_edge
+                                                generalisations: {}
+                                                pos:
+                                                    y: 500
+                                                    x: 100
+                                                type: entity
+                                                isWeak: []
+                                                id: E3
+                                                text: Email Users
+                                                attributes: {}
+                                            E4:
+                                                id: E4
+                                                edges:
+                                                    E4E0G0:
+                                                        type: hierarchy_edge
+                                                pos:
+                                                    x: 320
+                                                    y: 609
+                                                attributes: {}
+                                                type: entity
+                                                text: Non-email Users
+                                                isWeak: []
+                                                generalisations: {}
+                                        relationships:
+                                            R0:
+                                                attributes: {}
+                                                edges:
+                                                    E2R0:
+                                                        type: relationship_edge
+                                                    E0R0:
+                                                        type: relationship_edge
+                                                id: R0
+                                                text: Works In
+                                                pos:
+                                                    x: 690
+                                                    y: 393
+                                                type: relationship
+                                        edges:
+                                            E3E0G0:
+                                                generalisation: E0G0
+                                                type: hierarchy_edge
+                                                id: E3E0G0
+                                                parent: E0
+                                                child: E3
+                                            E4E0G0:
+                                                generalisation: E0G0
+                                                parent: E0
+                                                type: hierarchy_edge
+                                                child: E4
+                                                id: E4E0G0
+                                            E2R0:
+                                                target_type: relationship
+                                                cardinality: ZERO_TO_MANY
+                                                start: E2
+                                                end: R0
+                                                source_type: entity
+                                                id: E2R0
+                                                type: relationship_edge
+                                                isKey: false
+                                            ESwipeCardR0:
+                                                target_type: relationship
+                                                source_type: entity
+                                                cardinality: ONE_TO_ONE
+                                                isKey: true
+                                                id: ESwipeCardR0
+                                                start: ESwipeCard
+                                                end: R0
+                                                type: relationship_edge
+                                            E1E0:
+                                                child: E1
+                                                id: E1E0
+                                                parent: E0
+                                                type: hierarchy_edge
+                                            E0R0:
+                                                target_type: relationship
+                                                id: E0R0
+                                                isKey: false
+                                                cardinality: ONE_TO_ONE
+                                                source_type: entity
+                                                end: R0
+                                                start: E0
+                                                type: relationship_edge
+        post:
+            tags:
+                - ERD
+            description: Creates new ER diagram with given data and assigns permission to user
+            parameters:
+                - in: query
+                  name: Uid
+                  schema:
+                      type: string
+                  description: User ID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                name:
+                                    type: string
+                                data:
+                                    type: object
+                                    properties:
+                                        entities:
+                                            type: object
+                                            additionalProperties:
+                                                $ref: "#/components/schemas/Entity"
+                                        relationships:
+                                            type: object
+                                            additionalProperties:
+                                                $ref: "#/components/schemas/Relationship"
+                                        edges:
+                                            type: object
+                                            additionalProperties:
+                                                oneOf:
+                                                    - $ref: "#/components/schemas/Hierarchy_Edge"
+                                                    - $ref: "#/components/schemas/Relationship_Edge"
+                            example:
+                                name: DO NOT EDIT
+                                data:
+                                    entities:
+                                        E0:
+                                            attributes:
+                                                E0A0:
+                                                    text: Name
+                                                    id: E0A0
+                                                    isPrimaryKey: false
+                                                    type: attribute
+                                                    isMultiValued: false
+                                                    parent:
+                                                        id: E0
+                                                        type: entity
+                                                    isOptional: false
+                                                    relativePos:
+                                                        x: -100
+                                                        y: -30
+                                            generalisations:
+                                                E0G0:
+                                                    parent:
+                                                        id: E0
+                                                    type: generalisation
+                                                    edges:
+                                                        E3E0G0:
+                                                            type: hierarchy_edge
+                                                        E4E0G0:
+                                                            type: hierarchy_edge
+                                                    text: Messages
+                                                    id: E0G0
+                                                    pos:
+                                                        x: 551
+                                                        y: 528
+                                            text: Person
+                                            pos:
+                                                x: 300
+                                                y: 250
+                                            edges:
+                                                E1E0:
+                                                    type: hierarchy_edge
+                                                E0R0:
+                                                    type: relationship_edge
+                                            id: E0
+                                            type: entity
+                                            isWeak: []
+                                        E1:
+                                            type: entity
+                                            isWeak: []
+                                            id: E1
+                                            generalisations: {}
+                                            text: Manager
+                                            attributes: {}
+                                            pos:
+                                                y: 250
+                                                x: 100
+                                            edges:
+                                                E1E0:
+                                                    type: hierarchy_edge
+                                        ESwipeCard:
+                                            generalisations: {}
+                                            isWeak:
+                                                - ESwipeCardR0
+                                            attributes: {}
+                                            type: entity
+                                            id: ESwipeCard
+                                            pos:
+                                                y: 100
+                                                x: 550
+                                            edges:
+                                                ESwipeCardR0:
+                                                    type: relationship_edge
+                                            text: Swipe Card
+                                        E2:
+                                            id: E2
+                                            generalisations: {}
+                                            isWeak: []
+                                            pos:
+                                                y: 117
+                                                x: 765
+                                            type: entity
+                                            edges:
+                                                E2R0:
+                                                    type: relationship_edge
+                                            text: Department
+                                            attributes: {}
+                                        E3:
+                                            edges:
+                                                E3E0G0:
+                                                    type: hierarchy_edge
+                                            generalisations: {}
+                                            pos:
+                                                y: 500
+                                                x: 100
+                                            type: entity
+                                            isWeak: []
+                                            id: E3
+                                            text: Email Users
+                                            attributes: {}
+                                        E4:
+                                            id: E4
+                                            edges:
+                                                E4E0G0:
+                                                    type: hierarchy_edge
+                                            pos:
+                                                x: 320
+                                                y: 609
+                                            attributes: {}
+                                            type: entity
+                                            text: Non-email Users
+                                            isWeak: []
+                                            generalisations: {}
+                                    relationships:
+                                        R0:
+                                            attributes: {}
+                                            edges:
+                                                E2R0:
+                                                    type: relationship_edge
+                                                E0R0:
+                                                    type: relationship_edge
+                                            id: R0
+                                            text: Works In
+                                            pos:
+                                                x: 690
+                                                y: 393
+                                            type: relationship
+                                    edges:
+                                        E3E0G0:
+                                            generalisation: E0G0
+                                            type: hierarchy_edge
+                                            id: E3E0G0
+                                            parent: E0
+                                            child: E3
+                                        E4E0G0:
+                                            generalisation: E0G0
+                                            parent: E0
+                                            type: hierarchy_edge
+                                            child: E4
+                                            id: E4E0G0
+                                        E2R0:
+                                            target_type: relationship
+                                            cardinality: ZERO_TO_MANY
+                                            start: E2
+                                            end: R0
+                                            source_type: entity
+                                            id: E2R0
+                                            type: relationship_edge
+                                            isKey: false
+                                        ESwipeCardR0:
+                                            target_type: relationship
+                                            source_type: entity
+                                            cardinality: ONE_TO_ONE
+                                            isKey: true
+                                            id: ESwipeCardR0
+                                            start: ESwipeCard
+                                            end: R0
+                                            type: relationship_edge
+                                        E1E0:
+                                            child: E1
+                                            id: E1E0
+                                            parent: E0
+                                            type: hierarchy_edge
+                                        E0R0:
+                                            target_type: relationship
+                                            id: E0R0
+                                            isKey: false
+                                            cardinality: ONE_TO_ONE
+                                            source_type: entity
+                                            end: R0
+                                            start: E0
+                                            type: relationship_edge
+            responses:
+                400:
+                    description: Uid has to be defined as query. ERD name and data have to be defined in request body.
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: Uid has to be defined as query. ERD name and data have to be defined in request body.
+                404:
+                    description: ID does not exist
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: User does not exist
+                501:
+                    description: An error occured
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: An error occured.
+                200:
+                    description: Successfully added new ER diagram, returns ER diagram ID
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: erid
+        put:
+            tags:
+                - ERD
+            description: Updates ER diagram with given data
+            parameters:
+                - in: query
+                  name: ERid
+                  schema:
+                      type: string
+                  description: ER Diagram ID
+                - in: query
+                  name: Uid
+                  schema:
+                      type: string
+                  description: User ID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                name:
+                                    type: string
+                                data:
+                                    type: object
+                                    properties:
+                                        entities:
+                                            type: object
+                                            additionalProperties:
+                                                $ref: "#/components/schemas/Entity"
+                                        relationships:
+                                            type: object
+                                            additionalProperties:
+                                                $ref: "#/components/schemas/Relationship"
+                                        edges:
+                                            type: object
+                                            additionalProperties:
+                                                oneOf:
+                                                    - $ref: "#/components/schemas/Hierarchy_Edge"
+                                                    - $ref: "#/components/schemas/Relationship_Edge"
+                                counter:
+                                    type: number
+                            example:
+                                name: DO NOT EDIT
+                                counter: 123
+                                data:
+                                    entities:
+                                        E0:
+                                            attributes:
+                                                E0A0:
+                                                    text: Name
+                                                    id: E0A0
+                                                    isPrimaryKey: false
+                                                    type: attribute
+                                                    isMultiValued: false
+                                                    parent:
+                                                        id: E0
+                                                        type: entity
+                                                    isOptional: false
+                                                    relativePos:
+                                                        x: -100
+                                                        y: -30
+                                            generalisations:
+                                                E0G0:
+                                                    parent:
+                                                        id: E0
+                                                    type: generalisation
+                                                    edges:
+                                                        E3E0G0:
+                                                            type: hierarchy_edge
+                                                        E4E0G0:
+                                                            type: hierarchy_edge
+                                                    text: Messages
+                                                    id: E0G0
+                                                    pos:
+                                                        x: 551
+                                                        y: 528
+                                            text: Person
+                                            pos:
+                                                x: 300
+                                                y: 250
+                                            edges:
+                                                E1E0:
+                                                    type: hierarchy_edge
+                                                E0R0:
+                                                    type: relationship_edge
+                                            id: E0
+                                            type: entity
+                                            isWeak: []
+                                        E1:
+                                            type: entity
+                                            isWeak: []
+                                            id: E1
+                                            generalisations: {}
+                                            text: Manager
+                                            attributes: {}
+                                            pos:
+                                                y: 250
+                                                x: 100
+                                            edges:
+                                                E1E0:
+                                                    type: hierarchy_edge
+                                        ESwipeCard:
+                                            generalisations: {}
+                                            isWeak:
+                                                - ESwipeCardR0
+                                            attributes: {}
+                                            type: entity
+                                            id: ESwipeCard
+                                            pos:
+                                                y: 100
+                                                x: 550
+                                            edges:
+                                                ESwipeCardR0:
+                                                    type: relationship_edge
+                                            text: Swipe Card
+                                        E2:
+                                            id: E2
+                                            generalisations: {}
+                                            isWeak: []
+                                            pos:
+                                                y: 117
+                                                x: 765
+                                            type: entity
+                                            edges:
+                                                E2R0:
+                                                    type: relationship_edge
+                                            text: Department
+                                            attributes: {}
+                                        E3:
+                                            edges:
+                                                E3E0G0:
+                                                    type: hierarchy_edge
+                                            generalisations: {}
+                                            pos:
+                                                y: 500
+                                                x: 100
+                                            type: entity
+                                            isWeak: []
+                                            id: E3
+                                            text: Email Users
+                                            attributes: {}
+                                        E4:
+                                            id: E4
+                                            edges:
+                                                E4E0G0:
+                                                    type: hierarchy_edge
+                                            pos:
+                                                x: 320
+                                                y: 609
+                                            attributes: {}
+                                            type: entity
+                                            text: Non-email Users
+                                            isWeak: []
+                                            generalisations: {}
+                                    relationships:
+                                        R0:
+                                            attributes: {}
+                                            edges:
+                                                E2R0:
+                                                    type: relationship_edge
+                                                E0R0:
+                                                    type: relationship_edge
+                                            id: R0
+                                            text: Works In
+                                            pos:
+                                                x: 690
+                                                y: 393
+                                            type: relationship
+                                    edges:
+                                        E3E0G0:
+                                            generalisation: E0G0
+                                            type: hierarchy_edge
+                                            id: E3E0G0
+                                            parent: E0
+                                            child: E3
+                                        E4E0G0:
+                                            generalisation: E0G0
+                                            parent: E0
+                                            type: hierarchy_edge
+                                            child: E4
+                                            id: E4E0G0
+                                        E2R0:
+                                            target_type: relationship
+                                            cardinality: ZERO_TO_MANY
+                                            start: E2
+                                            end: R0
+                                            source_type: entity
+                                            id: E2R0
+                                            type: relationship_edge
+                                            isKey: false
+                                        ESwipeCardR0:
+                                            target_type: relationship
+                                            source_type: entity
+                                            cardinality: ONE_TO_ONE
+                                            isKey: true
+                                            id: ESwipeCardR0
+                                            start: ESwipeCard
+                                            end: R0
+                                            type: relationship_edge
+                                        E1E0:
+                                            child: E1
+                                            id: E1E0
+                                            parent: E0
+                                            type: hierarchy_edge
+                                        E0R0:
+                                            target_type: relationship
+                                            id: E0R0
+                                            isKey: false
+                                            cardinality: ONE_TO_ONE
+                                            source_type: entity
+                                            end: R0
+                                            start: E0
+                                            type: relationship_edge
+            responses:
+                400:
+                    description: Uid has to be defined as query. ERD name and data have to be defined in request body.
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: Uid and ERid have to be defined as queries. ERD name, counter and data have to be defined in request body.
+                403:
+                    description: No permission
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: You do not have permission to write, please make a duplicate to make changes.
+                404:
+                    description: ID does not exist
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: User does not exist
+                409:
+                    description: ER Diagram update conflict, counter not equal to erid database counter
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: ERD update conflict, please retrieve the latest version
+                501:
+                    description: An error occured
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: An error occured.
+                200:
+                    description: Successfully updated ER diagram
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: ERD successfully updated
+        delete:
+            tags:
+                - ERD
+            description: Deletes ER diagram
+            parameters:
+                - in: query
+                  name: ERid
+                  schema:
+                      type: string
+                  description: ER Diagram ID
+                - in: query
+                  name: Uid
+                  schema:
+                      type: string
+                  description: User ID
+            responses:
+                400:
+                    description: Uid has to be defined as query. ERD name and data have to be defined in request body.
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: Uid and ERid have to be defined as queries. ERD name, counter and data have to be defined in request body.
+                403:
+                    description: No permission
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: Only the owner can delete
+                404:
+                    description: ID does not exist
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: User does not exist
+                501:
+                    description: An error occured
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: An error occured.
+                200:
+                    description: Successfully deleted ER diagram
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: ERD successfully deleted
+
+    /api/collab:
+        get:
+            tags:
+                - Collaboration
+            description: Gets the list of users that can access the ERD (ERid) or gets the list of ERD that a user (Uid) has access to. Only provide either ERid or Uid
+            parameters:
+                - in: query
+                  name: ERid
+                  schema:
+                      type: string
+                  description: ER Diagram ID
+                - in: query
+                  name: Uid
+                  schema:
+                      type: string
+                  description: User ID
+            responses:
+                200:
+                    description: Successfully gets the list of users that can access the ERD (ERid) or gets the list of ERD that a user (Uid) has access to
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: "[{'email': '123@gmail.com', 'permission': 'OWNER'}]"
+                400:
+                    description: Either Uid or ERid has to be defined as query
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: "Either Uid or ERid has to be defined as query"
+                404:
+                    description: ID does not exist
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: User does not exist
+                501:
+                    description: An error occured
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: An error occured.
+        put:
+            tags:
+                - Collaboration
+            description: Grants email specified permission for the ER diagram
+            parameters:
+                - in: query
+                  name: owner
+                  schema:
+                      type: string
+                  description: Owner of ER diagram
+                - in: query
+                  name: email
+                  schema:
+                      type: string
+                  description: Email that owner wants to grant permission
+                - in: query
+                  name: ERid
+                  schema:
+                      type: string
+                  description: ER Diagram ID
+                - in: query
+                  name: permission
+                  schema:
+                      type: string
+                  description: Permission granted
+            responses:
+                400:
+                    description: Permission should be READ or READ-WRITE
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: Permission should be READ or READ-WRITE
+                403:
+                    description: No permission
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: Only owner can change permissions
+                404:
+                    description: User with email does not exist
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: User does not exist
+                501:
+                    description: An error occured
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: An error occured.
+                200:
+                    description: Permission successfully granted
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: Permission successfully granted
+    /api/collab/create-duplicate:
+        post:
+            tags:
+                - Collaboration
+            desciption: Create a duplicate of an ERD (ERid) for a user (Uid)
+            parameters:
+                - in: query
+                  name: ERid
+                  schema:
+                      type: string
+                  description: ER Diagram ID
+                - in: query
+                  name: Uid
+                  schema:
+                      type: string
+                  description: User ID
+            responses:
+                400:
+                    description: Uid and ERid have to be defined as queries.
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: Uid and ERid have to be defined as queries.
+                403:
+                    description: No permission
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: No permission to given ERid
+                404:
+                    description: ID does not exist
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: User does not exist
+                501:
+                    description: An error occured
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: An error occured.
+                200:
+                    description: Successfully duplicated ER diagram, returns new ERid
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: erid
+
+    /api/translation/translate:
+        post:
+            tags:
+                - Translation
+            description: Returns translation of diagram to relational model
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                entities:
+                                    type: array
+                                    example:
+                                        - identifier: 1
+                                          positionX: 1
+                                          positionY: 2
+                                          shapeWidth: 4
+                                          shapeHeight: 4
+                                          name: Mock Entity 1
+                                          isWeak: true
+                                          attributes:
+                                              - identifier: 1
+                                                positionX: 2
+                                                positionY: 4
+                                                shapeWidth: 4
+                                                shapeHeight: 4
+                                                name: Mock Attribute 1
+                                                isPrimaryKey: true
+                                                isOptional: false
+                                        - identifier: 2
+                                          positionX: 1
+                                          positionY: 2
+                                          shapeWidth: 4
+                                          shapeHeight: 4
+                                          name: Mock Entity 2
+                                          isWeak: true
+                                          attributes:
+                                              - identifier: 2
+                                                positionX: 2
+                                                positionY: 4
+                                                shapeWidth: 4
+                                                shapeHeight: 4
+                                                name: Mock Attribute 2
+                                                isPrimaryKey: true
+                                                isOptional: false
+                                    items:
+                                        $ref: "#/components/schemas/Entity"
+                                relationships:
+                                    type: array
+                                    example:
+                                        - identifier: 1
+                                          positionX: 1
+                                          positionY: 2
+                                          shapeWidth: 4
+                                          shapeHeight: 4
+                                          name: Mock Relationship
+                                          attributes:
+                                              - identifier: 3
+                                                positionX: 2
+                                                positionY: 4
+                                                shapeWidth: 4
+                                                shapeHeight: 4
+                                                name: Mock Attribute Relationship
+                                                isPrimaryKey: true
+                                                isOptional: false
+                                          lHConstraints:
+                                              1: ONE_TO_MANY
+                                              2: ONE_TO_MANY
+                                    items:
+                                        $ref: "#/components/schemas/Relationship"
+                required: false
+            responses:
+                200:
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/TranslatedTable"
+            x-codegen-request-body-name: body
+components:
+    schemas:
+        Attribute:
+            required:
+                - id
+                - isMultiValued
+                - isOptional
+                - isPrimaryKey
+                - parent
+                - relativePos
+                - text
+                - type
+            type: object
+            properties:
+                text:
                     type: string
-                  data:
+                id:
+                    type: number
+                isPrimaryKey:
+                    type: boolean
+                type:
+                    type: string
+                isMultiValued:
+                    type: boolean
+                parent:
                     type: object
                     properties:
-                      entities:
-                        type: object
-                        additionalProperties:
-                          $ref: '#/components/schemas/Entity'
-                      relationships:
-                        type: object
-                        additionalProperties:
-                          $ref: '#/components/schemas/Relationship'
-                      edges:
-                        type: object
-                        additionalProperties:
-                          oneOf:
-                            - $ref: '#/components/schemas/Hierarchy_Edge'
-                            - $ref: '#/components/schemas/Relationship_Edge'
-                  counter:
-                    type: number
-                example:
-                  name: DO NOT EDIT
-                  counter: 123
-                  data:
-                    entities:
-                      E0:
-                        attributes:
-                          E0A0:
-                            text: Name
-                            id: E0A0
-                            isPrimaryKey: false
-                            type: attribute
-                            isMultiValued: false
-                            parent:
-                              id: E0
-                              type: entity
-                            isOptional: false
-                            relativePos:
-                              x: -100
-                              y: -30
-                        generalisations:
-                          E0G0:
-                            parent:
-                              id: E0
-                            type: generalisation
-                            edges:
-                              E3E0G0:
-                                type: hierarchy_edge
-                              E4E0G0:
-                                type: hierarchy_edge
-                            text: Messages
-                            id: E0G0
-                            pos:
-                              x: 551
-                              y: 528
-                        text: Person
-                        pos:
-                          x: 300
-                          y: 250
-                        edges:
-                          E1E0:
-                            type: hierarchy_edge
-                          E0R0:
-                            type: relationship_edge
-                        id: E0
-                        type: entity
-                        isWeak: []
-                      E1:
-                        type: entity
-                        isWeak: []
-                        id: E1
-                        generalisations: {}
-                        text: Manager
-                        attributes: {}
-                        pos:
-                          y: 250
-                          x: 100
-                        edges:
-                          E1E0:
-                            type: hierarchy_edge
-                      ESwipeCard:
-                        generalisations: {}
-                        isWeak:
-                          - ESwipeCardR0
-                        attributes: {}
-                        type: entity
-                        id: ESwipeCard
-                        pos:
-                          y: 100
-                          x: 550
-                        edges:
-                          ESwipeCardR0:
-                            type: relationship_edge
-                        text: Swipe Card
-                      E2:
-                        id: E2
-                        generalisations: {}
-                        isWeak: []
-                        pos:
-                          y: 117
-                          x: 765
-                        type: entity
-                        edges:
-                          E2R0:
-                            type: relationship_edge
-                        text: Department
-                        attributes: {}
-                      E3:
-                        edges:
-                          E3E0G0:
-                            type: hierarchy_edge
-                        generalisations: {}
-                        pos:
-                          y: 500
-                          x: 100
-                        type: entity
-                        isWeak: []
-                        id: E3
-                        text: Email Users
-                        attributes: {}
-                      E4:
-                        id: E4
-                        edges:
-                          E4E0G0:
-                            type: hierarchy_edge
-                        pos:
-                          x: 320
-                          y: 609
-                        attributes: {}
-                        type: entity
-                        text: Non-email Users
-                        isWeak: []
-                        generalisations: {}
-                    relationships:
-                      R0:
-                        attributes: {}
-                        edges:
-                          E2R0:
-                            type: relationship_edge
-                          E0R0:
-                            type: relationship_edge
-                        id: R0
-                        text: Works In
-                        pos:
-                          x: 690
-                          y: 393
-                        type: relationship
-                    edges:
-                      E3E0G0:
-                        generalisation: E0G0
-                        type: hierarchy_edge
-                        id: E3E0G0
-                        parent: E0
-                        child: E3
-                      E4E0G0:
-                        generalisation: E0G0
-                        parent: E0
-                        type: hierarchy_edge
-                        child: E4
-                        id: E4E0G0
-                      E2R0:
-                        target_type: relationship
-                        cardinality: ZERO_TO_MANY
-                        start: E2
-                        end: R0
-                        source_type: entity
-                        id: E2R0
-                        type: relationship_edge
-                        isKey: false
-                      ESwipeCardR0:
-                        target_type: relationship
-                        source_type: entity
-                        cardinality: ONE_TO_ONE
-                        isKey: true
-                        id: ESwipeCardR0
-                        start: ESwipeCard
-                        end: R0
-                        type: relationship_edge
-                      E1E0:
-                        child: E1
-                        id: E1E0
-                        parent: E0
-                        type: hierarchy_edge
-                      E0R0:
-                        target_type: relationship
-                        id: E0R0
-                        isKey: false
-                        cardinality: ONE_TO_ONE
-                        source_type: entity
-                        end: R0
-                        start: E0
-                        type: relationship_edge
-    post:
-      tags:
-        - ERD
-      description: Creates new ER diagram with given data and assigns permission to user
-      parameters:
-        - in: query
-          name: Uid
-          schema:
-            type: string
-          description: User ID
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                data:
-                  type: object
-                  properties:
-                    entities:
-                      type: object
-                      additionalProperties:
-                        $ref: '#/components/schemas/Entity'
-                    relationships:
-                      type: object
-                      additionalProperties:
-                        $ref: '#/components/schemas/Relationship'
-                    edges:
-                      type: object
-                      additionalProperties:
-                        oneOf:
-                          - $ref: '#/components/schemas/Hierarchy_Edge'
-                          - $ref: '#/components/schemas/Relationship_Edge'
-              example:
-                name: DO NOT EDIT
-                data:
-                  entities:
-                    E0:
-                      attributes:
-                        E0A0:
-                          text: Name
-                          id: E0A0
-                          isPrimaryKey: false
-                          type: attribute
-                          isMultiValued: false
-                          parent:
-                            id: E0
-                            type: entity
-                          isOptional: false
-                          relativePos:
-                            x: -100
-                            y: -30
-                      generalisations:
-                        E0G0:
-                          parent:
-                            id: E0
-                          type: generalisation
-                          edges:
-                            E3E0G0:
-                              type: hierarchy_edge
-                            E4E0G0:
-                              type: hierarchy_edge
-                          text: Messages
-                          id: E0G0
-                          pos:
-                            x: 551
-                            y: 528
-                      text: Person
-                      pos:
-                        x: 300
-                        y: 250
-                      edges:
-                        E1E0:
-                          type: hierarchy_edge
-                        E0R0:
-                          type: relationship_edge
-                      id: E0
-                      type: entity
-                      isWeak: []
-                    E1:
-                      type: entity
-                      isWeak: []
-                      id: E1
-                      generalisations: {}
-                      text: Manager
-                      attributes: {}
-                      pos:
-                        y: 250
-                        x: 100
-                      edges:
-                        E1E0:
-                          type: hierarchy_edge
-                    ESwipeCard:
-                      generalisations: {}
-                      isWeak:
-                        - ESwipeCardR0
-                      attributes: {}
-                      type: entity
-                      id: ESwipeCard
-                      pos:
-                        y: 100
-                        x: 550
-                      edges:
-                        ESwipeCardR0:
-                          type: relationship_edge
-                      text: Swipe Card
-                    E2:
-                      id: E2
-                      generalisations: {}
-                      isWeak: []
-                      pos:
-                        y: 117
-                        x: 765
-                      type: entity
-                      edges:
-                        E2R0:
-                          type: relationship_edge
-                      text: Department
-                      attributes: {}
-                    E3:
-                      edges:
-                        E3E0G0:
-                          type: hierarchy_edge
-                      generalisations: {}
-                      pos:
-                        y: 500
-                        x: 100
-                      type: entity
-                      isWeak: []
-                      id: E3
-                      text: Email Users
-                      attributes: {}
-                    E4:
-                      id: E4
-                      edges:
-                        E4E0G0:
-                          type: hierarchy_edge
-                      pos:
-                        x: 320
-                        y: 609
-                      attributes: {}
-                      type: entity
-                      text: Non-email Users
-                      isWeak: []
-                      generalisations: {}
-                  relationships:
-                    R0:
-                      attributes: {}
-                      edges:
-                        E2R0:
-                          type: relationship_edge
-                        E0R0:
-                          type: relationship_edge
-                      id: R0
-                      text: Works In
-                      pos:
-                        x: 690
-                        y: 393
-                      type: relationship
-                  edges:
-                    E3E0G0:
-                      generalisation: E0G0
-                      type: hierarchy_edge
-                      id: E3E0G0
-                      parent: E0
-                      child: E3
-                    E4E0G0:
-                      generalisation: E0G0
-                      parent: E0
-                      type: hierarchy_edge
-                      child: E4
-                      id: E4E0G0
-                    E2R0:
-                      target_type: relationship
-                      cardinality: ZERO_TO_MANY
-                      start: E2
-                      end: R0
-                      source_type: entity
-                      id: E2R0
-                      type: relationship_edge
-                      isKey: false
-                    ESwipeCardR0:
-                      target_type: relationship
-                      source_type: entity
-                      cardinality: ONE_TO_ONE
-                      isKey: true
-                      id: ESwipeCardR0
-                      start: ESwipeCard
-                      end: R0
-                      type: relationship_edge
-                    E1E0:
-                      child: E1
-                      id: E1E0
-                      parent: E0
-                      type: hierarchy_edge
-                    E0R0:
-                      target_type: relationship
-                      id: E0R0
-                      isKey: false
-                      cardinality: ONE_TO_ONE
-                      source_type: entity
-                      end: R0
-                      start: E0
-                      type: relationship_edge
-      responses:
-        400:
-          description: Uid has to be defined as query. ERD name and data have to be defined in request body.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Uid has to be defined as query. ERD name and data have to be defined in request body.
-        404:
-          description: ID does not exist
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: User does not exist
-        501:
-          description: An error occured
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: An error occured.
-        200:
-          description: Successfully added new ER diagram, returns ER diagram ID
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: erid
-    put:
-      tags:
-        - ERD
-      description: Updates ER diagram with given data
-      parameters:
-        - in: query
-          name: ERid
-          schema:
-            type: string
-          description: ER Diagram ID
-        - in: query
-          name: Uid
-          schema:
-            type: string
-          description: User ID
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                data:
-                  type: object
-                  properties:
-                    entities:
-                      type: object
-                      additionalProperties:
-                        $ref: '#/components/schemas/Entity'
-                    relationships:
-                      type: object
-                      additionalProperties:
-                        $ref: '#/components/schemas/Relationship'
-                    edges:
-                      type: object
-                      additionalProperties:
-                        oneOf:
-                          - $ref: '#/components/schemas/Hierarchy_Edge'
-                          - $ref: '#/components/schemas/Relationship_Edge'
-                counter:
-                  type: number
-              example:
-                name: DO NOT EDIT
-                counter: 123
-                data:
-                  entities:
-                    E0:
-                      attributes:
-                        E0A0:
-                          text: Name
-                          id: E0A0
-                          isPrimaryKey: false
-                          type: attribute
-                          isMultiValued: false
-                          parent:
-                            id: E0
-                            type: entity
-                          isOptional: false
-                          relativePos:
-                            x: -100
-                            y: -30
-                      generalisations:
-                        E0G0:
-                          parent:
-                            id: E0
-                          type: generalisation
-                          edges:
-                            E3E0G0:
-                              type: hierarchy_edge
-                            E4E0G0:
-                              type: hierarchy_edge
-                          text: Messages
-                          id: E0G0
-                          pos:
-                            x: 551
-                            y: 528
-                      text: Person
-                      pos:
-                        x: 300
-                        y: 250
-                      edges:
-                        E1E0:
-                          type: hierarchy_edge
-                        E0R0:
-                          type: relationship_edge
-                      id: E0
-                      type: entity
-                      isWeak: []
-                    E1:
-                      type: entity
-                      isWeak: []
-                      id: E1
-                      generalisations: {}
-                      text: Manager
-                      attributes: {}
-                      pos:
-                        y: 250
-                        x: 100
-                      edges:
-                        E1E0:
-                          type: hierarchy_edge
-                    ESwipeCard:
-                      generalisations: {}
-                      isWeak:
-                        - ESwipeCardR0
-                      attributes: {}
-                      type: entity
-                      id: ESwipeCard
-                      pos:
-                        y: 100
-                        x: 550
-                      edges:
-                        ESwipeCardR0:
-                          type: relationship_edge
-                      text: Swipe Card
-                    E2:
-                      id: E2
-                      generalisations: {}
-                      isWeak: []
-                      pos:
-                        y: 117
-                        x: 765
-                      type: entity
-                      edges:
-                        E2R0:
-                          type: relationship_edge
-                      text: Department
-                      attributes: {}
-                    E3:
-                      edges:
-                        E3E0G0:
-                          type: hierarchy_edge
-                      generalisations: {}
-                      pos:
-                        y: 500
-                        x: 100
-                      type: entity
-                      isWeak: []
-                      id: E3
-                      text: Email Users
-                      attributes: {}
-                    E4:
-                      id: E4
-                      edges:
-                        E4E0G0:
-                          type: hierarchy_edge
-                      pos:
-                        x: 320
-                        y: 609
-                      attributes: {}
-                      type: entity
-                      text: Non-email Users
-                      isWeak: []
-                      generalisations: {}
-                  relationships:
-                    R0:
-                      attributes: {}
-                      edges:
-                        E2R0:
-                          type: relationship_edge
-                        E0R0:
-                          type: relationship_edge
-                      id: R0
-                      text: Works In
-                      pos:
-                        x: 690
-                        y: 393
-                      type: relationship
-                  edges:
-                    E3E0G0:
-                      generalisation: E0G0
-                      type: hierarchy_edge
-                      id: E3E0G0
-                      parent: E0
-                      child: E3
-                    E4E0G0:
-                      generalisation: E0G0
-                      parent: E0
-                      type: hierarchy_edge
-                      child: E4
-                      id: E4E0G0
-                    E2R0:
-                      target_type: relationship
-                      cardinality: ZERO_TO_MANY
-                      start: E2
-                      end: R0
-                      source_type: entity
-                      id: E2R0
-                      type: relationship_edge
-                      isKey: false
-                    ESwipeCardR0:
-                      target_type: relationship
-                      source_type: entity
-                      cardinality: ONE_TO_ONE
-                      isKey: true
-                      id: ESwipeCardR0
-                      start: ESwipeCard
-                      end: R0
-                      type: relationship_edge
-                    E1E0:
-                      child: E1
-                      id: E1E0
-                      parent: E0
-                      type: hierarchy_edge
-                    E0R0:
-                      target_type: relationship
-                      id: E0R0
-                      isKey: false
-                      cardinality: ONE_TO_ONE
-                      source_type: entity
-                      end: R0
-                      start: E0
-                      type: relationship_edge
-      responses:
-        400:
-          description: Uid has to be defined as query. ERD name and data have to be defined in request body.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Uid and ERid have to be defined as queries. ERD name, counter and data have to be defined in request body.
-        403:
-          description: No permission
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: You do not have permission to write, please make a duplicate to make changes.
-        404:
-          description: ID does not exist
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: User does not exist
-        409:
-          description: ER Diagram update conflict, counter not equal to erid database counter
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: ERD update conflict, please retrieve the latest version
-        501:
-          description: An error occured
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: An error occured.
-        200:
-          description: Successfully updated ER diagram
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: ERD successfully updated
-    delete:
-      tags:
-        - ERD
-      description: Deletes ER diagram
-      parameters:
-        - in: query
-          name: ERid
-          schema:
-            type: string
-          description: ER Diagram ID
-        - in: query
-          name: Uid
-          schema:
-            type: string
-          description: User ID
-      responses:
-        400:
-          description: Uid has to be defined as query. ERD name and data have to be defined in request body.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Uid and ERid have to be defined as queries. ERD name, counter and data have to be defined in request body.
-        403:
-          description: No permission
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Only the owner can delete
-        404:
-          description: ID does not exist
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: User does not exist
-        501:
-          description: An error occured
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: An error occured.
-        200:
-          description: Successfully deleted ER diagram
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: ERD successfully deleted
-
-  /api/collab:
-    get:
-      tags:
-        - Collaboration
-      description: Gets the list of users that can access the ERD (ERid) or gets the list of ERD that a user (Uid) has access to. Only provide either ERid or Uid
-      parameters:
-        - in: query
-          name: ERid
-          schema:
-            type: string
-          description: ER Diagram ID
-        - in: query
-          name: Uid
-          schema:
-            type: string
-          description: User ID
-      responses:
-        200:
-          description: Successfully gets the list of users that can access the ERD (ERid) or gets the list of ERD that a user (Uid) has access to
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "[{'email': '123@gmail.com', 'permission': 'OWNER'}]"
-        400:
-          description: Either Uid or ERid has to be defined as query
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: "Either Uid or ERid has to be defined as query"
-        404:
-          description: ID does not exist
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: User does not exist
-        501:
-          description: An error occured
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: An error occured.
-    put:
-      tags:
-        - Collaboration
-      description: Grants email specified permission for the ER diagram
-      parameters:
-        - in: query
-          name: owner
-          schema:
-            type: string
-          description: Owner of ER diagram
-        - in: query
-          name: email
-          schema:
-            type: string
-          description: Email that owner wants to grant permission
-        - in: query
-          name: ERid
-          schema:
-            type: string
-          description: ER Diagram ID
-        - in: query
-          name: permission
-          schema:
-            type: string
-          description: Permission granted
-      responses:
-        400:
-          description: Permission should be READ or READ-WRITE
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Permission should be READ or READ-WRITE
-        403:
-          description: No permission
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Only owner can change permissions
-        404:
-          description: User with email does not exist
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: User does not exist
-        501:
-          description: An error occured
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: An error occured.
-        200:
-          description: Permission successfully granted
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Permission successfully granted
-  /api/collab/create-duplicate:
-    post:
-      tags:
-        - Collaboration
-      desciption: Create a duplicate of an ERD (ERid) for a user (Uid)
-      parameters:
-        - in: query
-          name: ERid
-          schema:
-            type: string
-          description: ER Diagram ID
-        - in: query
-          name: Uid
-          schema:
-            type: string
-          description: User ID
-      responses:
-        400:
-          description: Uid and ERid have to be defined as queries.
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Uid and ERid have to be defined as queries.
-        403:
-          description: No permission
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: No permission to given ERid
-        404:
-          description: ID does not exist
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: User does not exist
-        501:
-          description: An error occured
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: An error occured.
-        200:
-          description: Successfully duplicated ER diagram, returns new ERid
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: erid
-
-  /api/translation/translate:
-    post:
-      tags:
-        - Translation
-      description: Returns translation of diagram to relational model
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                entities:
-                  type: array
-                  example:
-                    - identifier: 1
-                      positionX: 1
-                      positionY: 2
-                      shapeWidth: 4
-                      shapeHeight: 4
-                      name: Mock Entity 1
-                      isWeak: true
-                      attributes:
-                        - identifier: 1
-                          positionX: 2
-                          positionY: 4
-                          shapeWidth: 4
-                          shapeHeight: 4
-                          name: Mock Attribute 1
-                          isPrimaryKey: true
-                          isOptional: false
-                    - identifier: 2
-                      positionX: 1
-                      positionY: 2
-                      shapeWidth: 4
-                      shapeHeight: 4
-                      name: Mock Entity 2
-                      isWeak: true
-                      attributes:
-                        - identifier: 2
-                          positionX: 2
-                          positionY: 4
-                          shapeWidth: 4
-                          shapeHeight: 4
-                          name: Mock Attribute 2
-                          isPrimaryKey: true
-                          isOptional: false
-                  items:
-                    $ref: '#/components/schemas/Entity'
-                relationships:
-                  type: array
-                  example:
-                    - identifier: 1
-                      positionX: 1
-                      positionY: 2
-                      shapeWidth: 4
-                      shapeHeight: 4
-                      name: Mock Relationship
-                      attributes:
-                        - identifier: 3
-                          positionX: 2
-                          positionY: 4
-                          shapeWidth: 4
-                          shapeHeight: 4
-                          name: Mock Attribute Relationship
-                          isPrimaryKey: true
-                          isOptional: false
-                      lHConstraints:
-                        1: ONE_TO_MANY
-                        2: ONE_TO_MANY
-                  items:
-                    $ref: '#/components/schemas/Relationship'
-        required: false
-      responses:
-        200:
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/TranslatedTable'
-      x-codegen-request-body-name: body
-components:
-  schemas:
-    Attribute:
-      required:
-        - id
-        - isMultiValued
-        - isOptional
-        - isPrimaryKey
-        - parent
-        - relativePos
-        - text
-        - type
-      type: object
-      properties:
-        text:
-          type: string
-        id:
-          type: number
-        isPrimaryKey:
-          type: boolean
-        type:
-          type: string
-        isMultiValued:
-          type: boolean
-        parent:
-          type: object
-          properties:
-            id:
-              type: string
-            type:
-              type: string
-        isOptional:
-          type: boolean
-        relativePos:
-          type: object
-          properties:
-            x:
-              type: number
-            y:
-              type: number
-    Edge_Type:
-      required:
-        - type
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-            - hierarchy_edge
-            - relationship_edge
-    Hierarchy_Edge:
-      required:
-        - type
-        - child
-        - id
-        - parent
-      type: object
-      properties:
-        type:
-          type: string
-        child:
-          type: string
-        id:
-          type: string
-        parent:
-          type: string
-    Relationship_Edge:
-      required:
-        - target_type
-        - id
-        - isKey
-        - cardinality
-        - source_type
-        - end
-        - start
-        - type
-      type: object
-      properties:
-        target_type:
-          type: string
-        id:
-          type: string
-        isKey:
-          type: boolean
-        cardinality:
-          type: string
-        source_type:
-          type: string
-        end:
-          type: string
-        start:
-          type: string
-        type:
-          type: string
-    Generalisation:
-      required:
-        - edges
-        - id
-        - parent
-        - pos
-        - text
-        - type
-      type: object
-      properties:
-        parent:
-          type: object
-          properties:
-            id:
-              type: string
-        type:
-          type: string
-        edges:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/Edge_Type'
-        text:
-          type: string
-        id:
-          type: string
-        pos:
-          type: object
-          properties:
-            x:
-              type: number
-            y:
-              type: number
-    Entity:
-      required:
-        - attributes
-        - edges
-        - generalisations
-        - id
-        - isWeak
-        - pos
-        - text
-        - type
-      type: object
-      properties:
-        attributes:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/Attribute'
-        generalisations:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/Generalisation'
-        text:
-          type: string
-        pos:
-          type: object
-          properties:
-            x:
-              type: number
-            y:
-              type: number
-        edges:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/Edge_Type'
-        id:
-          type: string
-        type:
-          type: string
-        isWeak:
-          type: array
-          items:
-            type: string
-    Relationship:
-      required:
-        - attributes
-        - edges
-        - id
-        - text
-        - pos
-        - type
-      type: object
-      properties:
-        attributes:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/Attribute'
-        edges:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/Edge_Type'
-        id:
-          type: string
-        text:
-          type: string
-        pos:
-          type: object
-          properties:
-            x:
-              type: number
-            y:
-              type: number
-        type:
-          type: string
-    TranslatedTable:
-      type: object
-      properties:
-        tables:
-          type: object
-          properties:
-            table name:
-              type: string
-            table:
-              type: array
-              items:
-                type: object
-                properties:
-                  source:
-                    type: number
-                  columns:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        columnName:
-                          type: string
-                        isPrimaryKey:
-                          type: boolean
-                        isOptional:
-                          type: boolean
-                  foreignKeys:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        keyName:
-                          type: string
-                        foreignTable:
-                          type: string
-                        columns:
-                          type: array
-                          items:
+                        id:
                             type: string
+                        type:
+                            type: string
+                isOptional:
+                    type: boolean
+                relativePos:
+                    type: object
+                    properties:
+                        x:
+                            type: number
+                        y:
+                            type: number
+        Edge_Type:
+            required:
+                - type
+            type: object
+            properties:
+                type:
+                    type: string
+                    enum:
+                        - hierarchy_edge
+                        - relationship_edge
+        Hierarchy_Edge:
+            required:
+                - type
+                - child
+                - id
+                - parent
+            type: object
+            properties:
+                type:
+                    type: string
+                child:
+                    type: string
+                id:
+                    type: string
+                parent:
+                    type: string
+        Relationship_Edge:
+            required:
+                - target_type
+                - id
+                - isKey
+                - cardinality
+                - source_type
+                - end
+                - start
+                - type
+            type: object
+            properties:
+                target_type:
+                    type: string
+                id:
+                    type: string
+                isKey:
+                    type: boolean
+                cardinality:
+                    type: string
+                source_type:
+                    type: string
+                end:
+                    type: string
+                start:
+                    type: string
+                type:
+                    type: string
+        Generalisation:
+            required:
+                - edges
+                - id
+                - parent
+                - pos
+                - text
+                - type
+            type: object
+            properties:
+                parent:
+                    type: object
+                    properties:
+                        id:
+                            type: string
+                type:
+                    type: string
+                edges:
+                    type: object
+                    additionalProperties:
+                        $ref: "#/components/schemas/Edge_Type"
+                text:
+                    type: string
+                id:
+                    type: string
+                pos:
+                    type: object
+                    properties:
+                        x:
+                            type: number
+                        y:
+                            type: number
+        Entity:
+            required:
+                - attributes
+                - edges
+                - generalisations
+                - id
+                - isWeak
+                - pos
+                - text
+                - type
+            type: object
+            properties:
+                attributes:
+                    type: object
+                    additionalProperties:
+                        $ref: "#/components/schemas/Attribute"
+                generalisations:
+                    type: object
+                    additionalProperties:
+                        $ref: "#/components/schemas/Generalisation"
+                text:
+                    type: string
+                pos:
+                    type: object
+                    properties:
+                        x:
+                            type: number
+                        y:
+                            type: number
+                edges:
+                    type: object
+                    additionalProperties:
+                        $ref: "#/components/schemas/Edge_Type"
+                id:
+                    type: string
+                type:
+                    type: string
+                isWeak:
+                    type: array
+                    items:
+                        type: string
+        Relationship:
+            required:
+                - attributes
+                - edges
+                - id
+                - text
+                - pos
+                - type
+            type: object
+            properties:
+                attributes:
+                    type: object
+                    additionalProperties:
+                        $ref: "#/components/schemas/Attribute"
+                edges:
+                    type: object
+                    additionalProperties:
+                        $ref: "#/components/schemas/Edge_Type"
+                id:
+                    type: string
+                text:
+                    type: string
+                pos:
+                    type: object
+                    properties:
+                        x:
+                            type: number
+                        y:
+                            type: number
+                type:
+                    type: string
+        TranslatedTable:
+            type: object
+            properties:
+                tables:
+                    type: object
+                    properties:
+                        table name:
+                            type: string
+                        table:
+                            type: array
+                            items:
+                                type: object
+                                properties:
+                                    source:
+                                        type: number
+                                    columns:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                columnName:
+                                                    type: string
+                                                isPrimaryKey:
+                                                    type: boolean
+                                                isOptional:
+                                                    type: boolean
+                                    foreignKeys:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                keyName:
+                                                    type: string
+                                                foreignTable:
+                                                    type: string
+                                                columns:
+                                                    type: array
+                                                    items:
+                                                        type: string

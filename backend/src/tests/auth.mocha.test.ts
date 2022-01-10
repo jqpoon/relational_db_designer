@@ -1,17 +1,29 @@
-import chai, {expect} from "chai";
+/*
+	TABLE OF CONTENTS
+
+	1. Imports
+	2. Initialisation
+	3. Authentication tests
+*/
+
+// 1. Imports
+import chai, { expect } from "chai";
 import chaiHttp from "chai-http";
 import server from "../Server";
 import params from "./testparams";
 
+// 2. Initialisation
 chai.use(chaiHttp);
 
-describe('Auth', () => {
+// 3. Authentication tests
+
+describe("Auth", () => {
 	it("Cannot signup with an email that is already is use", (done) => {
 		chai.request(server)
-			.post('/api/auth/signup')
+			.post("/api/auth/signup")
 			.send({
-				"email": params.email,
-				"password": params.password
+				email: params.email,
+				password: params.password,
 			})
 			.end((_, res) => {
 				expect(res.status).to.be.equal(400);
@@ -21,10 +33,10 @@ describe('Auth', () => {
 
 	it("Password must be at least 6 characters long", (done) => {
 		chai.request(server)
-			.post('/api/auth/signup')
+			.post("/api/auth/signup")
 			.send({
-				"email": params.email,
-				"password": params.badPassword
+				email: params.email,
+				password: params.badPassword,
 			})
 			.end((_, res) => {
 				expect(res.status).to.be.equal(400);
@@ -32,12 +44,12 @@ describe('Auth', () => {
 			});
 	});
 
-	it('Can login with correct credentials', (done) => {
+	it("Can login with correct credentials", (done) => {
 		chai.request(server)
-			.post('/api/auth/login')
+			.post("/api/auth/login")
 			.send({
-				"email": params.email,
-				"password": params.password
+				email: params.email,
+				password: params.password,
 			})
 			.end((_, res) => {
 				expect(res.status).to.be.equal(200);
@@ -45,12 +57,12 @@ describe('Auth', () => {
 			});
 	});
 
-	it('Cannot login with incorrect credentials', (done) => {
+	it("Cannot login with incorrect credentials", (done) => {
 		chai.request(server)
-			.post('/api/auth/login')
+			.post("/api/auth/login")
 			.send({
-				"email": params.email,
-				"password": params.badPassword
+				email: params.email,
+				password: params.badPassword,
 			})
 			.end((_, res) => {
 				expect(res.status).to.be.equal(403);
