@@ -6,16 +6,24 @@
 	3. Authentication tests
 */
 
+// **********
 // 1. Imports
+// **********
+
 import chai, { expect } from "chai";
 import chaiHttp from "chai-http";
 import server from "../Server";
 import params from "./testparams";
 
+// *****************
 // 2. Initialisation
+// *****************
+
 chai.use(chaiHttp);
 
+// ***********************
 // 3. Authentication tests
+// ***********************
 
 describe("Auth", () => {
 	it("Cannot signup with an email that is already is use", (done) => {

@@ -1,286 +1,281 @@
 .toolbar-right {
-  position: fixed;
-  top: 0;
-  left: 80vw;
-  width: 20vw;
-  height: 100%;
-  background-color: antiquewhite;
-  text-align: left;
-  overflow-y: scroll;
-  /* z-index: 6; ?? */
-  padding: 10px 5px;
+	position: fixed;
+	top: 0;
+	left: 80vw;
+	width: 20vw;
+	height: 100%;
+	background-color: antiquewhite;
+	text-align: left;
+	overflow-y: scroll;
+	padding: 10px 5px;
 }
 
 .toolbar-left {
-  position: fixed;
-  top: 0;
-  width: 13vw;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background-color: antiquewhite;
-  text-align: left;
-  z-index: 0;
-  padding: 10px 5px;
+	position: fixed;
+	top: 0;
+	width: 13vw;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	background-color: antiquewhite;
+	text-align: left;
+	z-index: 0;
+	padding: 10px 5px;
 }
 
 .action {
-  cursor: pointer;
-  height: 40px;
-  width: 100%;
-  margin: 0px 0px 5px 0px;
-  padding: 10px;
-  border: 1px solid gray;
-  border-radius: 3px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+	cursor: pointer;
+	height: 40px;
+	width: 100%;
+	margin: 0px 0px 5px 0px;
+	padding: 10px;
+	border: 1px solid gray;
+	border-radius: 3px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .action:hover,
 .action:focus {
-  border: 2px solid purple;
+	border: 2px solid purple;
 }
 
 .load-text {
-  text-align: center;
-  padding: 10px;
+	text-align: center;
+	padding: 10px;
 }
 
 .click-action {
-  cursor: pointer;
-  text-align: center;
+	cursor: pointer;
+	text-align: center;
 }
 
 .drag-to-create {
-  display: flex;
-  cursor: move !important;
+	display: flex;
+	cursor: move !important;
 }
 
 .drag-to-create * {
-  padding: 0px 5px 0px 0px;
-  text-overflow: ellipsis;
+	padding: 0px 5px 0px 0px;
+	text-overflow: ellipsis;
 }
 
 input[type="text"] {
-  cursor: text;
-  outline: none !important;
-  text-align: center;
-  background-color: white !important;
+	cursor: text;
+	outline: none !important;
+	text-align: center;
+	background-color: white !important;
 }
 
 input[type="text"]:focus {
-  text-align: left;
+	text-align: left;
 }
 
 .toolbar-right input[type="text"] {
-  text-align: left;
+	text-align: left;
 }
 
 .toolbar-section {
-  padding: 10px 5px;
+	padding: 10px 5px;
 }
 
 .toolbar-section-header {
-  padding: 0px 0px 5px 0px
+	padding: 0px 0px 5px 0px;
 }
 
 .toolbar-text-action {
-  cursor: pointer;
-  color: gray;
-  font-size: medium;
-  padding: 5px 0px;
+	cursor: pointer;
+	color: gray;
+	font-size: medium;
+	padding: 5px 0px;
 }
 
 .toolbar-header {
-  padding: 20px;
-  color: black;
-  text-align: center;
-  font-weight: bold;
+	padding: 20px;
+	color: black;
+	text-align: center;
+	font-weight: bold;
 }
 
 .forms {
-  width: 100%;
+	width: 100%;
 }
 
 .translation {
-  margin-left: 3px;
-  font-size: 14px;
-  padding-top: 1px;
-  /* padding: 1px 0px 1px 0px; */
+	margin-left: 3px;
+	font-size: 14px;
+	padding-top: 1px;
 }
 
 .share-form-wrapper {
-  margin-bottom: 10px;
+	margin-bottom: 10px;
 }
 
 .share-form {
-  display: flex;
-  height: 30px;
-  padding: 0 5px;
+	display: flex;
+	height: 30px;
+	padding: 0 5px;
 }
 
 .share-email {
-  flex-grow: 1;
+	flex-grow: 1;
 }
 
 .share-permission {
-  flex-grow: 0;
+	flex-grow: 0;
 }
 
 .share-btn-wrapper {
-  text-align: center;
-  margin: 5px auto;
+	text-align: center;
+	margin: 5px auto;
 }
 
 .share-btn-wrapper button {
-  width: 100px;
-  font-size: large;
+	width: 100px;
+	font-size: large;
 }
 
 .permission-block {
-  display: flex;
-  padding: 0 5px;
+	display: flex;
+	padding: 0 5px;
 }
 
 .user-block {
-  flex-grow: 1;
-  overflow-x: hidden;
-  text-align: center;
-  padding: 3px;
-  margin: 2px 0;
-  border: 1px solid gray;
-  border-radius: 3px;
+	flex-grow: 1;
+	overflow-x: hidden;
+	text-align: center;
+	padding: 3px;
+	margin: 2px 0;
+	border: 1px solid gray;
+	border-radius: 3px;
 }
 
 .remove-permission-btn {
-  padding: 3px;
-  margin: 2px;
+	padding: 3px;
+	margin: 2px;
 }
 
 .title {
-  margin-left: 3px;
-  font-size: 20px;
+	margin-left: 3px;
+	font-size: 20px;
 }
 
 .toolbar-left * {
-  background: antiquewhite;
+	background: antiquewhite;
 }
 
 .toolbar-left .group {
-  padding: 0px 0px 15px 0px;
+	padding: 0px 0px 15px 0px;
 }
 
 .toolbar-left .group-header {
-  padding: 0px 0px 5px 0px;
+	padding: 0px 0px 5px 0px;
 }
 .toolbar-left .group-content {
-  padding: 0;
+	padding: 0;
 }
 .toolbar-left .group-content * {
-  overflow: hidden;
+	overflow: hidden;
 }
 
 .bug-report {
-  margin: 2px;
-  text-align: center;
+	margin: 2px;
+	text-align: center;
 }
 
 .edit-buttons {
-  padding: 0% 5% 0% 5%;
-  float: left;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
+	padding: 0% 5% 0% 5%;
+	float: left;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
 }
 
 .left {
-  margin-left: 8%;
+	margin-left: 8%;
 }
 
 .file-buttons {
-  float: left;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
+	float: left;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
 }
 
 /* CSS */
 .button-2 {
-  float: left;
-  align-items: center;
-  justify-content: center;
-  background-color: rgba(51, 51, 51, 0.05);
-  border-radius: 8px;
-  border-width: 1px;
-  /* color: #333333; */
-  cursor: pointer;
-  font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial,
-    sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-  list-style: none;
-  width: 50px;
-  margin: 1px;
-  padding: 10px 5px 12px 5px;
-  text-align: center;
-  transition: all 200ms;
-  vertical-align: baseline;
-  white-space: nowrap;
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: manipulation;
+	float: left;
+	align-items: center;
+	justify-content: center;
+	background-color: rgba(51, 51, 51, 0.05);
+	border-radius: 8px;
+	border-width: 1px;
+	cursor: pointer;
+	font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 20px;
+	list-style: none;
+	width: 50px;
+	margin: 1px;
+	padding: 10px 5px 12px 5px;
+	text-align: center;
+	transition: all 200ms;
+	vertical-align: baseline;
+	white-space: nowrap;
+	user-select: none;
+	-webkit-user-select: none;
+	touch-action: manipulation;
 }
 
 .button-2:hover {
-  background-color: black;
-  color: white;
+	background-color: black;
+	color: white;
 }
 
 .active {
-  background-color: black;
-  color: white;
+	background-color: black;
+	color: white;
 }
 
 .addButton:active,
 .addButton:focus {
-  border: 0.5em solid #00c; /* here configure as your needs */
-  color: #00c;
+	border: 0.5em solid #00c;
+	color: #00c;
 }
 
 .outer {
-  width: 100%;
-  text-align: center;
+	width: 100%;
+	text-align: center;
 }
 
 .inner {
-  display: inline-block;
+	display: inline-block;
 }
 
 .attributes-checkbox {
-  padding: 0px 0px 0px 10px
+	padding: 0px 0px 0px 10px;
 }
 
 .attributes-checkbox * {
-  font-weight: normal;
+	font-weight: normal;
 }
 
 .attributes-checkbox input:disabled {
-  cursor: not-allowed;
+	cursor: not-allowed;
 }
 
 .toolbar-section-item {
-  padding: 8px 0px;
+	padding: 8px 0px;
 }
 
 .toolbar-right label {
-  padding: 0px 0px 0px 5px
+	padding: 0px 0px 0px 5px;
 }
 
 .cardinality-selector {
-  padding: 5px;
-  margin: 5px 0px;
+	padding: 5px;
+	margin: 5px 0px;
 }
-

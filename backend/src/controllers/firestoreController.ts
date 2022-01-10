@@ -10,7 +10,10 @@
 		3.4 Collaboration methods
 */
 
+// **********
 // 1. Imports
+// **********
+
 import { FirebaseApp } from "firebase/app";
 import {
 	Firestore,
@@ -31,7 +34,10 @@ import {
 } from "firebase/firestore";
 import asyncLock from "async-lock";
 
+// ************************
 // 2. Interface definitions
+// ************************
+
 interface ERDSchema {
 	counter: number;
 	name: string;
@@ -53,7 +59,10 @@ interface DisplayPermission {
 	email: string;
 }
 
+// *************************************************
 // 3. Singleton controller class for Cloud Firestore
+// *************************************************
+
 class FirestoreController {
 	private static instance: FirestoreController;
 	private db: Firestore;
@@ -71,7 +80,9 @@ class FirestoreController {
 		return FirestoreController.instance;
 	}
 
+	// *************
 	// 3.1 Utilities
+	// *************
 
 	public async getUidFromEmail(email: string): Promise<string | null> {
 		const docRef: DocumentReference = doc(this.db, `email_uid/${email}`);
@@ -139,7 +150,9 @@ class FirestoreController {
 		return permission === "REMOVE" || permission === "READ" || permission === "READ-WRITE";
 	}
 
+	// *********************************
 	// 3.2 User documents initialisation
+	// *********************************
 
 	public async createDocumentForNewUser(uid: string, email: string): Promise<void> {
 		let docRef: DocumentReference = doc(this.db, `user_erds/${uid}`);
@@ -148,7 +161,9 @@ class FirestoreController {
 		await setDoc(docRef, { uid });
 	}
 
+	// ****************
 	// 3.3 CRUD for ERD
+	// ****************
 
 	public async createERD(uid: string, json: string): Promise<string> {
 		// Store ERD
@@ -223,7 +238,9 @@ class FirestoreController {
 		await deleteDoc(dataRef);
 	}
 
+	// *************************
 	// 3.4 Collaboration methods
+	// *************************
 
 	public async getERDAccessList(erid: string): Promise<string> {
 		const docRef: DocumentReference = doc(this.db, `erd_users/${erid}`);

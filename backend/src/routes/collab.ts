@@ -8,15 +8,24 @@
 		2.3 Create duplicate
 */
 
+// **********
 // 1. Imports
+// **********
+
 import { Router } from "express";
 import ErrorBuilder from "../controllers/errorBuilder";
 import FirebaseController from "../controllers/firebaseController";
 
+// ****************
 // 2. Collab router
+// ****************
+
 const router = Router();
 
+// *******************
 // 2.1 Get access list
+// *******************
+
 /*
 	/collab?Uid
 	- Gets the list of ERD that a user (Uid) has access to
@@ -47,7 +56,10 @@ router.get("/", function (req, res) {
 		});
 });
 
+// **********************
 // 2.2 Update access list
+// **********************
+
 /*
 	/collab?owner&email&ERid&permission
 	- Update user (email) access (permission) to ERD (ERid)
@@ -81,7 +93,10 @@ router.put("/", function (req, res) {
 		});
 });
 
+// ********************
 // 2.3 Create duplicate
+// ********************
+
 /*
 	/collab/create-duplicate?ERid&Uid
 	- Create a duplicate of an ERD (ERid) for a user (Uid)

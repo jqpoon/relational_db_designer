@@ -8,13 +8,19 @@
 		2.3 Collaboration methods
 */
 
+// **********
 // 1. Imports
+// **********
+
 import { FirebaseApp, initializeApp } from "firebase/app";
 import FirebaseAuthController from "./firebaseAuthController";
 import FirestoreController from "./firestoreController";
 import ErrorBuilder from "./errorBuilder";
 
+// *******************************************************************************
 // 2. Single controller class for Firebase that wraps authentication and Firestore
+// *******************************************************************************
+
 class FirebaseController {
 	private static instance: FirebaseController;
 	private firebaseApp: FirebaseApp;
@@ -43,7 +49,9 @@ class FirebaseController {
 		return FirebaseController.instance;
 	}
 
+	// **************************
 	// 2.1 Authentication methods
+	// **************************
 
 	public async signUp(email: string, password: string): Promise<string> {
 		const uid: string = await this.firebaseAuthController.signUp(email, password);
@@ -55,7 +63,9 @@ class FirebaseController {
 		return this.firebaseAuthController.login(email, password);
 	}
 
+	// *****************
 	// 2.2 CRUD for ERDs
+	// *****************
 
 	public async createERD(uid: string, data: string): Promise<string> {
 		const exists: boolean = await this.firestoreController.checkUserExists(uid);
@@ -108,7 +118,9 @@ class FirebaseController {
 		await this.firestoreController.deleteERD(erid);
 	}
 
+	// *************************
 	// 2.3 Collaboration methods
+	// *************************
 
 	public async getAccessList(id: string, isUser: boolean): Promise<string> {
 		let exists: boolean;

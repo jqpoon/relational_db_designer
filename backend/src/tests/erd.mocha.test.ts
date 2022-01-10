@@ -6,17 +6,25 @@
 	3. ERD tests
 */
 
+// **********
 // 1. Imports
+// **********
+
 import chai, { expect } from "chai";
 import chaiHttp from "chai-http";
 import server from "../Server";
 import example from "./erdExample.json";
 import params from "./testparams";
 
+// *****************
 // 2. Initialisation
+// *****************
+
 chai.use(chaiHttp);
 
+// ************
 // 3. ERD tests
+// ************
 
 describe("ERD", () => {
 	describe("GET /erd", () => {

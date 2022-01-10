@@ -9,16 +9,24 @@
 		2.4 DELETE ERD
 */
 
+// **********
 // 1. Imports
+// **********
+
 import { Router } from "express";
 import ErrorBuilder from "../controllers/errorBuilder";
 import FirebaseController from "../controllers/firebaseController";
 
+// **********************
 // 2. ERD router for CRUD
+// **********************
 
 const router = Router();
 
+// ***********
 // 2.1 GET ERD
+// ***********
+
 /*
 	/erd?ERid&Uid
 	- Get ERD
@@ -44,7 +52,10 @@ router.get("/", function (req, res) {
 		});
 });
 
+// ************
 // 2.2 POST ERD
+// ************
+
 /*
 	/erd?Uid
 	- Create ERD
@@ -72,7 +83,10 @@ router.post("/", function (req, res) {
 		});
 });
 
+// ***********
 // 2.3 PUT ERD
+// ***********
+
 /*
 	/erd?ERid&Uid
 	- Update ERD
@@ -109,7 +123,10 @@ router.put("/", function (req, res) {
 		});
 });
 
+// **************
 // 2.4 DELETE ERD
+// **************
+
 /*
 	/erd?ERid&Uid
 		- Deletes an ERD

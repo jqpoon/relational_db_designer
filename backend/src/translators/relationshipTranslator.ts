@@ -121,8 +121,6 @@ class RelationshipTranslator implements Translator {
 						};
 						translatedTable.tables.set(this.relationship.text, rTable);
 					} else {
-						console.log(rs.text);
-						console.log(this.relationship.text);
 						var columns: Array<Column> = new Array<Column>();
 						if (this.relationship.attributes !== undefined) {
 							this.relationship.attributes!.map((a: Attribute) => {
@@ -132,7 +130,6 @@ class RelationshipTranslator implements Translator {
 									isOptional: a.isOptional,
 									isMultiValued: a.isMultiValued,
 								});
-								console.log(a.text);
 							});
 						}
 						rs.attributes!.map((a: Attribute) => {

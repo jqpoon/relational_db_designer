@@ -8,7 +8,10 @@
 	3. Collaboration tests
 */
 
+// **********
 // 1. Imports
+// **********
+
 import chai, { expect } from "chai";
 import chaiHttp from "chai-http";
 import { some } from "lodash";
@@ -16,10 +19,16 @@ import server from "../Server";
 import params from "./testparams";
 import example from "./erdExample.json";
 
+// *****************
 // 2. Initialisation
+// *****************
+
 chai.use(chaiHttp);
 
+// **********************
 // 3. Collaboration tests
+// **********************
+
 describe("Collab", () => {
 	describe("Access lists", () => {
 		it("Request must be well defined", (done) => {

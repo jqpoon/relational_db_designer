@@ -7,15 +7,23 @@
 		2.2 Login
 */
 
+// **********
 // 1. Imports
+// **********
+
 import { Router } from "express";
 import FirebaseController from "../controllers/firebaseController";
 
+// **************
 // 2. Auth router
+// **************
 
 const router = Router();
 
+// ***********
 // 2.1 Sign up
+// ***********
+
 router.post("/signup", function (req, res) {
 	const email: string = req.body.email ?? undefined;
 	const password: string = req.body.password ?? undefined;
@@ -30,7 +38,10 @@ router.post("/signup", function (req, res) {
 		});
 });
 
+// *********
 // 2.2 Login
+// *********
+
 router.post("/login", function (req, res) {
 	const email: string = req.body.email ?? undefined;
 	const password: string = req.body.password ?? undefined;

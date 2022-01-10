@@ -1,10 +1,5 @@
-/*
-	TABLE OF CONTENTS
+//  Error builder class with status code and error message
 
-	1. Error builder class with status code and error message
-*/
-
-// 1. Error builder class with status code and error message
 class ErrorBuilder {
 	private code: number;
 	private msg: string;
