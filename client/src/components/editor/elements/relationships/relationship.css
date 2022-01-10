@@ -1,0 +1,25 @@
+.relationship {
+	width: 100px;
+	height: 100px;
+	border: 1px solid black;
+	transform: rotate(45deg);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-color: var(--relationship-color);
+}
+
+.relationship .content {
+	transform: rotate(-45deg);
+}
+
+.relationship .edit {
+	display: flex;
+	justify-content: center;
+	margin-top: 10px;
+	width: 100%;
+}
+
+.relationship input {
+	width: 90%;
+}

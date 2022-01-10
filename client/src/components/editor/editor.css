@@ -1,0 +1,11 @@
+.editor {
+	display: flex;
+	height: 100vh;
+	overflow: hidden;
+}
+
+.canvas {
+	left: 10vw;
+	width: 140vw;
+	height: 100vh;
+}
