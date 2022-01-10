@@ -38,6 +38,7 @@ import { addToUndo, redo, undo } from "./utilities/history";
 import { Validator } from "./utilities/validator";
 import "./editor.css";
 import "react-confirm-alert/src/react-confirm-alert.css";
+import {notificationHandler} from "./utilities/alert";
 
 // For testing
 // import { initialEntities, initialRelationships, initialEdges } from "./initial";
@@ -290,6 +291,11 @@ export default function Editor({ user, setUser }) {
       const validator = new Validator(exportStateToObject());
       validator.validateAndAlert();
       await saveERDToBackEnd(backendUtils);
+    },
+    validateERD: () => {
+      const validator = new Validator(exportStateToObject());
+      validator.validateAndAlert();
+      if (validator.valid) notificationHandler("Valid Schema", "Your diagram is valid.");
     },
     translateERtoRelational: () => {
       const validator = new Validator(exportStateToObject());

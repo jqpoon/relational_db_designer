@@ -192,6 +192,11 @@ const showFile = (info, functions) => {
 					tooltip="Export diagram to PNG"
 				/>
 				<ClickAction
+					title="Validate"
+					action={functions.validateERD}
+					tooltip="Check if the diagram is valid"
+				/>
+				<ClickAction
 					title="Translate"
 					action={functions.translateERtoRelational}
 					tooltip="Translate ERD to relational schema"
