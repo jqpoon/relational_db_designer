@@ -21,6 +21,7 @@ import { actions, cardinality, types } from "../../types";
 import CardinalityChoices from "./cardinality";
 import { createRelationshipEdge } from "../../elements/relationshipEdges/relationshipEdge";
 import { createHierarchyEdge } from "../../elements/hierarchyEdges/hierarchyEdge";
+import { IconButton } from "@mui/material";
 
 // ********************************************
 // 2. Generic function for adding a single edge
@@ -65,6 +66,26 @@ function AddingEdge({
     });
   };
 
+  const cancelButton = () => {
+    return (
+      <div className="confirm-button" onClick={reset}>
+        <IconButton>
+          <MdClear />
+        </IconButton>
+      </div>
+    );
+  };
+
+  const confirmButton = () => {
+    return (
+      <div className="confirm-button" onClick={addEdge}>
+        <IconButton>
+          <MdCheck />
+        </IconButton>
+      </div>
+    );
+  };
+
   // **********************
   // 2.2 Null target return
   // **********************
@@ -79,9 +100,7 @@ function AddingEdge({
         }}
       >
         <div>No target selected</div>
-        <div onClick={reset}>
-          <MdClear />
-        </div>
+        {cancelButton()}
       </div>
     );
   }
@@ -129,9 +148,7 @@ function AddingEdge({
         }}
       >
         {warning}
-        <div>
-          <MdClear />
-        </div>
+        {cancelButton()}
       </div>
     );
   }
@@ -169,12 +186,8 @@ function AddingEdge({
           right: "0",
         }}
       >
-        <div onClick={addEdge}>
-          <MdCheck />
-        </div>
-        <div onClick={reset}>
-          <MdClear />
-        </div>
+        {confirmButton()}
+        {cancelButton()}
       </div>
     </div>
   );
