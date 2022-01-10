@@ -1,6 +1,6 @@
 {
 	"name": "DO NOT EDIT",
-  "data": {
+	"data": {
 		"entities": {
 			"E0": {
 				"attributes": {
@@ -79,9 +79,7 @@
 			},
 			"ESwipeCard": {
 				"generalisations": {},
-				"isWeak": [
-					"ESwipeCardR0"
-				],
+				"isWeak": ["ESwipeCardR0"],
 				"attributes": {},
 				"type": "entity",
 				"id": "ESwipeCard",

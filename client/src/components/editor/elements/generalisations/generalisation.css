@@ -1,48 +1,48 @@
 .generalisation {
-  width: 120px;
-  height: 75px;
-  background-color: var(--generalisation-color);
-  display: table;
-  position: relative;
-  z-index: 15;
+	width: 120px;
+	height: 75px;
+	background-color: var(--generalisation-color);
+	display: table;
+	position: relative;
+	z-index: 15;
 }
 
 .generalisation:before,
 .generalisation:after {
-  content: "";
-  display: flex;
-  width: 0;
-  border-top: 37.5px solid transparent;
-  border-bottom: 37.5px solid transparent;
-  position: fixed;
+	content: "";
+	display: flex;
+	width: 0;
+	border-top: 37.5px solid transparent;
+	border-bottom: 37.5px solid transparent;
+	position: fixed;
 }
 
 .generalisation:before {
-  left: -20px;
-  border-right: 20px solid var(--generalisation-color);
+	left: -20px;
+	border-right: 20px solid var(--generalisation-color);
 }
 .generalisation:after {
-  top: 0px;
-  bottom: 0px;
-  right: -20px;
-  border-left: 20px solid var(--generalisation-color);
+	top: 0px;
+	bottom: 0px;
+	right: -20px;
+	border-left: 20px solid var(--generalisation-color);
 }
 
 .generalisation .edit {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-  width: 100%;
-  align-items: center;
+	display: flex;
+	justify-content: center;
+	margin-top: 20px;
+	width: 100%;
+	align-items: center;
 }
 
 .generalisation .edit input {
-  width: 80%;
-  margin-top: 5px;
+	width: 80%;
+	margin-top: 5px;
 }
 
 .generalisation .view {
-  height: 100%;
-  display: table-cell;
-  vertical-align: middle;
+	height: 100%;
+	display: table-cell;
+	vertical-align: middle;
 }

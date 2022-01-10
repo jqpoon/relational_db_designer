@@ -1,31 +1,33 @@
 interface TranslatedTable {
-    tables: Map<string, Table>
+    // Map from table names to tables
+	tables: Map<string, Table>;
 }
 
 interface Table {
-    source: TableSource,
-    columns: Array<Column>
-    foreignKeys: Array<ForeignKey>
+	source: TableSource;
+	columns: Array<Column>;
+	foreignKeys: Array<ForeignKey>;
 }
 
 enum TableSource {
-    ENTITY,
-    RELATIONSHIP
+	ENTITY,
+	RELATIONSHIP,
+	MULTI_ATTRIBUTE,
 }
 
 interface Column {
-    columnName: string,
-    isPrimaryKey: boolean,
-    isOptional: boolean
-    isMultiValued: boolean
+	columnName: string;
+	isPrimaryKey: boolean;
+	isOptional: boolean;
+	isMultiValued: boolean;
 }
 
 interface ForeignKey {
-    keyName: string, //works_in person
-    foreignTable: string, // person
-    columns: Array<string> //salary_number
-    //has to say which columns are affected by it
+    // keyName should be concatenation of source and foreign table names
+	keyName: string;
+	foreignTable: string;
+	columns: Array<string>; 
 }
 
-export default TranslatedTable
-export { Table, TableSource, Column, ForeignKey }
+export default TranslatedTable;
+export { Table, TableSource, Column, ForeignKey };

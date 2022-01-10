@@ -1,5 +1,5 @@
-.attribute, .attribute-selected {
-  padding: 10px;
-  width: fit-content;
-  height: fit-content;
+.attribute {
+	padding: 10px;
+	width: fit-content;
+	height: fit-content;
 }

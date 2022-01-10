@@ -1,597 +1,497 @@
+/*
+	TABLE OF CONTENTS
+
+	1. Imports
+	2. Canvas ID
+	3. Editor component
+		3.1 States
+		3.2 Side effect hooks
+		3.3 Utilities
+		3.4 Configurations
+		3.5 Render functions for edges
+		3.6 JSX
+*/
+
+// 1. Imports
 import { useState, useRef, useEffect } from "react";
-import { initialEntities, initialRelationships, initialEdges } from "./initial";
-import { actions, types } from "./types";
-import Edge, { AttributeEdge, HierarchyEdge } from "./edges/edge";
 import { Xwrapper } from "react-xarrows";
-import "./editor.css";
-import "react-confirm-alert/src/react-confirm-alert.css";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import html2canvas from "html2canvas";
-import SelectEntity from "./right_toolbar/selectEntity";
-import SelectRelationship from "./right_toolbar/selectRelationship";
-import Normal from "./right_toolbar/normal";
-import SelectEdge from "./right_toolbar/selectEdge";
-import SelectGeneralisation from "./right_toolbar/selectGeneralisation";
-import { ContextMenu } from "./contextMenu";
-import DisplayTranslation from "./right_toolbar/translationDisplay";
-import { addToUndo, redo, undo } from "./historyUtilities/history";
-import { deletes, gets, updates } from "./elementUtilities/elementFunctions";
-import { saveIdCounter, setIdCounter } from "./idGenerator";
-import LeftToolbar from "./leftToolbar/leftToolbar";
-import Load from "./right_toolbar/load";
-import Share from "./right_toolbar/share";
+import { actions } from "./types";
+import { ContextMenu } from "./elements/contextMenu";
+import { deletes, gets, updates } from "./elements/elementFunctions";
+import { Relationship } from "./elements/relationships/relationship";
+import { Entity } from "./elements/entities/entity";
+import axios from "axios";
+import { AttributeEdge } from "./elements/attributeEdges/attributeEdge";
+import Edge from "./elements/general";
+import { HierarchyEdge } from "./elements/hierarchyEdges/hierarchyEdge";
+import LeftToolbar from "./toolbar/leftToolbar";
+import { RightToolbar } from "./toolbar/rightToolbar";
 import {
   deleteERDInBackEnd,
   duplicateERD,
   saveERDToBackEnd,
   translateERtoRelational,
-} from "./backendUtilities/backendUtils";
-import { Relationship } from "./elements/relationships/relationship";
-import { Entity } from "./elements/entities/entity";
-import axios from "axios";
+} from "./utilities/backendUtils";
+import { saveIdCounter, setIdCounter } from "./utilities/idGenerator";
+import { addToUndo, redo, undo } from "./utilities/history";
+import { Validator } from "./utilities/validator";
+import "./editor.css";
+import "react-confirm-alert/src/react-confirm-alert.css";
 
+// For testing
+// import { initialEntities, initialRelationships, initialEdges } from "./initial";
+
+// 2. Canvas ID
+const canvasExportableCompID = "canvasExportableComp";
+
+// 3. Editor component
 export default function Editor({ user, setUser, socket, setSocket }) {
-  /** ERD Metadata
-   * name - name of ERD
-   * erid - id of ERD
-   * counter - version of schema retrieved from backend, used to check for update conflicts
-   */
-  const [name, setName] = useState("Untitled");
-  const [erid, setErid] = useState(null);
-  const [counter, setCounter] = useState(0);
+	// **********
+	// 3.1 States
+	// **********
 
-  // Canvas states: passed to children for metadata (eg width and height of main container)
-  const parentRef = useRef(null);
-  const [render, setRender] = useState(false);
-  const [joinedRoom, setJoinedRoom] = useState(false);
-  const stateRef = useRef();
+	// ERD Metadata
+	const [name, setName] = useState("Untitled");
+	// id of ERD
+	const [erid, setErid] = useState(null);
+	// version of schema retrieved from backend, used to check for update conflicts
+	const [counter, setCounter] = useState(0);
 
-  // List of components that will be rendered
-  const [elements, setElements] = useState({
-    entities: initialEntities,
-    relationships: initialRelationships,
-    edges: initialEdges,
-  });
+	// List of components that will be rendered
+	const [elements, setElements] = useState({});
+	const elementsAndSetter = {
+		elements: elements,
+		setElements: (e) => {
+		  setElements(e);
 
-  stateRef.current = elements;
+		  // emits event to server that ER diagram has been updated
+          if (erid !== null) {
+            socket.emit("update schema", {
+              uid: user,
+              erid: erid,
+              body: {
+                name: name,
+                data: elementsRef.current,
+                counter: counter,
+                idCounter: saveIdCounter(),
+              }
+            })
+          }
+        },
+	};
 
-  socket.on("schema updated", (res) => {
-      if (res.socketID !== socket.id) {
-          setElements(res.body.data);
-      }
-      setCounter(res.body.counter);
-      setIdCounter(res.body.idCounter);
-  });
+	// Canvas states:
+	// passed to children for metadata (eg width and height of main container)
+	const parentRef = useRef(null);
+	// Toggle when ready to render
+	const [render, setRender] = useState(false);
+	// Disable panning (eg. when dragging nodes)
+	const [panDisabled, setPanDisabled] = useState(false);
+	// Record scale of zoom
+	const [scale, setScale] = useState(1);
+	// Trigger rerendering when dealing with pure CSS transitions
+	const [, setRerender] = useState(false);
+	const forceRerender = () => setRerender((r) => !r);
 
-  socket.on("schema reloaded", (res) => {
-    setElements(res.body.data);
-    setCounter(res.body.counter);
-    setIdCounter(res.body.idCounter);
-  })
+	// To support undo and redo
+	const [history, setHistory] = useState({ store: [], position: -1 });
+	const historyAndSetter = {
+		history: history,
+		setHistory: setHistory,
+	};
 
-  socket.on("error", async (resp) => {
-    if (resp.socketID === socket.id) {
-      if (resp.error_code === 409) {
-        socket.emit("reload schema", {
-          uid: user,
+	// Context of current action
+	const [context, setContext] = useState({ action: actions.NORMAL });
+	const backToNormal = () => setContext({ action: actions.NORMAL });
+
+	// Toggle context menu on right click
+	const [contextMenu, setContextMenu] = useState(null);
+
+	// Elements ref to retrieve latest update for sockets
+    const elementsRef = useRef(elements);
+    elementsRef.current = elements;
+
+	// *********************
+	// 3.2 Side effect hooks
+	// *********************
+
+	useEffect(() => {
+		setRender(true);
+		// Store user on login
+		localStorage.setItem("user", user);
+		// Loads latest ER diagram on login / refreshing the page
+		const state = JSON.parse(localStorage.getItem("state"));
+		importStateFromObject(state);
+	}, []);
+
+	// Add / remove event listener for clicks on whitespace
+	useEffect(() => {
+		const canvas = document.getElementById(canvasExportableCompID);
+		const backToNormalWrapper = (e) => {
+			if (e.target.className === "canvas") backToNormal();
+		};
+		canvas?.addEventListener("click", backToNormalWrapper);
+		return () => {
+			canvas?.removeEventListener("click", backToNormalWrapper);
+		};
+	}, [render]);
+
+	// Cache elements and ERD ID (if exists)
+	useEffect(() => {
+		const state = exportStateToObject();
+		if (erid) state["erid"] = erid;
+		localStorage.setItem("state", JSON.stringify(state));
+	}, [elements, erid]);
+
+	// Update user's socket rooms in the server
+    useEffect(() => {
+      if (erid !== null) {
+        socket.emit("leave all");
+        socket.emit("connect schema", {
           erid: erid,
         })
       }
-    }
-  });
+    }, [erid])
 
-  const elementsAndSetter = { elements: elements, setElements: (e) => {
-    setElements(e);
-    if (erid !== null) {
-      socket.emit("update schema", {
-        uid: user,
-        erid: erid,
-        body: {
-          name: name,
-          data: stateRef.current,
-          counter: counter,
-          idCounter: saveIdCounter(),
-        }
-      })
-    }
-    }
-  };
+	// *************
+	// 3.3 Utilities
+	// *************
 
-  const [history, setHistory] = useState({ store: [], position: -1 });
-  const historyAndSetter = {
-    history: history,
-    setHistory: setHistory,
-  };
+	// Returns a copy of the element
+	const getElement = (type, id, parent) => {
+		return gets[type](elements, id, parent);
+	};
 
-  const [context, setContext] = useState({ action: actions.NORMAL });
+	const addElement = (type, element) => {
+		const arg = JSON.parse(JSON.stringify(element));
+		const data = updates[type](elementsAndSetter, element);
+		addToUndo("addElement", arg, data, historyAndSetter);
+	};
 
-  const [contextMenu, setContextMenu] = useState(null);
+	const updateElement = (type, element) => {
+		const arg = JSON.parse(JSON.stringify(element));
+		const data = updates[type](elementsAndSetter, element);
+		addToUndo("updateElement", arg, data, historyAndSetter);
+	};
 
-  const resetClick = (e) => {
-    if (
-      e.target.classList.contains("react-transform-wrapper") ||
-      e.target.classList.contains("canvas")
-    ) {
-      setContext({ action: actions.NORMAL, disableNodeNameEditing: true });
-    }
-  };
+	const deleteElement = (type, element) => {
+		const arg = JSON.parse(JSON.stringify(element));
+		const data = deletes[type](elementsAndSetter, element);
+		addToUndo("deleteElement", arg, data, historyAndSetter);
+		setContextMenu(null);
+	};
 
-  // Canvas states:
-  // Disable panning eg. when dragging nodes
-  const [panDisabled, setPanDisabled] = useState(false);
-  // Record
-  const [scale, setScale] = useState(1);
-  // Trigger rerendering onZoom/Pan etc for edges to update properly
-  const [, setRerender] = useState(false);
-  const forceRerender = () => setRerender((r) => !r);
+	const elementFunctions = {
+		getElement,
+		addElement,
+		updateElement,
+		deleteElement,
+		undo: () => {
+			undo(historyAndSetter, elementsAndSetter);
+		},
+	};
 
-  const canvasConfig = {
-    panning: {
-      disabled: panDisabled,
-      excluded: ["input", "button"],
-      velocityDisabled: true,
-    },
-    onZoomStop: (ref) => {
-      setScale(ref.state.scale);
-    },
-    onZoom: (ref) => {
-      setScale(ref.state.scale);
-      forceRerender();
-    },
-    onPanning: forceRerender,
-    alignmentAnimation: { animationTime: 0 },
-    onAlignBound: forceRerender,
-    doubleClick: { disabled: true },
-    minScale: 0.4,
-    limitToBounds: false,
-  };
+	// Generic save function
+	const saveChanges = ({ type, id, parent }, change) => {
+		let newElem = getElement(type, id, parent);
+		change(newElem);
+		updateElement(type, newElem);
+	};
 
-  const canvasExportableCompID = "canvasExportableComp";
+	// Reset/set canvas depending on if obj is defined
+	const resetState = (obj) => {
+		setName(obj?.name || "Untitled");
+		setErid(obj?.erid || null);
+		setCounter(obj?.counter || 0);
+		if (obj?.idCounter) setIdCounter(obj.idCounter);
+		setElements(obj?.data || { entities: {}, relationships: {}, edges: {} });
+		setHistory({ store: [], position: -1 });
+	};
 
-  useEffect(() => {
-    setRender(true);
-    document?.addEventListener("click", resetClick);
-  }, []);
+	// Translates entire model state from backend JSON into client components.
+	const importStateFromObject = (obj) => resetState(obj);
 
-  useEffect(() => {
-    if (erid !== null) {
-      socket.emit("leave all");
-      socket.emit("connect schema", {
-        erid: erid,
-      })
-      setJoinedRoom(true);
-    }
-  }, [erid])
+	// Translates entire schema state into a single JSON object.
+	const exportStateToObject = () => {
+		let obj = {
+			name,
+			data: elements,
+			idCounter: saveIdCounter(),
+		};
+		// Object has already been created, save counter to check against backend
+		if (counter !== 0) obj["counter"] = counter;
+		return obj;
+	};
 
-  // Resets the state of the whiteboard and deletes the current schema if obj == null.
-  // else imports state from obj
-  const resetState = (obj) => {
-    setName(obj?.name || "Untitled");
-    setErid(obj?.erid || null);
-    setCounter(obj?.counter || 0);
-    if (obj?.idCounter) setIdCounter(obj.idCounter);
-    setElements(obj?.data || { entities: {}, relationships: {}, edges: {} });
-    setHistory({ store: [], position: -1 });
-  };
-  useEffect(() => {
-    // Loads latest ER diagram on login / refreshing the page
-    const state = JSON.parse(localStorage.getItem("state"));
-    importStateFromObject(state);
-    setErid(localStorage.getItem("erid"));
-  }, [user]);
+	// Download ERD as JSON
+	const downloadStateAsObject = () => {
+		const fileName = "schema.json";
+		const blob = new Blob([JSON.stringify(exportStateToObject())], {
+			type: "text/json",
+		});
+		const a = document.createElement("a");
+		a.download = fileName;
+		a.href = window.URL.createObjectURL(blob);
+		const mouseEvent = new MouseEvent("click", {
+			view: window,
+			bubbles: true,
+			cancelable: true,
+		});
+		a.dispatchEvent(mouseEvent);
+		a.remove();
+	};
 
-  useEffect(() => {
-    // Loads current state into local storage whenever ER diagram changes
-    const state = exportStateToObject();
-    localStorage.setItem("state", JSON.stringify(state));
-    localStorage.setItem("user", user);
-    localStorage.setItem("erid", erid);
-  }, [elements, history]);
+	// Upload JSON to be rendered as ERD
+	const uploadStateFromObject = (file) => {
+		const fileReader = new FileReader();
+		fileReader.readAsText(file, "UTF-8");
+		fileReader.onload = (e) => {
+			const state = JSON.parse(e.target.result);
+			resetState();
+			importStateFromObject(state);
+		};
+	};
 
-  // Returns a copy of the element
-  const getElement = (type, id, parent) => {
-    return gets[type](elements, id, parent);
-  };
+	// Download ERD as PNG
+	const createSchemaImage = () => {
+		const canvasDiv = document.getElementById(canvasExportableCompID);
+		html2canvas(canvasDiv, {
+			allowTaint: true,
+			foreignObjectRendering: true,
+			logging: true,
+			scrollX: -window.scrollX,
+			scrollY: -window.scrollY,
+		}).then((canvas) => {
+			const newTab = window.open("about:blank", "schema");
+			newTab.document.write("<img src='" + canvas.toDataURL("image/png") + "' alt=''/>");
+		});
+	};
 
-  const deleteElement = (type, element) => {
-    const arg = JSON.parse(JSON.stringify(element));
-    const data = deletes[type](elementsAndSetter, element);
-    addToUndo("deleteElement", arg, data, historyAndSetter);
-  };
-  const addElement = (type, element) => {
-    const arg = JSON.parse(JSON.stringify(element));
-    const data = updates[type](elementsAndSetter, element);
-    addToUndo("addElement", arg, data, historyAndSetter);
-  };
-  const updateElement = (type, element) => {
-    const arg = JSON.parse(JSON.stringify(element));
-    const data = updates[type](elementsAndSetter, element);
-    addToUndo("updateElement", arg, data, historyAndSetter);
-  };
+	// ******************
+	// 3.4 Configurations
+	// ******************
 
-  const elementFunctions = {
-    getElement: getElement,
-    addElement: addElement,
-    updateElement: updateElement,
-    deleteElement: deleteElement,
-    undo: () => {
-      undo(historyAndSetter, elementsAndSetter);
-    },
-  };
+	const erdInfo = {
+		user,
+		erid,
+		name,
+		scale,
+	};
 
-  const generalFunctions = {
-    setContext: setContext,
-    context: context,
-    setContextMenu: setContextMenu,
-    setPanDisabled: setPanDisabled,
-  };
+	const backendUtils = {
+		...erdInfo,
+		exportERD: exportStateToObject,
+		importERD: importStateFromObject,
+		resetERD: resetState,
+		setErid,
+		setContext,
+		setCounter,
+	};
 
-  // Translates entire model state from backend JSON into client components.
-  const importStateFromObject = (obj) => {
-    resetState(obj);
-  };
+	const canvasConfig = {
+		panning: {
+			disabled: panDisabled,
+			excluded: ["input", "button"],
+			velocityDisabled: true,
+		},
+		onZoomStop: (ref) => {
+			setScale(ref.state.scale);
+		},
+		onZoom: (ref) => {
+			setScale(ref.state.scale);
+			forceRerender();
+		},
+		onPanning: forceRerender,
+		alignmentAnimation: { animationTime: 0 },
+		onAlignBound: forceRerender,
+		doubleClick: { disabled: true },
+		minScale: 0.4,
+		limitToBounds: false,
+	};
 
-  // Translates entire schema state into a single JSON object.
-  const exportStateToObject = () => {
-    let obj = { name: name, data: elements, idCounter: saveIdCounter() };
-    if (counter !== 0) {
-      // Object has already been created, save counter to check against backend
-      obj["counter"] = counter;
-    }
-    return obj;
-  };
+	const leftToolBarActions = {
+		duplicateERD: async () => duplicateERD(backendUtils),
+		loadERD: () => setContext({ action: actions.LOAD }),
+		shareERD: () => setContext({ action: actions.SHARE }),
+		saveERD: async () => {
+			const validator = new Validator(exportStateToObject());
+			validator.validateAndAlert();
+			await saveERDToBackEnd(backendUtils);
+		},
+		translateERtoRelational: () => {
+			const validator = new Validator(exportStateToObject());
+			validator.validateAndAlert();
+			if (validator.valid) translateERtoRelational(backendUtils);
+		},
+		importFromJSON: uploadStateFromObject,
+		exportToJSON: downloadStateAsObject,
+		exportToPNG: createSchemaImage,
+		undo: () => undo(historyAndSetter, elementsAndSetter),
+		redo: () => redo(historyAndSetter, elementsAndSetter),
+		logout: () => {
+			localStorage.removeItem("user");
+			localStorage.removeItem("state");
+			setUser(null);
+			if (socket != null) {
+			  socket.disconnect();
+            }
+			setSocket(null);
+		},
+		deleteERD: async () => deleteERDInBackEnd(backendUtils),
+		resetState,
+		setName,
+	};
 
-  // Translates entire schema state into a JSON object that fits backend format.
-  // TODO: Move this function to backend after working out Firebase stuff.
-  const translateStateToBackend = () => {
-    let state = {
-      entities: [],
-      relationships: [],
-      generalisations: [],
-    };
+	const nodeConfig = {
+		parentRef,
+		ctx: {
+			scale,
+			context,
+		},
+		functions: {
+			getElement,
+			updateElement,
+			addElement,
+			deleteElement,
+			setContext,
+			setContextMenu,
+			setPanDisabled,
+			saveChanges,
+		},
+	};
 
-    let entitiesClone = { ...elements.entities };
-    let relationshipsClone = { ...elements.relationships };
-    let edgesClone = { ...elements.edges };
+	// ******************************
+	// 3.5 Render functions for edges
+	// ******************************
 
-    // Entities.
-    Object.values(entitiesClone).forEach((entity) => {
-      let entityState = {
-        id: entity.id,
-        text: entity.text,
-        pos: entity.pos,
-        isWeak: entity.isWeak.length !== 0,
-        attributes: [],
-        subsets: [],
-      };
+	const showAttributeEdges = (nodes) => {
+		return Object.values(nodes).map((node) => {
+			return Object.values(node.attributes).map((attribute) => {
+				return (
+					<AttributeEdge
+						parent={attribute.parent.id}
+						child={attribute.id}
+						scale={scale}
+					/>
+				);
+			});
+		});
+	};
 
-      // Attributes associated with entity.
-      Object.values(entity.attributes).forEach(({ parent, type, ...attr }) => {
-        entityState.attributes.push(attr);
-      });
+	const showEdges = () => {
+		return (
+			<>
+				{/* Normal relationship and hierarchy edges */}
+				{Object.values(elements.edges).map((edge) => (
+					<Edge edge={edge} scale={scale} />
+				))}
+				{/* Generalisation edges */}
+				{Object.values(elements.entities).map((entity) => {
+					return Object.values(entity.generalisations).map((generalisation) => (
+						<HierarchyEdge parent={entity.id} child={generalisation.id} scale={scale} />
+					));
+				})}
+				{/* Attribute edges */}
+				{showAttributeEdges(elements.entities)}
+				{showAttributeEdges(elements.relationships)}
+			</>
+		);
+	};
 
-      state.entities.push(entityState);
+    // *********************
+    // 3.6 Socket listeners for component
+    // *********************
+
+    // Whenever an update to the current ER diagram, update data
+    socket.on("schema updated", (res) => {
+      if (res.socketID !== socket.id) {
+        setElements(res.body.data);
+      }
+      setCounter(res.body.counter);
+      setIdCounter(res.body.idCounter);
     });
 
-    // Populate subsets array for each entity.
-    state.entities.forEach((entityState) => {
-      let entity = entitiesClone[entityState.id];
-      for (const [edgeID, edgeData] of Object.entries(entity.edges)) {
-        // Ensure is a subset edge.
-        if (edgeData.type !== types.EDGE.HIERARCHY) continue;
-        // Find corresponding child entity object and add to the subsets array.
-        const childEntityState = state.entities.filter((e) => {
-          return e.id === edgesClone[edgeID].child;
-        })[0];
-        entityState.subsets.push(childEntityState);
+    // When an update is required on the current user's ER diagram due to being out of sync
+    socket.on("schema reloaded", (res) => {
+      setElements(res.body.data);
+      setCounter(res.body.counter);
+      setIdCounter(res.body.idCounter);
+    })
+
+    // Triggered when server responds with error, push reload mechanism if out of sync
+    socket.on("error", async (resp) => {
+      if (resp.socketID === socket.id) {
+        if (resp.error_code === 409) {
+          socket.emit("reload schema", {
+            uid: user,
+            erid: erid,
+          })
+        }
       }
     });
 
-    // Relationships and linking with entities.
-    Object.values(relationshipsClone).forEach((relationship) => {
-      let relationshipState = {
-        id: relationship.id,
-        text: relationship.text,
-        pos: relationship.pos,
-        attributes: [],
-        lHConstraints: {},
-      };
+	// *******
+	// 3.7 JSX
+	// *******
 
-      // Attributes associated with relationship.
-      Object.values(relationship.attributes).forEach(
-        ({ parent, type, ...attr }) => {
-          relationshipState.attributes.push(attr);
-        }
-      );
-
-      // Populate lHConstraints mapping.
-      let links = Object.values(edgesClone).filter(
-        (edge) => edge.start === relationship.id || edge.end === relationship.id
-      );
-      for (const i in links) {
-        const link = links[i];
-        const entityID = link.start === relationship.id ? link.end : link.start;
-        relationshipState.lHConstraints[entityID] = link.cardinality;
-      }
-
-      state.relationships.push(relationshipState);
-    });
-
-    // Generalisations.
-    Object.values(entitiesClone).forEach((entity) => {
-      Object.values(entity.generalisations).forEach((gen) => {
-        let genState = {
-          id: gen.id,
-          text: gen.text,
-          pos: gen.pos,
-          parent: state.entities.filter((e) => {
-            return e.id === gen.parent.id;
-          })[0],
-          entities: Object.keys(gen.edges).map((edgeID) => {
-            const edge = edgesClone[edgeID];
-            // Find the corresponding child entity object by its ID.
-            const childEntity = state.entities.filter((e) => {
-              return e.id === edge.child;
-            })[0];
-            // Add the child to the list of subsets of the parent.
-            state.entities
-              .filter((e) => {
-                return e.id === edge.parent;
-              })[0]
-              .subsets.push(childEntity);
-            return childEntity;
-          }),
-        };
-        state.generalisations.push(genState);
-      });
-    });
-
-    return state;
-  };
-
-  const uploadStateFromObject = (file) => {
-    const fileReader = new FileReader();
-    fileReader.readAsText(file, "UTF-8");
-    fileReader.onload = (e) => {
-      const state = JSON.parse(e.target.result);
-      resetState();
-      importStateFromObject(state);
-    };
-  };
-
-  const downloadStateAsObject = () => {
-    const fileName = "schema.json";
-    const blob = new Blob([JSON.stringify(exportStateToObject())], {
-      type: "text/json",
-    });
-    const a = document.createElement("a");
-    a.download = fileName;
-    a.href = window.URL.createObjectURL(blob);
-    const mouseEvent = new MouseEvent("click", {
-      view: window,
-      bubbles: true,
-      cancelable: true,
-    });
-    a.dispatchEvent(mouseEvent);
-    a.remove();
-  };
-
-  const erdInfo = {
-    user: user,
-    erid: erid,
-    name: name,
-    scale: scale,
-  };
-
-  const createSchemaImage = () => {
-    const canvasDiv = document.getElementById(canvasExportableCompID);
-    html2canvas(canvasDiv, {
-      allowTaint : true,
-      foreignObjectRendering: true,
-      logging: true,
-      scrollX: -window.scrollX,
-      scrollY: -window.scrollY,
-    }).then((canvas) => {
-      const newTab = window.open("about:blank", "schema");
-      newTab.document.write(
-        "<img src='" + canvas.toDataURL("image/png") + "' alt=''/>"
-      );
-    });
-  };
-
-  const backendUtils = {
-    ...erdInfo,
-    exportERD: exportStateToObject,
-    importERD: importStateFromObject,
-    resetERD: resetState,
-    setErid: setErid,
-    setContext: setContext,
-    setCounter: setCounter,
-  };
-
-  const leftToolBarActions = {
-    duplicateERD: async () => duplicateERD(backendUtils),
-    loadERD: () => setContext({ action: actions.LOAD }),
-    shareERD: () => setContext({ action: actions.SHARE }),
-    saveERD: async () => saveERDToBackEnd(backendUtils),
-    translateERtoRelational: () => translateERtoRelational(backendUtils),
-    importFromJSON: uploadStateFromObject,
-    exportToJSON: downloadStateAsObject,
-    exportToPNG: createSchemaImage,
-    undo: () => undo(historyAndSetter, elementsAndSetter),
-    redo: () => redo(historyAndSetter, elementsAndSetter),
-    logout: () => {
-      if (socket !== null) {
-        socket.disconnect();
-        setSocket(null);
-      }
-      localStorage.removeItem('user');
-      localStorage.removeItem('state');
-      localStorage.removeItem('erid');
-      setUser(null);
-    },
-    deleteERD: async () => deleteERDInBackEnd(backendUtils),
-    resetState: resetState,
-    setName,
-  };
-
-  const nodeConfig = {
-    parentRef: parentRef,
-    ctx: { scale: scale, context: context },
-    functions: {
-      getElement: getElement,
-      updateElement: updateElement,
-      addElement: addElement,
-      setContext: setContext,
-      setContextMenu: setContextMenu,
-      setPanDisabled: setPanDisabled,
-    },
-  };
-
-  const showRightToolbar = () => {
-    switch (context.action) {
-      case actions.TRANSLATE:
-        return <DisplayTranslation relationalSchema={context.tables} />;
-      case actions.NORMAL:
-        return <Normal />;
-      case actions.SELECT.NORMAL:
-      case actions.SELECT.ADD_RELATIONSHIP:
-      case actions.SELECT.ADD_SUPERSET:
-      case actions.SELECT.ADD_SUBSET:
-        switch (context.selected.type) {
-          case types.ENTITY:
-            return (
-              <SelectEntity
-                entity={getElement(types.ENTITY, context.selected.id)}
-                {...elementFunctions}
-                {...generalFunctions}
-              />
-            );
-          case types.RELATIONSHIP:
-            return (
-              <SelectRelationship
-                relationship={getElement(
-                  types.RELATIONSHIP,
-                  context.selected.id
-                )}
-                {...elementFunctions}
-                {...generalFunctions}
-              />
-            );
-          case types.GENERALISATION:
-            return (
-              <SelectGeneralisation
-                generalisation={getElement(
-                  types.GENERALISATION,
-                  context.selected.id,
-                  context.selected.parent
-                )}
-                {...elementFunctions}
-                {...generalFunctions}
-              />
-            );
-          case types.EDGE.RELATIONSHIP:
-          case types.EDGE.HIERARCHY:
-            return <SelectEdge edge={elements.edges[context.selected.id]} />;
-          default:
-            return <Normal />; // TODO: type not found page
-        }
-      case actions.LOAD:
-        return (
-          <Load
-            user={user}
-            importStateFromObject={importStateFromObject}
-            backToNormal={() => setContext({ action: actions.NORMAL })}
-          />
-        );
-      case actions.SHARE:
-        return (
-          <Share
-            user={user}
-            erid={erid}
-            backToNormal={() => setContext({ action: actions.NORMAL })}
-          />
-        );
-      default:
-        // TODO
-        return <Normal />;
-    }
-  };
-
-  const showAttributeEdges = (nodes) => {
-    return Object.values(nodes).map((node) => {
-      return Object.values(node.attributes).map((attribute) => {
-        return (
-          <AttributeEdge
-            parent={attribute.parent.id}
-            child={attribute.id}
-            scale={scale}
-          />
-        );
-      });
-    });
-  };
-  const showEdges = () => {
-    return (
-      <>
-        {/* Normal relationship and hierarchy edges */}
-        {Object.values(elements.edges).map((edge) => (
-          <Edge edge={edge} scale={scale} />
-        ))}
-        {/* Generalisation edges */}
-        {Object.values(elements.entities).map((entity) => {
-          return Object.values(entity.generalisations).map((generalisation) => (
-            <HierarchyEdge
-              parent={entity.id}
-              child={generalisation.id}
-              scale={scale}
-            />
-          ));
-        })}
-        {/* Attribute edges */}
-        {showAttributeEdges(elements.entities)}
-        {showAttributeEdges(elements.relationships)}
-      </>
-    );
-  };
-
-  return (
-    <Xwrapper>
-      <div className="editor" ref={parentRef}>
-        {render ? (
-          <>
-            <div id={canvasExportableCompID}>
-              <TransformWrapper {...canvasConfig}>
-                <TransformComponent>
-                  <div
-                    className="canvas" // TODO: previously "dnd"
-                    onClick={() => setPanDisabled(false)}
-                  >
-                    {Object.values(elements.entities).map((entity) => (
-                      <Entity key={entity.id} entity={entity} {...nodeConfig} />
-                    ))}
-                    {Object.values(elements.relationships).map((relationship) => (
-                      <Relationship
-                        key={relationship.id}
-                        relationship={relationship}
-                        {...nodeConfig}
-                      />
-                    ))}
-                  </div>
-                </TransformComponent>
-              </TransformWrapper>
-              {showEdges()}
-            </div>
-            <LeftToolbar
-              info={erdInfo}
-              functions={{ ...leftToolBarActions, ...elementFunctions }}
-            />
-            {/* <Toolbar {...elementFunctions} {...leftToolBarActions} /> */}
-            {showRightToolbar()}
-            <ContextMenu contextMenu={contextMenu} />
-          </>
-        ) : null}
-      </div>
-    </Xwrapper>
-  );
+	return (
+		<Xwrapper>
+			<div className="editor" ref={parentRef}>
+				{render ? (
+					<>
+						<div id={canvasExportableCompID}>
+							<TransformWrapper {...canvasConfig}>
+								<TransformComponent>
+									<div className="canvas" onClick={() => setPanDisabled(false)}>
+										{Object.values(elements.entities).map((entity) => (
+											<Entity
+												key={entity.id}
+												entity={entity}
+												{...nodeConfig}
+											/>
+										))}
+										{Object.values(elements.relationships).map(
+											(relationship) => (
+												<Relationship
+													key={relationship.id}
+													relationship={relationship}
+													{...nodeConfig}
+												/>
+											)
+										)}
+									</div>
+								</TransformComponent>
+							</TransformWrapper>
+							{showEdges()}
+						</div>
+						<LeftToolbar
+							info={erdInfo}
+							functions={{ ...leftToolBarActions, ...elementFunctions }}
+						/>
+						<RightToolbar
+							context={context}
+							user={user}
+							erid={erid}
+							functions={{
+								importERD: importStateFromObject,
+								backToNormal,
+								setContext,
+								getElement,
+								saveChanges,
+								deleteElement,
+								addElement,
+							}}
+						/>
+						<ContextMenu
+							contextMenu={contextMenu}
+							setContextMenu={setContextMenu}
+							backToNormal={backToNormal}
+						/>
+					</>
+				) : null}
+			</div>
+		</Xwrapper>
+	);
 }

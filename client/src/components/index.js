@@ -1,4 +1,6 @@
-import React, {useState} from 'react'
+// Main component of project
+
+import React, { useState } from "react";
 import Auth from "./auth";
 import Editor from "./editor/editor";
 import {io} from "socket.io-client";

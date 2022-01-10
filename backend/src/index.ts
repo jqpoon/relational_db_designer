@@ -3,7 +3,6 @@ import logger from '@shared/Logger';
 import {createServer} from "http";
 import {Server} from "socket.io";
 import SchemaHandler from './handlers/schemaHandler';
-import {io} from "socket.io-client";
 
 // Start the server
 const port = Number(process.env.PORT || 3000);
@@ -18,7 +17,6 @@ const ioServer = new Server(httpServer, {
 
 ioServer.on("connection", (socket) => {
     logger.info('Client connected');
-    logger.info(socket.id);
     SchemaHandler(ioServer, socket);
 
     socket.on("disconnect", (reason) => {

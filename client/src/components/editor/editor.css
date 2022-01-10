@@ -1,6 +1,7 @@
 .editor {
 	display: flex;
 	height: 100vh;
+	overflow: hidden;
 }
 
 .canvas {
@@ -8,4 +9,3 @@
 	width: 140vw;
 	height: 100vh;
 }
-
