@@ -26,7 +26,7 @@ export default function SelectGeneralisation({
           <IconButton
             onClick={() => {
               functions.deleteElement(types.GENERALISATION, generalisation);
-              functions.setContext({ actions: actions.NORMAL });
+              functions.setContext({ action: actions.NORMAL });
             }}
           >
             <MdClear />

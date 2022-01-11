@@ -16,7 +16,7 @@ export default function SelectRelationship({ ctx, relationship, functions }) {
 					<IconButton
 						onClick={() => {
 							functions.deleteElement(types.RELATIONSHIP, relationship);
-							functions.setContext({ actions: actions.NORMAL });
+							functions.setContext({ action: actions.NORMAL });
 						}}
 					>
 						<MdClear />

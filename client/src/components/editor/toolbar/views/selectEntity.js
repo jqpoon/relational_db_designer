@@ -37,7 +37,7 @@ export function SelectEntity({ entity, functions, ctx }) {
 					<IconButton
 						onClick={() => {
 							functions.deleteElement(types.ENTITY, entity);
-							functions.setContext({ actions: actions.NORMAL });
+							functions.setContext({ action: actions.NORMAL });
 						}}
 					>
 						<MdClear />
