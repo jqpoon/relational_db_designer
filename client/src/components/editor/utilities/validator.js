@@ -38,9 +38,6 @@ export class Validator {
 	checkForEntityPrimaryKey(e) {
 		const attributes = Object.values(e.attributes);
 
-		// Guard statement. Only process if entity has attributes.
-		if (attributes.length === 0) return;
-
 		// Check if entity is a subset of another entity.
 		let isSubset = false;
 		Object.entries(e.edges).forEach(([edgeID, edgeData]) => {
