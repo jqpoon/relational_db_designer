@@ -123,7 +123,7 @@ export default function Editor({ user, setUser }) {
     const state = exportStateToObject();
     if (erid) state["erid"] = erid;
     localStorage.setItem("state", JSON.stringify(state));
-  }, [elements, erid]);
+  }, [elements, erid, name]);
 
   // *************
   // 3.3 Utilities
